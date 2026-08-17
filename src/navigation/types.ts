@@ -5,20 +5,22 @@ export type RootStackParamList = {
   Onboarding: undefined;
   Home: undefined;
   GoalSelect: undefined;
-  Countdown: { goalMs: number };
-  Session: { goalMs: number };
+  Countdown: { goalMs: number; duelId?: string };
+  Session: { goalMs: number; duelId?: string };
   SessionResult: {
     record: SessionRecord;
     isNewRecord: boolean;
     newlyUnlocked: AchievementState[];
     coinsEarned: number;
     streakBroken: boolean;
+    duelId?: string;
   };
   Stats: undefined;
   Achievements: undefined;
   Settings: undefined;
   Store: undefined;
   Paywall: undefined;
+  Duel: undefined;
 };
 
 export type NavProp = NativeStackNavigationProp<RootStackParamList>;

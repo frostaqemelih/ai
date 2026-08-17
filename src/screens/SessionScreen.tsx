@@ -16,6 +16,7 @@ import { colors, spacing, typography } from '../theme';
 import { formatClock } from '../utils/time';
 import type { FailReason } from '../types';
 import { reportError } from '../services/crashService';
+import { submitDuelResult } from '../services/duelService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Session'>;
 
@@ -26,7 +27,7 @@ const HAPTIC_STYLE: Record<HapticIntensity, Haptics.ImpactFeedbackStyle> = {
 };
 
 export function SessionScreen({ navigation, route }: Props) {
-  const { goalMs } = route.params;
+  const { goalMs, duelId } = route.params;
   const { beginActiveSession, completeSession, stats, settings } = useAppData();
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const settledRef = useRef(false);
@@ -48,15 +49,19 @@ export function SessionScreen({ navigation, route }: Props) {
       if (settledRef.current || startedAt === null) return;
       settledRef.current = true;
       const result = await completeSession({ startedAt, goalMs, completed, failReason });
+      if (duelId) {
+        submitDuelResult(duelId, result.record.durationMs, completed).catch((err) => reportError(err));
+      }
       navigation.replace('SessionResult', {
         record: result.record,
         isNewRecord: result.isNewRecord,
         newlyUnlocked: result.newlyUnlocked,
         coinsEarned: result.coinsEarned,
         streakBroken: result.streakBroken,
+        duelId,
       });
     },
-    [startedAt, goalMs, completeSession, navigation]
+    [startedAt, goalMs, completeSession, navigation, duelId]
   );
 
   const onComplete = useCallback(() => {

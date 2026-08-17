@@ -16,6 +16,7 @@ import { AchievementsScreen } from '../screens/AchievementsScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { StoreScreen } from '../screens/StoreScreen';
 import { PaywallScreen } from '../screens/PaywallScreen';
+import { DuelScreen } from '../screens/DuelScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -75,6 +76,7 @@ export function RootNavigator() {
           component={PaywallScreen}
           options={{ presentation: 'modal' }}
         />
+        <Stack.Screen name="Duel" component={DuelScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

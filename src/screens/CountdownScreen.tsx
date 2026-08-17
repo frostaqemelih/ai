@@ -12,7 +12,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Countdown'>;
 const SEQUENCE = ['3', '2', '1', 'GO'];
 
 export function CountdownScreen({ navigation, route }: Props) {
-  const { goalMs } = route.params;
+  const { goalMs, duelId } = route.params;
   const { settings } = useAppData();
   const [index, setIndex] = useState(0);
   const scale = React.useRef(new Animated.Value(0.6)).current;
@@ -35,7 +35,7 @@ export function CountdownScreen({ navigation, route }: Props) {
 
     if (index >= SEQUENCE.length - 1) {
       const timeout = setTimeout(() => {
-        navigation.replace('Session', { goalMs });
+        navigation.replace('Session', { goalMs, duelId });
       }, 500);
       return () => clearTimeout(timeout);
     }

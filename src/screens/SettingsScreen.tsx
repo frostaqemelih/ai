@@ -142,6 +142,23 @@ export function SettingsScreen({ navigation }: Props) {
           )}
         </GlassCard>
 
+        <GlassCard style={styles.section}>
+          <View style={styles.row}>
+            <Text style={styles.rowLabel}>🤝 Friend Duel</Text>
+          </View>
+          <Text style={styles.coinHint}>
+            Race a friend to see who lasts longer, untouched. Fully optional — nothing is
+            sent anywhere unless you create or join a duel.
+          </Text>
+          <Pressable
+            style={styles.storeLink}
+            onPress={() => navigation.navigate('Duel')}
+            accessibilityRole="button"
+          >
+            <Text style={styles.storeLinkText}>OPEN DUEL ›</Text>
+          </Pressable>
+        </GlassCard>
+
         <View style={styles.noAccountBox}>
           <Text style={styles.noAccountText}>NO ACCOUNT REQUIRED</Text>
           <Text style={styles.noAccountSubtext}>

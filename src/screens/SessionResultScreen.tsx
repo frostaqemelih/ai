@@ -15,6 +15,7 @@ import { STREAK_FREEZE_COST } from '../utils/economy';
 import { buildShareMessage } from '../utils/share';
 import { reportError } from '../services/crashService';
 import { track } from '../services/analyticsService';
+import { fetchDuelStatus, type DuelStatus } from '../services/duelService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SessionResult'>;
 
@@ -27,7 +28,7 @@ const FAIL_MESSAGES: Record<string, string> = {
 type AdPurpose = 'streak' | 'double' | null;
 
 export function SessionResultScreen({ navigation, route }: Props) {
-  const { record, isNewRecord, newlyUnlocked, coinsEarned, streakBroken } = route.params;
+  const { record, isNewRecord, newlyUnlocked, coinsEarned, streakBroken, duelId } = route.params;
   const insets = useSafeAreaInsets();
   const { settings, stats, coins, isPremium, earnCoins, saveStreakWithInsurance, saveStreakWithCoins } =
     useAppData();
@@ -36,6 +37,21 @@ export function SessionResultScreen({ navigation, route }: Props) {
   const [streakSaved, setStreakSaved] = useState(false);
   const [coinsDoubled, setCoinsDoubled] = useState(false);
   const [spendingCoins, setSpendingCoins] = useState(false);
+  const [duelStatus, setDuelStatus] = useState<DuelStatus | null>(null);
+  const [checkingDuel, setCheckingDuel] = useState(false);
+
+  const checkDuel = async () => {
+    if (!duelId || checkingDuel) return;
+    setCheckingDuel(true);
+    const status = await fetchDuelStatus(duelId);
+    setCheckingDuel(false);
+    setDuelStatus(status);
+  };
+
+  useEffect(() => {
+    if (duelId) checkDuel();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [duelId]);
 
   useEffect(() => {
     if (record.completed) {
@@ -180,6 +196,41 @@ export function SessionResultScreen({ navigation, route }: Props) {
               )}
             </View>
           )}
+          {duelId && (
+            <View style={styles.duelBox}>
+              <Text style={styles.duelTitle}>🤝 DUEL</Text>
+              {(() => {
+                if (!duelStatus) {
+                  return (
+                    <Text style={styles.duelHint}>
+                      {checkingDuel ? 'Checking…' : 'Could not reach the duel.'}
+                    </Text>
+                  );
+                }
+                const me = duelStatus.participants.find((p) => p.isMe);
+                const opponent = duelStatus.participants.find((p) => !p.isMe);
+                if (!opponent || opponent.durationMs === null) {
+                  return <Text style={styles.duelHint}>Waiting for your friend's result…</Text>;
+                }
+                const myDuration = me?.durationMs ?? record.durationMs;
+                const won = myDuration > opponent.durationMs;
+                const tie = myDuration === opponent.durationMs;
+                return (
+                  <>
+                    <Text style={styles.duelResultText}>
+                      You {formatClock(myDuration)} · Friend {formatClock(opponent.durationMs)}
+                    </Text>
+                    <Text style={[styles.duelOutcome, won && styles.duelOutcomeWin]}>
+                      {tie ? "IT'S A TIE" : won ? 'YOU WIN 🏆' : 'YOU LOSE'}
+                    </Text>
+                  </>
+                );
+              })()}
+              <Pressable onPress={checkDuel} hitSlop={8} disabled={checkingDuel}>
+                <Text style={styles.duelRefresh}>↻ CHECK AGAIN</Text>
+              </Pressable>
+            </View>
+          )}
         </View>
 
         <View style={styles.footer}>
@@ -319,5 +370,40 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.textTertiary,
     letterSpacing: 1.5,
+  },
+  duelBox: {
+    marginTop: spacing.lg,
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  duelTitle: {
+    ...typography.label,
+    fontSize: 11,
+    color: colors.textTertiary,
+    letterSpacing: 2,
+  },
+  duelHint: {
+    ...typography.body,
+    fontSize: 13,
+    color: colors.textSecondary,
+  },
+  duelResultText: {
+    ...typography.body,
+    fontSize: 13,
+    color: colors.textSecondary,
+  },
+  duelOutcome: {
+    ...typography.label,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  duelOutcomeWin: {
+    color: colors.streak,
+  },
+  duelRefresh: {
+    ...typography.label,
+    fontSize: 10,
+    color: colors.textTertiary,
+    marginTop: spacing.xs,
   },
 });
