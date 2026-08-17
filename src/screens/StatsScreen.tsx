@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -12,12 +12,19 @@ import { getMonthlyTotals, getWeeklyTotals } from '../storage/statsEngine';
 import { colors, spacing, typography } from '../theme';
 import { formatClock, formatDurationLong } from '../utils/time';
 import { toLocalDateKey, WEEKDAY_LABELS } from '../utils/date';
+import { fetchGlobalTotalTodayMs, isSupabaseConfigured } from '../services/globalStatsService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Stats'>;
 
 export function StatsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { sessions, stats, isPremium } = useAppData();
+  const [globalTodayMs, setGlobalTodayMs] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    fetchGlobalTotalTodayMs().then(setGlobalTodayMs);
+  }, []);
 
   const weekly = useMemo(() => getWeeklyTotals(sessions), [sessions]);
   const maxWeekly = Math.max(1, ...weekly.map((w) => w.totalMs));
@@ -67,10 +74,19 @@ export function StatsScreen({ navigation }: Props) {
             </View>
             <View style={styles.leaderboardDivider} />
             <View>
-              <Text style={styles.leaderboardLabel}>GLOBAL</Text>
-              <Text style={styles.leaderboardValueMuted}>Coming soon</Text>
+              <Text style={styles.leaderboardLabel}>GLOBAL TODAY</Text>
+              {globalTodayMs !== null ? (
+                <Text style={styles.leaderboardValue}>{formatDurationLong(globalTodayMs)}</Text>
+              ) : (
+                <Text style={styles.leaderboardValueMuted}>Coming soon</Text>
+              )}
             </View>
           </View>
+          {globalTodayMs !== null && (
+            <Text style={styles.globalHint}>
+              The world has stayed phone-free for {formatDurationLong(globalTodayMs)} today.
+            </Text>
+          )}
         </GlassCard>
 
         <GlassCard style={styles.section}>
@@ -214,6 +230,11 @@ const styles = StyleSheet.create({
     ...typography.statValue,
     color: colors.textTertiary,
     marginTop: 4,
+  },
+  globalHint: {
+    ...typography.body,
+    fontSize: 12,
+    color: colors.textTertiary,
   },
   trendHeader: {
     flexDirection: 'row',

@@ -56,6 +56,8 @@ import { toLocalDateKey } from '../utils/date';
 import { track } from '../services/analyticsService';
 import { requestTrackingPermission } from '../services/trackingService';
 import { requestAppReview, shouldPromptForRating } from '../services/ratingService';
+import { contributeToGlobalStats } from '../services/globalStatsService';
+import { reportError } from '../services/crashService';
 
 interface CompleteSessionInput {
   startedAt: number;
@@ -319,6 +321,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
       if (completed) {
         track('session_completed', { durationMs: record.durationMs, goalMs: record.goalMs });
+        if (settings.contributeToGlobalStats) {
+          contributeToGlobalStats(record.durationMs).catch((err) => reportError(err));
+        }
       } else {
         track('session_failed', {
           durationMs: record.durationMs,
@@ -339,7 +344,15 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         streakBroken,
       };
     },
-    [sessions, stats.personalBestMs, stats.currentStreak, earnCoins, settings.notificationsEnabled, rescheduleReminders]
+    [
+      sessions,
+      stats.personalBestMs,
+      stats.currentStreak,
+      earnCoins,
+      settings.notificationsEnabled,
+      settings.contributeToGlobalStats,
+      rescheduleReminders,
+    ]
   );
 
   const grantStreakSave = useCallback(async () => {

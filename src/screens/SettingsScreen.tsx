@@ -124,6 +124,17 @@ export function SettingsScreen({ navigation }: Props) {
               ))}
             </View>
           </View>
+          <Divider />
+          <Row
+            label="Contribute to global stats (anonymous)"
+            right={
+              <Switch
+                value={settings.contributeToGlobalStats}
+                onValueChange={(v) => updateSettings({ contributeToGlobalStats: v })}
+                trackColor={{ true: colors.streak, false: colors.border }}
+              />
+            }
+          />
         </GlassCard>
 
         <GlassCard style={styles.section}>
