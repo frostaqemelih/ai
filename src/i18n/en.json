@@ -52,7 +52,10 @@
     "duelCheckAgain": "CHECK AGAIN",
     "duelBonus": "First duel bonus: +{{amount}} coins!",
     "watchingStreak": "Watching to save your streak…",
-    "watchingDouble": "Watching to double your coins…"
+    "watchingDouble": "Watching to double your coins…",
+    "streakMilestoneLabel": "DAY STREAK MILESTONE",
+    "streakMilestoneCoins": "+{{amount}} BONUS COINS",
+    "streakMilestoneDismiss": "NICE"
   },
   "paywall": {
     "title": "PREMIUM",

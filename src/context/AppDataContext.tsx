@@ -34,6 +34,7 @@ import { deriveAchievements, deriveStats, findNewlyUnlocked } from '../storage/s
 import { DEFAULT_SETTINGS } from '../storage/storage';
 import {
   baseCoinsForSession,
+  checkStreakMilestone,
   DEFAULT_RING_COLOR_ID,
   DUEL_REFERRAL_BONUS_COINS,
   STREAK_FREEZE_COST,
@@ -72,6 +73,7 @@ interface CompleteSessionResult {
   newlyUnlocked: AchievementState[];
   coinsEarned: number;
   streakBroken: boolean;
+  streakMilestone: { day: number; coins: number } | null;
 }
 
 interface AppDataContextValue {
@@ -319,6 +321,27 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
       const streakBroken = !completed && previousStreak > 0 && nextStats.currentStreak < previousStreak;
 
+      let streakMilestone: { day: number; coins: number } | null = null;
+      if (completed) {
+        const { claimed, milestone } = checkStreakMilestone(
+          previousStreak,
+          nextStats.currentStreak,
+          settings.streakMilestonesClaimed
+        );
+        if (milestone) {
+          streakMilestone = milestone;
+          await earnCoins(milestone.coins);
+          await updateSettings({ streakMilestonesClaimed: claimed });
+          track('streak_milestone_reached', { day: milestone.day, coins: milestone.coins });
+        }
+      } else if (nextStats.currentStreak < previousStreak || nextStats.currentStreak === 0) {
+        // Streak broke without a milestone crossing — still clear the claim
+        // list so a future streak can earn the same milestones again.
+        if (settings.streakMilestonesClaimed.length > 0) {
+          await updateSettings({ streakMilestonesClaimed: [] });
+        }
+      }
+
       if (completed) {
         track('session_completed', { durationMs: record.durationMs, goalMs: record.goalMs });
         if (settings.contributeToGlobalStats) {
@@ -342,6 +365,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         newlyUnlocked,
         coinsEarned,
         streakBroken,
+        streakMilestone,
       };
     },
     [
@@ -351,6 +375,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       earnCoins,
       settings.notificationsEnabled,
       settings.contributeToGlobalStats,
+      settings.streakMilestonesClaimed,
+      updateSettings,
       rescheduleReminders,
     ]
   );
@@ -366,9 +392,24 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       completed: true,
       streakSaved: true,
     };
+    const previousStreak = stats.currentStreak;
     const nextSessions = await appendSession(sessions, record);
     setSessions(nextSessions);
-  }, [sessions]);
+
+    // A saved streak can itself cross a milestone day (e.g. insurance
+    // carries a 6-day streak to 7) — same reward path as a real session.
+    const nextStreak = deriveStats(nextSessions).currentStreak;
+    const { claimed, milestone } = checkStreakMilestone(
+      previousStreak,
+      nextStreak,
+      settings.streakMilestonesClaimed
+    );
+    if (milestone) {
+      await earnCoins(milestone.coins);
+      await updateSettings({ streakMilestonesClaimed: claimed });
+      track('streak_milestone_reached', { day: milestone.day, coins: milestone.coins });
+    }
+  }, [sessions, stats.currentStreak, settings.streakMilestonesClaimed, earnCoins, updateSettings]);
 
   const saveStreakWithInsurance = useCallback(async () => {
     await grantStreakSave();

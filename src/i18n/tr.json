@@ -52,7 +52,10 @@
     "duelCheckAgain": "TEKRAR KONTROL ET",
     "duelBonus": "İlk düello bonusu: +{{amount}} coin!",
     "watchingStreak": "Serini kurtarmak için izleniyor…",
-    "watchingDouble": "Coin'lerini katlamak için izleniyor…"
+    "watchingDouble": "Coin'lerini katlamak için izleniyor…",
+    "streakMilestoneLabel": "GÜNLÜK SERİ MİLESTONE'U",
+    "streakMilestoneCoins": "+{{amount}} BONUS COIN",
+    "streakMilestoneDismiss": "HARİKA"
   },
   "paywall": {
     "title": "PREMIUM",

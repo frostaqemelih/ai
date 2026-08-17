@@ -29,6 +29,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   contributeToGlobalStats: false,
   adWatchDate: null,
   adWatchCountToday: 0,
+  streakMilestonesClaimed: [],
 };
 
 // Cap stored history so device storage never grows unbounded.

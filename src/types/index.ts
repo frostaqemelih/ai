@@ -30,6 +30,10 @@ export interface AppSettings {
   contributeToGlobalStats: boolean;
   adWatchDate: string | null;
   adWatchCountToday: number;
+  /** Milestone days (from STREAK_MILESTONE_DAYS) already rewarded within the
+   *  CURRENT unbroken streak — cleared back to [] whenever the streak
+   *  resets, so the same milestone can be rewarded again on a future run. */
+  streakMilestonesClaimed: number[];
 }
 
 export interface ActiveSession {

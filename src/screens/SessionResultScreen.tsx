@@ -11,6 +11,7 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { Confetti } from '../components/Confetti';
 import { RewardedAdModal } from '../components/RewardedAdModal';
 import { ShareCard } from '../components/ShareCard';
+import { MilestoneCelebration } from '../components/MilestoneCelebration';
 import { colors, radius, spacing, typography } from '../theme';
 import { formatClock } from '../utils/time';
 import { STREAK_FREEZE_COST } from '../utils/economy';
@@ -33,7 +34,8 @@ const FAIL_MESSAGE_KEYS: Record<string, string> = {
 type AdPurpose = 'streak' | 'double' | null;
 
 export function SessionResultScreen({ navigation, route }: Props) {
-  const { record, isNewRecord, newlyUnlocked, coinsEarned, streakBroken, duelId } = route.params;
+  const { record, isNewRecord, newlyUnlocked, coinsEarned, streakBroken, streakMilestone, duelId } =
+    route.params;
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const {
@@ -59,6 +61,7 @@ export function SessionResultScreen({ navigation, route }: Props) {
   const [duelBonusClaimed, setDuelBonusClaimed] = useState(false);
   const [sharingCard, setSharingCard] = useState(false);
   const shareCardRef = useRef<View>(null);
+  const [showMilestone, setShowMilestone] = useState(streakMilestone !== null);
 
   const checkDuel = async () => {
     if (!duelId || checkingDuel) return;
@@ -87,6 +90,10 @@ export function SessionResultScreen({ navigation, route }: Props) {
       }
     } else if (settings.hapticsEnabled) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch((err) => reportError(err));
+    }
+
+    if (streakMilestone && settings.hapticsEnabled) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch((err) => reportError(err));
     }
 
     // The best moment to ask for a rating is right after the app just proved
@@ -354,6 +361,16 @@ export function SessionResultScreen({ navigation, route }: Props) {
         <View style={styles.offscreen} pointerEvents="none">
           <ShareCard record={record} currentStreak={stats.currentStreak} isNewRecord={isNewRecord} />
         </View>
+      )}
+
+      {showMilestone && streakMilestone && (
+        <MilestoneCelebration
+          day={streakMilestone.day}
+          label={t('sessionResult.streakMilestoneLabel')}
+          coinsText={t('sessionResult.streakMilestoneCoins', { amount: streakMilestone.coins })}
+          dismissLabel={t('sessionResult.streakMilestoneDismiss')}
+          onDismiss={() => setShowMilestone(false)}
+        />
       )}
 
       <RewardedAdModal

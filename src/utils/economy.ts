@@ -61,12 +61,50 @@ export function coinsForPackageIdentifier(identifier: string): number | null {
 }
 
 // Streak lengths (in days) that count as a celebration-worthy milestone —
-// shared between the share card's highlight badge and the future streak
-// reward ladder so the two stay in sync.
+// shared between the share card's highlight badge and the streak reward
+// ladder (AppDataContext.completeSession) so the two stay in sync.
 export const STREAK_MILESTONE_DAYS: number[] = [7, 30, 100, 365];
+
+// Coin reward granted the first time a streak reaches each milestone day —
+// escalating well past a single day's normal coin yield so it reads as a
+// real celebration, not routine income.
+export const STREAK_MILESTONE_REWARDS: Record<number, number> = {
+  7: 100,
+  30: 300,
+  100: 1000,
+  365: 5000,
+};
 
 export function isStreakMilestoneDay(streak: number): boolean {
   return STREAK_MILESTONE_DAYS.includes(streak);
+}
+
+export interface StreakMilestoneResult {
+  claimed: number[];
+  milestone: { day: number; coins: number } | null;
+}
+
+// Pure milestone-crossing check shared by every path that can grow the
+// streak (a normal completed session, or a streak-insurance/freeze save) —
+// keeps the "claim once per unbroken streak" rule consistent everywhere.
+export function checkStreakMilestone(
+  previousStreak: number,
+  nextStreak: number,
+  previouslyClaimed: number[]
+): StreakMilestoneResult {
+  const streakReset = nextStreak < previousStreak || nextStreak === 0;
+  let claimed = streakReset ? [] : previouslyClaimed;
+
+  const newlyCrossedDay = STREAK_MILESTONE_DAYS.find(
+    (day) => nextStreak >= day && previousStreak < day && !claimed.includes(day)
+  );
+
+  if (newlyCrossedDay === undefined) {
+    return { claimed, milestone: null };
+  }
+
+  claimed = [...claimed, newlyCrossedDay];
+  return { claimed, milestone: { day: newlyCrossedDay, coins: STREAK_MILESTONE_REWARDS[newlyCrossedDay] } };
 }
 
 export function ringColorForId(id: string): string {

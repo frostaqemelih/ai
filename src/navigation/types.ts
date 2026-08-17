@@ -13,6 +13,7 @@ export type RootStackParamList = {
     newlyUnlocked: AchievementState[];
     coinsEarned: number;
     streakBroken: boolean;
+    streakMilestone: { day: number; coins: number } | null;
     duelId?: string;
   };
   Stats: undefined;

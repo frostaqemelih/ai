@@ -60,6 +60,7 @@ export function SessionScreen({ navigation, route }: Props) {
         newlyUnlocked: result.newlyUnlocked,
         coinsEarned: result.coinsEarned,
         streakBroken: result.streakBroken,
+        streakMilestone: result.streakMilestone,
         duelId,
       });
     },
