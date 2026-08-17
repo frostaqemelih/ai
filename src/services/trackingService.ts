@@ -2,10 +2,11 @@ import { Platform } from 'react-native';
 
 // expo-tracking-transparency's native module isn't present on web, and isn't
 // present in a plain Expo Go install either (it needs a custom dev client) —
-// simply `import`-ing it at module scope throws immediately in both cases.
-// A lazy, guarded `require()` keeps that crash from ever happening: the
-// module is only touched on iOS, and any failure to load it is swallowed
-// the same way every other optional native dependency in this app is.
+// simply `import`-ing it at module scope throws immediately in both cases,
+// and so does calling any of its functions (including the synchronous
+// `isAvailable()`). Every entry point below wraps the *entire* call chain —
+// load, isAvailable, and the async request — in one try/catch so nothing
+// escapes uncaught.
 type TrackingModule = typeof import('expo-tracking-transparency');
 
 function loadModule(): TrackingModule | null {
@@ -19,9 +20,9 @@ function loadModule(): TrackingModule | null {
 }
 
 export async function requestTrackingPermission(): Promise<boolean> {
-  const mod = loadModule();
-  if (!mod || !mod.isAvailable()) return true;
   try {
+    const mod = loadModule();
+    if (!mod || !mod.isAvailable()) return true;
     const { status } = await mod.requestTrackingPermissionsAsync();
     return status === 'granted';
   } catch {
@@ -30,9 +31,9 @@ export async function requestTrackingPermission(): Promise<boolean> {
 }
 
 export async function getTrackingGranted(): Promise<boolean> {
-  const mod = loadModule();
-  if (!mod || !mod.isAvailable()) return true;
   try {
+    const mod = loadModule();
+    if (!mod || !mod.isAvailable()) return true;
     const { status } = await mod.getTrackingPermissionsAsync();
     return status === 'granted';
   } catch {

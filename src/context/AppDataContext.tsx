@@ -32,7 +32,12 @@ import {
 } from '../storage/storage';
 import { deriveAchievements, deriveStats, findNewlyUnlocked } from '../storage/statsEngine';
 import { DEFAULT_SETTINGS } from '../storage/storage';
-import { baseCoinsForSession, DEFAULT_RING_COLOR_ID, STREAK_FREEZE_COST } from '../utils/economy';
+import {
+  baseCoinsForSession,
+  DEFAULT_RING_COLOR_ID,
+  DUEL_REFERRAL_BONUS_COINS,
+  STREAK_FREEZE_COST,
+} from '../utils/economy';
 import type { CustomerInfo, CustomerInfoUpdateListener } from 'react-native-purchases';
 import {
   addCustomerInfoListener,
@@ -50,6 +55,7 @@ import {
 import { toLocalDateKey } from '../utils/date';
 import { track } from '../services/analyticsService';
 import { requestTrackingPermission } from '../services/trackingService';
+import { requestAppReview, shouldPromptForRating } from '../services/ratingService';
 
 interface CompleteSessionInput {
   startedAt: number;
@@ -88,6 +94,8 @@ interface AppDataContextValue {
   disableNotifications: () => Promise<void>;
   requestTracking: () => Promise<boolean>;
   recordAdWatched: () => Promise<number>;
+  claimFirstDuelBonus: () => Promise<boolean>;
+  maybeRequestRating: () => Promise<void>;
   resetProgress: () => Promise<void>;
 }
 
@@ -384,6 +392,25 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     return nextCount;
   }, [settings.adWatchDate, settings.adWatchCountToday, updateSettings]);
 
+  // Awards the one-time Friend Duel referral bonus to THIS device the first
+  // time it ever sees a completed duel (its own or a friend's) — both the
+  // inviter's device and the accepter's device independently detect this
+  // when they check their own duel status, so both sides get rewarded
+  // without any extra backend logic. `firstDuelBonusClaimed` guarantees it
+  // only ever fires once per device.
+  const claimFirstDuelBonus = useCallback(async (): Promise<boolean> => {
+    if (settings.firstDuelBonusClaimed) return false;
+    await updateSettings({ firstDuelBonusClaimed: true });
+    await earnCoins(DUEL_REFERRAL_BONUS_COINS);
+    return true;
+  }, [settings.firstDuelBonusClaimed, updateSettings, earnCoins]);
+
+  const maybeRequestRating = useCallback(async (): Promise<void> => {
+    if (!shouldPromptForRating(settings.lastRatingPromptAt)) return;
+    await updateSettings({ lastRatingPromptAt: Date.now() });
+    await requestAppReview();
+  }, [settings.lastRatingPromptAt, updateSettings]);
+
   const disableNotifications = useCallback(async () => {
     await updateSettings({ notificationsEnabled: false });
     await cancelAllReminders();
@@ -425,6 +452,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     disableNotifications,
     requestTracking,
     recordAdWatched,
+    claimFirstDuelBonus,
+    maybeRequestRating,
     resetProgress,
   };
 

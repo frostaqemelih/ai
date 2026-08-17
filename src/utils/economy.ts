@@ -8,6 +8,11 @@ export function baseCoinsForSession(durationMs: number, completed: boolean): num
 // Spend coins to save a broken streak instantly, without watching an ad.
 export const STREAK_FREEZE_COST = 50;
 
+// One-time bonus awarded to a device the first time it ever sees a
+// completed Friend Duel (as inviter or accepter) — see
+// AppDataContext.claimFirstDuelBonus.
+export const DUEL_REFERRAL_BONUS_COINS = 100;
+
 export interface CosmeticRingColor {
   id: string;
   label: string;

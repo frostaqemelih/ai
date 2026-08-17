@@ -16,6 +16,7 @@ import { buildShareMessage } from '../utils/share';
 import { reportError } from '../services/crashService';
 import { track } from '../services/analyticsService';
 import { fetchDuelStatus, type DuelStatus } from '../services/duelService';
+import { DUEL_REFERRAL_BONUS_COINS } from '../utils/economy';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SessionResult'>;
 
@@ -39,6 +40,8 @@ export function SessionResultScreen({ navigation, route }: Props) {
     saveStreakWithInsurance,
     saveStreakWithCoins,
     recordAdWatched,
+    claimFirstDuelBonus,
+    maybeRequestRating,
   } = useAppData();
   const [adFatigue, setAdFatigue] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -48,6 +51,7 @@ export function SessionResultScreen({ navigation, route }: Props) {
   const [spendingCoins, setSpendingCoins] = useState(false);
   const [duelStatus, setDuelStatus] = useState<DuelStatus | null>(null);
   const [checkingDuel, setCheckingDuel] = useState(false);
+  const [duelBonusClaimed, setDuelBonusClaimed] = useState(false);
 
   const checkDuel = async () => {
     if (!duelId || checkingDuel) return;
@@ -55,6 +59,12 @@ export function SessionResultScreen({ navigation, route }: Props) {
     const status = await fetchDuelStatus(duelId);
     setCheckingDuel(false);
     setDuelStatus(status);
+
+    const opponent = status?.participants.find((p) => !p.isMe);
+    if (opponent && opponent.durationMs !== null) {
+      const claimed = await claimFirstDuelBonus();
+      if (claimed) setDuelBonusClaimed(true);
+    }
   };
 
   useEffect(() => {
@@ -70,6 +80,12 @@ export function SessionResultScreen({ navigation, route }: Props) {
       }
     } else if (settings.hapticsEnabled) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch((err) => reportError(err));
+    }
+
+    // The best moment to ask for a rating is right after the app just proved
+    // its value — a new record or a freshly unlocked achievement.
+    if (record.completed && (isNewRecord || newlyUnlocked.length > 0)) {
+      maybeRequestRating().catch((err) => reportError(err));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -233,6 +249,11 @@ export function SessionResultScreen({ navigation, route }: Props) {
           {duelId && (
             <View style={styles.duelBox}>
               <Text style={styles.duelTitle}>🤝 DUEL</Text>
+              {duelBonusClaimed && (
+                <Text style={styles.duelBonusText}>
+                  🎉 First duel bonus: +{DUEL_REFERRAL_BONUS_COINS} coins!
+                </Text>
+              )}
               {(() => {
                 if (!duelStatus) {
                   return (
@@ -420,6 +441,11 @@ const styles = StyleSheet.create({
     ...typography.body,
     fontSize: 13,
     color: colors.textSecondary,
+  },
+  duelBonusText: {
+    ...typography.label,
+    fontSize: 11,
+    color: colors.streak,
   },
   duelResultText: {
     ...typography.body,
