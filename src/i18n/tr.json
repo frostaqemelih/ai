@@ -63,6 +63,8 @@
     "terms": "Koşullar",
     "privacy": "Gizlilik",
     "bestValue": "EN İYİ DEĞER · %{{percent}} TASARRUF",
+    "oneTime": "TEK SEFERLİK",
+    "perMonth": "{{price}}/ay",
     "entitlementMissing": "Satın alma tamamlandı ama premium yetkisi bulunamadı. RevenueCat entitlement ayarını kontrol edin.",
     "noPreviousPurchase": "Geri yüklenecek önceki bir satın alma bulunamadı.",
     "featureNoAds": "Reklamsız, her zaman",

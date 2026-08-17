@@ -70,7 +70,9 @@ export function PaywallScreen({ navigation }: Props) {
   };
 
   const packages = offering
-    ? [offering.monthly, offering.annual].filter((p): p is PurchasesPackage => p !== null)
+    ? [offering.monthly, offering.annual, offering.lifetime].filter(
+        (p): p is PurchasesPackage => p !== null
+      )
     : [];
   const savingsPercent = computeAnnualSavingsPercent(offering?.monthly ?? null, offering?.annual ?? null);
 
@@ -96,11 +98,16 @@ export function PaywallScreen({ navigation }: Props) {
             <View style={styles.packages}>
               {packages.map((pkg) => {
                 const isAnnual = offering?.annual?.identifier === pkg.identifier;
+                const isLifetime = offering?.lifetime?.identifier === pkg.identifier;
                 const showBestValue = isAnnual && savingsPercent !== null;
                 return (
                   <Pressable
                     key={pkg.identifier}
-                    style={[styles.packageCard, showBestValue && styles.packageCardHighlighted]}
+                    style={[
+                      styles.packageCard,
+                      showBestValue && styles.packageCardHighlighted,
+                      isLifetime && styles.packageCardLifetime,
+                    ]}
                     disabled={purchasingId !== null}
                     onPress={() => handlePurchase(pkg)}
                   >
@@ -111,12 +118,22 @@ export function PaywallScreen({ navigation }: Props) {
                         </Text>
                       </View>
                     )}
+                    {isLifetime && (
+                      <View style={styles.oneTimeBadge}>
+                        <Text style={styles.oneTimeBadgeText}>{t('paywall.oneTime')}</Text>
+                      </View>
+                    )}
                     <View style={styles.packageRow}>
                       <Text style={styles.packageTitle}>{pkg.product.title || pkg.identifier}</Text>
                       <Text style={styles.packagePrice}>
                         {purchasingId === pkg.identifier ? '…' : pkg.product.priceString}
                       </Text>
                     </View>
+                    {isAnnual && pkg.product.pricePerMonthString && (
+                      <Text style={styles.introOfferText}>
+                        {t('paywall.perMonth', { price: pkg.product.pricePerMonthString })}
+                      </Text>
+                    )}
                     {pkg.product.introPrice && (
                       <Text style={styles.introOfferText}>
                         {describeIntroOffer(pkg.product.introPrice)}, then {pkg.product.priceString}
@@ -203,6 +220,24 @@ const styles = StyleSheet.create({
   packageCardHighlighted: {
     borderColor: colors.streak,
     borderWidth: 2,
+  },
+  packageCardLifetime: {
+    borderColor: colors.textSecondary,
+  },
+  oneTimeBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.surfaceRaised,
+    borderWidth: 1,
+    borderColor: colors.textSecondary,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    marginBottom: spacing.xs,
+  },
+  oneTimeBadgeText: {
+    ...typography.label,
+    fontSize: 9,
+    color: colors.textSecondary,
   },
   packageRow: {
     flexDirection: 'row',

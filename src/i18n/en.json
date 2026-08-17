@@ -63,6 +63,8 @@
     "terms": "Terms",
     "privacy": "Privacy",
     "bestValue": "BEST VALUE · SAVE {{percent}}%",
+    "oneTime": "ONE-TIME",
+    "perMonth": "{{price}}/mo",
     "entitlementMissing": "Purchase completed, but the premium entitlement wasn't found. Check your RevenueCat entitlement configuration.",
     "noPreviousPurchase": "No previous purchase found to restore.",
     "featureNoAds": "No ads, ever",
