@@ -15,6 +15,7 @@ import { getDangerLevel, type HapticIntensity } from '../utils/dangerLevels';
 import { colors, spacing, typography } from '../theme';
 import { formatClock } from '../utils/time';
 import type { FailReason } from '../types';
+import { reportError } from '../services/crashService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Session'>;
 
@@ -76,7 +77,7 @@ export function SessionScreen({ navigation, route }: Props) {
       return;
     }
     if (settings.hapticsEnabled) {
-      Haptics.impactAsync(HAPTIC_STYLE[dangerLevel.haptic]).catch(() => {});
+      Haptics.impactAsync(HAPTIC_STYLE[dangerLevel.haptic]).catch((err) => reportError(err));
     }
   }, [dangerLevel.id, settings.hapticsEnabled]);
 

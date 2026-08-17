@@ -48,6 +48,7 @@ import {
   scheduleStreakReminder,
 } from '../services/notificationsService';
 import { toLocalDateKey } from '../utils/date';
+import { track } from '../services/analyticsService';
 
 interface CompleteSessionInput {
   startedAt: number;
@@ -208,6 +209,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const beginActiveSession = useCallback(async (goalMs: number) => {
     const startedAt = Date.now();
     await setActiveSession({ startedAt, goalMs });
+    track('session_started', { goalMs });
     return startedAt;
   }, []);
 
@@ -290,6 +292,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         }
         unlockTimestampsRef.current = nextUnlocks;
         await saveAchievementUnlocks(nextUnlocks);
+        for (const id of newlyUnlockedIds) {
+          track('achievement_unlocked', { id });
+        }
       }
 
       const newlyUnlocked = nextAchievements.filter((a) => newlyUnlockedIds.includes(a.id));
@@ -300,6 +305,16 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       }
 
       const streakBroken = !completed && previousStreak > 0 && nextStats.currentStreak < previousStreak;
+
+      if (completed) {
+        track('session_completed', { durationMs: record.durationMs, goalMs: record.goalMs });
+      } else {
+        track('session_failed', {
+          durationMs: record.durationMs,
+          goalMs: record.goalMs,
+          failReason: record.failReason,
+        });
+      }
 
       if (settings.notificationsEnabled) {
         await rescheduleReminders(nextSessions, nextStats);

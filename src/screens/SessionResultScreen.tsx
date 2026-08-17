@@ -13,6 +13,8 @@ import { colors, radius, spacing, typography } from '../theme';
 import { formatClock } from '../utils/time';
 import { STREAK_FREEZE_COST } from '../utils/economy';
 import { buildShareMessage } from '../utils/share';
+import { reportError } from '../services/crashService';
+import { track } from '../services/analyticsService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SessionResult'>;
 
@@ -39,10 +41,10 @@ export function SessionResultScreen({ navigation, route }: Props) {
     if (record.completed) {
       setShowConfetti(true);
       if (settings.hapticsEnabled) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch((err) => reportError(err));
       }
     } else if (settings.hapticsEnabled) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch((err) => reportError(err));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -60,7 +62,9 @@ export function SessionResultScreen({ navigation, route }: Props) {
   };
 
   const shareResult = () => {
-    Share.share({ message: buildShareMessage(record, stats.currentStreak) }).catch(() => {});
+    Share.share({ message: buildShareMessage(record, stats.currentStreak) }).catch((err) =>
+      reportError(err)
+    );
   };
 
   const handleSpendCoinsForStreak = async () => {
@@ -75,6 +79,7 @@ export function SessionResultScreen({ navigation, route }: Props) {
     const purpose = adPurpose;
     setAdPurpose(null);
     if (!rewarded || !purpose) return;
+    track('rewarded_ad_watched', { purpose });
     if (purpose === 'streak') {
       await saveStreakWithInsurance();
       setStreakSaved(true);

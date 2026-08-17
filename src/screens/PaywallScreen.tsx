@@ -9,6 +9,7 @@ import { Header } from '../components/Header';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { colors, radius, spacing, typography } from '../theme';
 import { fetchOfferings, isEntitled, purchasePackage, restorePurchases } from '../services/purchasesService';
+import { track } from '../services/analyticsService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Paywall'>;
 
@@ -30,6 +31,7 @@ export function PaywallScreen({ navigation }: Props) {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    track('paywall_viewed');
     (async () => {
       const result = await fetchOfferings();
       setOffering(result);
@@ -43,6 +45,7 @@ export function PaywallScreen({ navigation }: Props) {
     const { success, info } = await purchasePackage(pkg);
     setPurchasingId(null);
     if (success && isEntitled(info)) {
+      track('purchase_completed', { packageId: pkg.identifier });
       await refreshPremiumStatus();
       navigation.goBack();
     } else if (success) {

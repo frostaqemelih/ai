@@ -7,8 +7,12 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppDataProvider } from './src/context/AppDataContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { colors, FONTS_TO_LOAD } from './src/theme';
+import { initAnalytics } from './src/services/analyticsService';
+import { initCrashReporting } from './src/services/crashService';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
+initCrashReporting();
+initAnalytics().catch(() => {});
 
 export default function App() {
   const [fontsLoaded, fontError] = useFonts(FONTS_TO_LOAD);

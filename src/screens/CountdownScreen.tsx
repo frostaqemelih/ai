@@ -5,6 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { useAppData } from '../context/AppDataContext';
 import { colors, typography } from '../theme';
+import { reportError } from '../services/crashService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Countdown'>;
 
@@ -22,7 +23,7 @@ export function CountdownScreen({ navigation, route }: Props) {
         index === SEQUENCE.length - 1
           ? Haptics.ImpactFeedbackStyle.Medium
           : Haptics.ImpactFeedbackStyle.Light
-      ).catch(() => {});
+      ).catch((err) => reportError(err));
     }
 
     scale.setValue(0.6);

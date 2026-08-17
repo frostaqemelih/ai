@@ -7,6 +7,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { useAppData } from '../context/AppDataContext';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { colors, spacing, typography } from '../theme';
+import { reportError } from '../services/crashService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
 
@@ -28,7 +29,7 @@ export function OnboardingScreen({ navigation }: Props) {
   const finish = () => {
     updateSettings({ hasOnboarded: true });
     if (!settings.notificationsPermissionAsked) {
-      requestNotificationsPermission().catch(() => {});
+      requestNotificationsPermission().catch((err) => reportError(err));
     }
     navigation.replace('Home');
   };
