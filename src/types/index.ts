@@ -22,6 +22,12 @@ export interface AppSettings {
   premiumThemeEnabled: boolean;
   notificationsEnabled: boolean;
   notificationsPermissionAsked: boolean;
+  trackingGranted: boolean;
+  trackingPermissionAsked: boolean;
+  firstDuelBonusClaimed: boolean;
+  lastRatingPromptAt: number | null;
+  languageCode: 'system' | 'en' | 'tr';
+  contributeToGlobalStats: boolean;
 }
 
 export interface ActiveSession {

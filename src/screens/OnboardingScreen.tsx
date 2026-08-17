@@ -22,16 +22,26 @@ const STEPS = [
 
 export function OnboardingScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { updateSettings, settings, requestNotificationsPermission } = useAppData();
+  const { updateSettings, settings, requestNotificationsPermission, requestTracking } = useAppData();
   const [step, setStep] = useState(0);
   const fade = useRef(new Animated.Value(1)).current;
 
-  const finish = () => {
-    updateSettings({ hasOnboarded: true });
-    if (!settings.notificationsPermissionAsked) {
-      requestNotificationsPermission().catch((err) => reportError(err));
-    }
+  const finish = async () => {
+    await updateSettings({ hasOnboarded: true });
     navigation.replace('Home');
+
+    // Fire both permission prompts after navigating so they never block the
+    // transition to Home; order matters (ATT before anything ad-adjacent).
+    try {
+      if (!settings.trackingPermissionAsked) {
+        await requestTracking();
+      }
+      if (!settings.notificationsPermissionAsked) {
+        await requestNotificationsPermission();
+      }
+    } catch (err) {
+      reportError(err);
+    }
   };
 
   const goToStep = (next: number) => {

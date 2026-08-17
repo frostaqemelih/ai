@@ -159,6 +159,16 @@ export function SettingsScreen({ navigation }: Props) {
           </Pressable>
         </GlassCard>
 
+        <View style={styles.legalRow}>
+          <Pressable onPress={() => navigation.navigate('PrivacyPolicy')} hitSlop={8}>
+            <Text style={styles.legalLink}>Privacy Policy</Text>
+          </Pressable>
+          <Text style={styles.legalDivider}>·</Text>
+          <Pressable onPress={() => navigation.navigate('Terms')} hitSlop={8}>
+            <Text style={styles.legalLink}>Terms of Service</Text>
+          </Pressable>
+        </View>
+
         <View style={styles.noAccountBox}>
           <Text style={styles.noAccountText}>NO ACCOUNT REQUIRED</Text>
           <Text style={styles.noAccountSubtext}>
@@ -260,6 +270,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textSecondary,
     marginTop: 4,
+  },
+  legalRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  legalLink: {
+    ...typography.body,
+    fontSize: 12,
+    color: colors.textTertiary,
+    textDecorationLine: 'underline',
+  },
+  legalDivider: {
+    color: colors.textTertiary,
+    fontSize: 12,
   },
   noAccountBox: {
     alignItems: 'center',

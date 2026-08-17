@@ -88,6 +88,47 @@ itself, logs a warning) when its key is missing.
    `docs/WIDGET_AND_LIVE_ACTIVITY_GUIDE.md` for the concrete setup path
    once you're ready to open Xcode/Android Studio.
 
+8. **App Tracking Transparency (iOS)** (`src/services/trackingService.ts`)
+   - Already wired: the app prompts for ATT right after onboarding
+     (`OnboardingScreen.tsx`), and `app.json`'s
+     `expo-tracking-transparency` plugin config sets the
+     `NSUserTrackingUsageDescription` string. Nothing further is required
+     unless you want to customize that message.
+   - Note this only matters once real AdMob (step 2) is wired — the
+     current PostHog integration uses a random on-device ID, not IDFA, and
+     does not require ATT under Apple's guidelines.
+
+9. **Privacy Policy & Terms of Service** (`src/utils/legalContent.ts`)
+   - The in-app Privacy Policy and Terms screens currently show
+     **placeholder text** (clearly marked `[DATE — fill in on real
+     publish]` / `[Insert a real support email]`). Replace the content in
+     `legalContent.ts` with real, lawyer-reviewed text before submitting
+     to the App Store / Play Store — both require a reachable privacy
+     policy URL, and RevenueCat/AdMob dashboards ask for one too.
+   - If you also need a public, non-app URL (App Store Connect asks for
+     one separately from the in-app screen), host the same content
+     wherever you host your marketing site and link both to the same text.
+
+10. **App Store / Play Store privacy label declarations** — reference
+    table for filling out App Store Connect's "App Privacy" (Privacy
+    Nutrition Label) form and Play Console's "Data safety" form. This is a
+    form-filling step on your end, not something the code can automate.
+
+    | Third party | Data category | Linked to identity? | Used for |
+    |---|---|---|---|
+    | RevenueCat | Purchase history | No (RevenueCat-generated anonymous app user ID) | Subscription entitlement management |
+    | AdMob (once wired) | Advertising data (IDFA on iOS, if ATT granted) | Only if user grants ATT | Ad personalization / delivery |
+    | PostHog | Product interaction (anonymous) | No (random on-device UUID, not IDFA) | Analytics |
+    | Sentry | Crash data (device model, OS version, stack traces) | No | Crash/error diagnostics |
+    | Supabase (Friend Duel, opt-in) | Session duration + random device ID | No (no name/email) | Only if the user opens Duel and creates/joins one |
+    | Supabase (Global stats, opt-in) | Session duration only | No | Only if the user enables "Contribute to global stats" |
+
+    Net summary for the "Data Not Collected" question: **no**, once
+    PostHog/Sentry/AdMob are live you can no longer claim zero data
+    collection — but you can accurately claim **no data linked to
+    identity**, since nothing here collects a name, email, or persistent
+    cross-app identifier without explicit ATT consent.
+
 ## Environment variables
 
 Copy `.env.example` to `.env` and fill in the keys you need (see above).

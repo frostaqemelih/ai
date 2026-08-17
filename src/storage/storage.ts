@@ -21,6 +21,12 @@ export const DEFAULT_SETTINGS: AppSettings = {
   premiumThemeEnabled: false,
   notificationsEnabled: false,
   notificationsPermissionAsked: false,
+  trackingGranted: false,
+  trackingPermissionAsked: false,
+  firstDuelBonusClaimed: false,
+  lastRatingPromptAt: null,
+  languageCode: 'system',
+  contributeToGlobalStats: false,
 };
 
 // Cap stored history so device storage never grows unbounded.

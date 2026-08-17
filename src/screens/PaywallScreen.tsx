@@ -119,6 +119,15 @@ export function PaywallScreen({ navigation }: Props) {
             onPress={handleRestore}
             disabled={restoring}
           />
+          <View style={styles.legalRow}>
+            <Pressable onPress={() => navigation.navigate('Terms')} hitSlop={8}>
+              <Text style={styles.legalLink}>Terms</Text>
+            </Pressable>
+            <Text style={styles.legalDivider}>·</Text>
+            <Pressable onPress={() => navigation.navigate('PrivacyPolicy')} hitSlop={8}>
+              <Text style={styles.legalLink}>Privacy</Text>
+            </Pressable>
+          </View>
         </View>
       </View>
     </View>
@@ -191,5 +200,21 @@ const styles = StyleSheet.create({
   },
   footer: {
     alignItems: 'center',
+    gap: spacing.md,
+  },
+  legalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  legalLink: {
+    ...typography.body,
+    fontSize: 11,
+    color: colors.textTertiary,
+    textDecorationLine: 'underline',
+  },
+  legalDivider: {
+    color: colors.textTertiary,
+    fontSize: 11,
   },
 });

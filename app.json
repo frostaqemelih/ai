@@ -26,7 +26,13 @@
       "expo-font",
       "expo-splash-screen",
       "expo-notifications",
-      "@sentry/react-native"
+      "@sentry/react-native",
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "This lets us show you ads that are more relevant to you. Don't Touch never tracks anything else about you."
+        }
+      ]
     ]
   }
 }

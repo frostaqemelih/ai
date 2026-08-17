@@ -21,6 +21,8 @@ export type RootStackParamList = {
   Store: undefined;
   Paywall: undefined;
   Duel: undefined;
+  PrivacyPolicy: undefined;
+  Terms: undefined;
 };
 
 export type NavProp = NativeStackNavigationProp<RootStackParamList>;

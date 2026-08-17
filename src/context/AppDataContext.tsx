@@ -49,6 +49,7 @@ import {
 } from '../services/notificationsService';
 import { toLocalDateKey } from '../utils/date';
 import { track } from '../services/analyticsService';
+import { requestTrackingPermission } from '../services/trackingService';
 
 interface CompleteSessionInput {
   startedAt: number;
@@ -85,6 +86,7 @@ interface AppDataContextValue {
   unlockCosmetic: (id: string, cost: number) => Promise<boolean>;
   requestNotificationsPermission: () => Promise<boolean>;
   disableNotifications: () => Promise<void>;
+  requestTracking: () => Promise<boolean>;
   resetProgress: () => Promise<void>;
 }
 
@@ -366,6 +368,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     return granted;
   }, [updateSettings, rescheduleReminders, sessions, stats]);
 
+  const requestTracking = useCallback(async (): Promise<boolean> => {
+    const granted = await requestTrackingPermission();
+    await updateSettings({ trackingPermissionAsked: true, trackingGranted: granted });
+    return granted;
+  }, [updateSettings]);
+
   const disableNotifications = useCallback(async () => {
     await updateSettings({ notificationsEnabled: false });
     await cancelAllReminders();
@@ -405,6 +413,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     unlockCosmetic,
     requestNotificationsPermission,
     disableNotifications,
+    requestTracking,
     resetProgress,
   };
 

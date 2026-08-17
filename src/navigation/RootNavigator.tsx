@@ -17,6 +17,7 @@ import { SettingsScreen } from '../screens/SettingsScreen';
 import { StoreScreen } from '../screens/StoreScreen';
 import { PaywallScreen } from '../screens/PaywallScreen';
 import { DuelScreen } from '../screens/DuelScreen';
+import { LegalScreen } from '../screens/LegalScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -77,6 +78,8 @@ export function RootNavigator() {
           options={{ presentation: 'modal' }}
         />
         <Stack.Screen name="Duel" component={DuelScreen} />
+        <Stack.Screen name="PrivacyPolicy" component={LegalScreen} />
+        <Stack.Screen name="Terms" component={LegalScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
