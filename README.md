@@ -14,8 +14,11 @@ npx expo start          # then scan the QR code with Expo Go
 As of this build, most of the app (core gameplay, coins, Store, Settings,
 Stats, Achievements, RevenueCat in "Browser Mode" fallback, local
 notifications, PostHog, Sentry, Supabase Duel) still runs in plain Expo Go.
-**RevenueCat's native purchase flow and real AdMob ads require a custom
-dev client / EAS build** — see the manual steps below.
+**RevenueCat's native purchase flow, real AdMob ads, and the visual share
+card's image capture (`react-native-view-shot`) require a custom dev
+client / EAS build** — see the manual steps below. In plain Expo Go the
+share button still works, it just falls back to the original text-only
+share (`captureShareCard` fails safe and returns `null`).
 
 ## Manual steps required before shipping
 
