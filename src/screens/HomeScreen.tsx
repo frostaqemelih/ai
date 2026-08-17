@@ -13,12 +13,14 @@ import { colors, fonts, radius, spacing, typography } from '../theme';
 import { formatClock } from '../utils/time';
 import { goalLabelForMs } from '../utils/goals';
 import { ringColorForId } from '../utils/economy';
+import { useTranslation } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export function HomeScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { settings, stats, coins } = useAppData();
+  const { t } = useTranslation();
   const [starting, setStarting] = useState(false);
 
   useFocusEffect(
@@ -78,8 +80,8 @@ export function HomeScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.brand}>
-          <Text style={styles.wordmark}>DON'T{'\n'}TOUCH</Text>
-          <Text style={styles.tagline}>How long can you stay away from your phone?</Text>
+          <Text style={styles.wordmark}>{t('home.wordmark')}</Text>
+          <Text style={styles.tagline}>{t('home.tagline')}</Text>
         </View>
 
         <View style={styles.center}>
@@ -98,15 +100,15 @@ export function HomeScreen({ navigation }: Props) {
             <Text style={styles.goalChipText}>{goalLabelForMs(settings.lastSelectedGoalMs)}</Text>
           </Pressable>
 
-          <PrimaryButton label="START SESSION" onPress={handleStart} disabled={starting} />
+          <PrimaryButton label={t('home.startSession')} onPress={handleStart} disabled={starting} />
 
           <View style={styles.statsRow}>
             <Pressable onPress={() => navigation.navigate('Stats')}>
-              <StatPill label="Today's Best" value={formatClock(stats.todayBestMs)} />
+              <StatPill label={t('home.todaysBest')} value={formatClock(stats.todayBestMs)} />
             </Pressable>
             <View style={styles.statDivider} />
             <Pressable onPress={() => navigation.navigate('Stats')}>
-              <StatPill label="Best Ever" value={formatClock(stats.personalBestMs)} />
+              <StatPill label={t('home.bestEver')} value={formatClock(stats.personalBestMs)} />
             </Pressable>
           </View>
         </View>

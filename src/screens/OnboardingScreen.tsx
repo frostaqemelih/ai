@@ -8,23 +8,22 @@ import { useAppData } from '../context/AppDataContext';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { colors, spacing, typography } from '../theme';
 import { reportError } from '../services/crashService';
+import { useTranslation } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
-
-const STEPS = [
-  { title: 'YOUR PHONE\nIS DISTRACTING YOU.' },
-  {
-    title: 'PUT IT DOWN.',
-    subtitle: 'Anything that appears on screen during a run is just noise.\nTouching it still ends your run.',
-  },
-  { title: 'HOW LONG\nCAN YOU LAST?' },
-];
 
 export function OnboardingScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { updateSettings, settings, requestNotificationsPermission, requestTracking } = useAppData();
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
   const fade = useRef(new Animated.Value(1)).current;
+
+  const STEPS = [
+    { title: t('onboarding.step1Title') },
+    { title: t('onboarding.step2Title'), subtitle: t('onboarding.step2Subtitle') },
+    { title: t('onboarding.step3Title') },
+  ];
 
   const finish = async () => {
     await updateSettings({ hasOnboarded: true });
@@ -62,7 +61,7 @@ export function OnboardingScreen({ navigation }: Props) {
         style={StyleSheet.absoluteFill}
       />
       <Pressable style={styles.skip} onPress={finish} hitSlop={12}>
-        <Text style={styles.skipText}>SKIP</Text>
+        <Text style={styles.skipText}>{t('onboarding.skip')}</Text>
       </Pressable>
 
       <Animated.View style={[styles.content, { opacity: fade }]}>
@@ -79,7 +78,7 @@ export function OnboardingScreen({ navigation }: Props) {
           ))}
         </View>
         <PrimaryButton
-          label={isLast ? 'START' : 'NEXT'}
+          label={isLast ? t('onboarding.start') : t('onboarding.next')}
           onPress={() => (isLast ? finish() : goToStep(step + 1))}
         />
       </View>

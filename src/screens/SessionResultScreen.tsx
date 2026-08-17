@@ -17,13 +17,14 @@ import { reportError } from '../services/crashService';
 import { track } from '../services/analyticsService';
 import { fetchDuelStatus, type DuelStatus } from '../services/duelService';
 import { DUEL_REFERRAL_BONUS_COINS } from '../utils/economy';
+import { useTranslation } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SessionResult'>;
 
-const FAIL_MESSAGES: Record<string, string> = {
-  touch: 'You touched your phone.',
-  backgrounded: 'You left the app.',
-  interrupted: 'The session was interrupted.',
+const FAIL_MESSAGE_KEYS: Record<string, string> = {
+  touch: 'sessionResult.touchedPhone',
+  backgrounded: 'sessionResult.leftApp',
+  interrupted: 'sessionResult.interrupted',
 };
 
 type AdPurpose = 'streak' | 'double' | null;
@@ -31,6 +32,7 @@ type AdPurpose = 'streak' | 'double' | null;
 export function SessionResultScreen({ navigation, route }: Props) {
   const { record, isNewRecord, newlyUnlocked, coinsEarned, streakBroken, duelId } = route.params;
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const {
     settings,
     stats,
@@ -147,19 +149,21 @@ export function SessionResultScreen({ navigation, route }: Props) {
         ]}
       >
         <View style={styles.body}>
-          <Text style={styles.status}>{record.completed ? 'SESSION COMPLETE' : 'SESSION OVER'}</Text>
+          <Text style={styles.status}>
+            {record.completed ? t('sessionResult.sessionComplete') : t('sessionResult.sessionOver')}
+          </Text>
           {record.completed && <Text style={styles.emoji}>🎉</Text>}
           <Text style={styles.duration}>{formatClock(record.durationMs)}</Text>
           <Text style={styles.message}>
             {record.completed
-              ? 'You stayed away from your phone.'
-              : FAIL_MESSAGES[record.failReason ?? 'touch']}
+              ? t('sessionResult.stayedAway')
+              : t(FAIL_MESSAGE_KEYS[record.failReason ?? 'touch'])}
           </Text>
 
           {isNewRecord && (
             <View style={styles.recordBadge}>
               <Text style={styles.recordText}>
-                {record.completed ? 'PERSONAL BEST!' : 'NEW RECORD!'}
+                {record.completed ? t('sessionResult.personalBest') : t('sessionResult.newRecord')}
               </Text>
             </View>
           )}
@@ -170,19 +174,19 @@ export function SessionResultScreen({ navigation, route }: Props) {
               hitSlop={8}
               style={styles.upsellLink}
             >
-              <Text style={styles.upsellLinkText}>Unlock unlimited custom runs with Premium →</Text>
+              <Text style={styles.upsellLinkText}>{t('sessionResult.unlockPremiumRuns')}</Text>
             </Pressable>
           )}
 
           {adFatigue && (
             <View style={styles.fatigueBox}>
-              <Text style={styles.fatigueText}>Tired of ads?</Text>
+              <Text style={styles.fatigueText}>{t('sessionResult.tiredOfAds')}</Text>
               <Pressable
                 onPress={() => navigation.navigate('Paywall')}
                 hitSlop={8}
                 style={styles.fatigueButton}
               >
-                <Text style={styles.fatigueButtonText}>GO AD-FREE</Text>
+                <Text style={styles.fatigueButtonText}>{t('sessionResult.goAdFree')}</Text>
               </Pressable>
             </View>
           )}
@@ -191,7 +195,7 @@ export function SessionResultScreen({ navigation, route }: Props) {
             <View style={styles.achievementsBox}>
               {newlyUnlocked.map((a) => (
                 <Text key={a.id} style={styles.achievementText}>
-                  🏅 {a.title} unlocked
+                  🏅 {t('sessionResult.achievementUnlocked', { title: a.title })}
                 </Text>
               ))}
             </View>
@@ -200,7 +204,7 @@ export function SessionResultScreen({ navigation, route }: Props) {
           {record.completed && coinsEarned > 0 && (
             <View style={styles.coinBox}>
               <Text style={styles.coinText}>
-                🪙 +{coinsDoubled ? coinsEarned * 2 : coinsEarned} COINS
+                🪙 {t('sessionResult.coinsEarned', { amount: coinsDoubled ? coinsEarned * 2 : coinsEarned })}
               </Text>
               {!coinsDoubled && !isPremium ? (
                 <Pressable
@@ -208,10 +212,10 @@ export function SessionResultScreen({ navigation, route }: Props) {
                   onPress={() => setAdPurpose('double')}
                   accessibilityRole="button"
                 >
-                  <Text style={styles.adButtonText}>🎬 DOUBLE (WATCH AD)</Text>
+                  <Text style={styles.adButtonText}>🎬 {t('sessionResult.doubleWatchAd')}</Text>
                 </Pressable>
               ) : coinsDoubled ? (
-                <Text style={styles.adDoneText}>✓ Doubled</Text>
+                <Text style={styles.adDoneText}>✓ {t('sessionResult.doubled')}</Text>
               ) : null}
             </View>
           )}
@@ -220,7 +224,7 @@ export function SessionResultScreen({ navigation, route }: Props) {
             <View style={styles.streakBox}>
               {!streakSaved ? (
                 <>
-                  <Text style={styles.streakWarning}>Your streak is about to end.</Text>
+                  <Text style={styles.streakWarning}>{t('sessionResult.streakEndingWarning')}</Text>
                   <View style={styles.streakOptionsRow}>
                     {!isPremium && (
                       <Pressable
@@ -228,7 +232,7 @@ export function SessionResultScreen({ navigation, route }: Props) {
                         onPress={() => setAdPurpose('streak')}
                         accessibilityRole="button"
                       >
-                        <Text style={styles.adButtonText}>🎬 WATCH AD</Text>
+                        <Text style={styles.adButtonText}>🎬 {t('sessionResult.watchAd')}</Text>
                       </Pressable>
                     )}
                     <Pressable
@@ -237,35 +241,35 @@ export function SessionResultScreen({ navigation, route }: Props) {
                       disabled={spendingCoins || coins < STREAK_FREEZE_COST}
                       accessibilityRole="button"
                     >
-                      <Text style={styles.adButtonText}>🪙 {STREAK_FREEZE_COST} COINS</Text>
+                      <Text style={styles.adButtonText}>🪙 {STREAK_FREEZE_COST}</Text>
                     </Pressable>
                   </View>
                 </>
               ) : (
-                <Text style={styles.adDoneText}>✓ Streak saved</Text>
+                <Text style={styles.adDoneText}>✓ {t('sessionResult.streakSaved')}</Text>
               )}
             </View>
           )}
           {duelId && (
             <View style={styles.duelBox}>
-              <Text style={styles.duelTitle}>🤝 DUEL</Text>
+              <Text style={styles.duelTitle}>🤝 {t('sessionResult.duel')}</Text>
               {duelBonusClaimed && (
                 <Text style={styles.duelBonusText}>
-                  🎉 First duel bonus: +{DUEL_REFERRAL_BONUS_COINS} coins!
+                  🎉 {t('sessionResult.duelBonus', { amount: DUEL_REFERRAL_BONUS_COINS })}
                 </Text>
               )}
               {(() => {
                 if (!duelStatus) {
                   return (
                     <Text style={styles.duelHint}>
-                      {checkingDuel ? 'Checking…' : 'Could not reach the duel.'}
+                      {checkingDuel ? t('sessionResult.duelChecking') : t('sessionResult.duelUnreachable')}
                     </Text>
                   );
                 }
                 const me = duelStatus.participants.find((p) => p.isMe);
                 const opponent = duelStatus.participants.find((p) => !p.isMe);
                 if (!opponent || opponent.durationMs === null) {
-                  return <Text style={styles.duelHint}>Waiting for your friend's result…</Text>;
+                  return <Text style={styles.duelHint}>{t('sessionResult.duelWaiting')}</Text>;
                 }
                 const myDuration = me?.durationMs ?? record.durationMs;
                 const won = myDuration > opponent.durationMs;
@@ -273,16 +277,23 @@ export function SessionResultScreen({ navigation, route }: Props) {
                 return (
                   <>
                     <Text style={styles.duelResultText}>
-                      You {formatClock(myDuration)} · Friend {formatClock(opponent.durationMs)}
+                      {t('sessionResult.duelResult', {
+                        mine: formatClock(myDuration),
+                        theirs: formatClock(opponent.durationMs),
+                      })}
                     </Text>
                     <Text style={[styles.duelOutcome, won && styles.duelOutcomeWin]}>
-                      {tie ? "IT'S A TIE" : won ? 'YOU WIN 🏆' : 'YOU LOSE'}
+                      {tie
+                        ? t('sessionResult.duelTie')
+                        : won
+                          ? t('sessionResult.duelWin')
+                          : t('sessionResult.duelLose')}
                     </Text>
                   </>
                 );
               })()}
               <Pressable onPress={checkDuel} hitSlop={8} disabled={checkingDuel}>
-                <Text style={styles.duelRefresh}>↻ CHECK AGAIN</Text>
+                <Text style={styles.duelRefresh}>↻ {t('sessionResult.duelCheckAgain')}</Text>
               </Pressable>
             </View>
           )}
@@ -291,24 +302,24 @@ export function SessionResultScreen({ navigation, route }: Props) {
         <View style={styles.footer}>
           {record.completed ? (
             <>
-              <PrimaryButton label="DONE" onPress={goHome} />
-              <PrimaryButton label="TRY AGAIN" variant="ghost" onPress={tryAgain} />
+              <PrimaryButton label={t('sessionResult.done')} onPress={goHome} />
+              <PrimaryButton label={t('sessionResult.tryAgain')} variant="ghost" onPress={tryAgain} />
             </>
           ) : (
             <>
-              <PrimaryButton label="TRY AGAIN" onPress={tryAgain} />
-              <PrimaryButton label="VIEW STATS" variant="ghost" onPress={viewStats} />
+              <PrimaryButton label={t('sessionResult.tryAgain')} onPress={tryAgain} />
+              <PrimaryButton label={t('sessionResult.viewStats')} variant="ghost" onPress={viewStats} />
             </>
           )}
           <Pressable onPress={shareResult} hitSlop={8} accessibilityRole="button">
-            <Text style={styles.shareText}>SHARE RESULT</Text>
+            <Text style={styles.shareText}>{t('sessionResult.shareResult')}</Text>
           </Pressable>
         </View>
       </View>
 
       <RewardedAdModal
         visible={adPurpose !== null}
-        prompt={adPurpose === 'streak' ? 'Watching to save your streak…' : 'Watching to double your coins…'}
+        prompt={adPurpose === 'streak' ? t('sessionResult.watchingStreak') : t('sessionResult.watchingDouble')}
         onResult={handleAdResult}
       />
     </View>

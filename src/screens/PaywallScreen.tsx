@@ -11,20 +11,22 @@ import { colors, radius, spacing, typography } from '../theme';
 import { fetchOfferings, isEntitled, purchasePackage, restorePurchases } from '../services/purchasesService';
 import { track } from '../services/analyticsService';
 import { computeAnnualSavingsPercent, describeIntroOffer } from '../utils/paywall';
+import { useTranslation } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Paywall'>;
 
-const FEATURES = [
-  'No ads, ever',
-  'Custom runs up to 24 hours',
-  'Advanced stats: monthly & 3-month trends',
-  'Premium timer theme',
-  'Exclusive cosmetic ring colors',
+const FEATURE_KEYS = [
+  'paywall.featureNoAds',
+  'paywall.featureCustomRuns',
+  'paywall.featureStatsTrends',
+  'paywall.featurePremiumTheme',
+  'paywall.featureCosmetics',
 ];
 
 export function PaywallScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { refreshPremiumStatus } = useAppData();
+  const { t } = useTranslation();
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
   const [loadingOffering, setLoadingOffering] = useState(true);
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
@@ -50,7 +52,7 @@ export function PaywallScreen({ navigation }: Props) {
       await refreshPremiumStatus();
       navigation.goBack();
     } else if (success) {
-      setMessage("Purchase completed, but the premium entitlement wasn't found. Check your RevenueCat entitlement configuration.");
+      setMessage(t('paywall.entitlementMissing'));
     }
   };
 
@@ -63,7 +65,7 @@ export function PaywallScreen({ navigation }: Props) {
       await refreshPremiumStatus();
       navigation.goBack();
     } else {
-      setMessage('No previous purchase found to restore.');
+      setMessage(t('paywall.noPreviousPurchase'));
     }
   };
 
@@ -74,14 +76,14 @@ export function PaywallScreen({ navigation }: Props) {
 
   return (
     <View style={styles.screen}>
-      <Header title="PREMIUM" />
+      <Header title={t('paywall.title')} />
       <View style={[styles.content, { paddingBottom: insets.bottom + spacing.xl }]}>
         <View style={styles.body}>
-          <Text style={styles.title}>Go Premium</Text>
+          <Text style={styles.title}>{t('paywall.heading')}</Text>
           <View style={styles.featureList}>
-            {FEATURES.map((f) => (
-              <Text key={f} style={styles.featureText}>
-                · {f}
+            {FEATURE_KEYS.map((key) => (
+              <Text key={key} style={styles.featureText}>
+                · {t(key)}
               </Text>
             ))}
           </View>
@@ -89,10 +91,7 @@ export function PaywallScreen({ navigation }: Props) {
           {loadingOffering ? (
             <ActivityIndicator color={colors.textSecondary} style={{ marginTop: spacing.xl }} />
           ) : packages.length === 0 ? (
-            <Text style={styles.emptyText}>
-              No products configured yet.{'\n'}
-              Set up Offerings in the RevenueCat dashboard (see README).
-            </Text>
+            <Text style={styles.emptyText}>{t('paywall.noProducts')}</Text>
           ) : (
             <View style={styles.packages}>
               {packages.map((pkg) => {
@@ -107,7 +106,9 @@ export function PaywallScreen({ navigation }: Props) {
                   >
                     {showBestValue && (
                       <View style={styles.bestValueBadge}>
-                        <Text style={styles.bestValueBadgeText}>BEST VALUE · SAVE {savingsPercent}%</Text>
+                        <Text style={styles.bestValueBadgeText}>
+                          {t('paywall.bestValue', { percent: savingsPercent })}
+                        </Text>
                       </View>
                     )}
                     <View style={styles.packageRow}>
@@ -132,18 +133,18 @@ export function PaywallScreen({ navigation }: Props) {
 
         <View style={styles.footer}>
           <PrimaryButton
-            label={restoring ? 'RESTORING…' : 'RESTORE PURCHASES'}
+            label={restoring ? t('paywall.restoring') : t('paywall.restorePurchases')}
             variant="ghost"
             onPress={handleRestore}
             disabled={restoring}
           />
           <View style={styles.legalRow}>
             <Pressable onPress={() => navigation.navigate('Terms')} hitSlop={8}>
-              <Text style={styles.legalLink}>Terms</Text>
+              <Text style={styles.legalLink}>{t('paywall.terms')}</Text>
             </Pressable>
             <Text style={styles.legalDivider}>·</Text>
             <Pressable onPress={() => navigation.navigate('PrivacyPolicy')} hitSlop={8}>
-              <Text style={styles.legalLink}>Privacy</Text>
+              <Text style={styles.legalLink}>{t('paywall.privacy')}</Text>
             </Pressable>
           </View>
         </View>

@@ -99,6 +99,31 @@ export function SettingsScreen({ navigation }: Props) {
               />
             }
           />
+          <Divider />
+          <View style={styles.languageRow}>
+            <Text style={styles.rowLabel}>Language</Text>
+            <View style={styles.languageOptions}>
+              {(['system', 'en', 'tr'] as const).map((code) => (
+                <Pressable
+                  key={code}
+                  onPress={() => updateSettings({ languageCode: code })}
+                  style={[
+                    styles.languagePill,
+                    settings.languageCode === code && styles.languagePillActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.languagePillText,
+                      settings.languageCode === code && styles.languagePillTextActive,
+                    ]}
+                  >
+                    {code.toUpperCase()}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
         </GlassCard>
 
         <GlassCard style={styles.section}>
@@ -242,6 +267,35 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: colors.border,
+  },
+  languageRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+  },
+  languageOptions: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  languagePill: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  languagePillActive: {
+    borderColor: colors.streak,
+    backgroundColor: colors.surfaceRaised,
+  },
+  languagePillText: {
+    ...typography.label,
+    fontSize: 10,
+    color: colors.textTertiary,
+  },
+  languagePillTextActive: {
+    color: colors.streak,
   },
   premiumTitle: {
     ...typography.body,

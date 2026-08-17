@@ -17,6 +17,7 @@ import { formatClock } from '../utils/time';
 import type { FailReason } from '../types';
 import { reportError } from '../services/crashService';
 import { submitDuelResult } from '../services/duelService';
+import { useTranslation } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Session'>;
 
@@ -29,6 +30,7 @@ const HAPTIC_STYLE: Record<HapticIntensity, Haptics.ImpactFeedbackStyle> = {
 export function SessionScreen({ navigation, route }: Props) {
   const { goalMs, duelId } = route.params;
   const { beginActiveSession, completeSession, stats, settings } = useAppData();
+  const { t } = useTranslation();
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const settledRef = useRef(false);
   const previousBestMsRef = useRef(stats.personalBestMs);
@@ -128,7 +130,7 @@ export function SessionScreen({ navigation, route }: Props) {
         </PulseWrapper>
         <Text style={[styles.levelLabel, { color: dangerLevel.color }]}>{dangerLevel.label}</Text>
         <GhostPbBanner elapsedMs={clock.elapsedMs} previousBestMs={previousBestMsRef.current} />
-        <Text style={styles.hint}>DON'T TOUCH</Text>
+        <Text style={styles.hint}>{t('session.dontTouch')}</Text>
       </View>
 
       {milestone && (

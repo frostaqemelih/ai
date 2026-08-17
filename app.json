@@ -32,7 +32,8 @@
         {
           "userTrackingPermission": "This lets us show you ads that are more relevant to you. Don't Touch never tracks anything else about you."
         }
-      ]
+      ],
+      "expo-localization"
     ]
   }
 }
