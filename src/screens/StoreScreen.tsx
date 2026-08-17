@@ -1,22 +1,49 @@
-import React, { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
 import type { RootStackParamList } from '../navigation/types';
 import { useAppData } from '../context/AppDataContext';
 import { Header } from '../components/Header';
 import { GlassCard } from '../components/GlassCard';
 import { CircularTimer } from '../components/CircularTimer';
 import { colors, spacing, typography } from '../theme';
-import { COSMETIC_RING_COLORS } from '../utils/economy';
+import { COIN_OFFERING_ID, COSMETIC_RING_COLORS, coinsForPackageIdentifier } from '../utils/economy';
+import { fetchOfferingByIdentifier, purchasePackage } from '../services/purchasesService';
+import { track } from '../services/analyticsService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Store'>;
 
 export function StoreScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { coins, unlockedCosmetics, settings, updateSettings, unlockCosmetic, isPremium } =
+  const { coins, unlockedCosmetics, settings, updateSettings, unlockCosmetic, isPremium, earnCoins } =
     useAppData();
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [coinOffering, setCoinOffering] = useState<PurchasesOffering | null>(null);
+  const [loadingCoinOffering, setLoadingCoinOffering] = useState(true);
+  const [purchasingCoinPack, setPurchasingCoinPack] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchOfferingByIdentifier(COIN_OFFERING_ID).then((offering) => {
+      setCoinOffering(offering);
+      setLoadingCoinOffering(false);
+    });
+  }, []);
+
+  const coinPackages = coinOffering?.availablePackages ?? [];
+
+  const handleBuyCoins = async (pkg: PurchasesPackage) => {
+    const coinsForPack = coinsForPackageIdentifier(pkg.identifier);
+    if (coinsForPack === null || purchasingCoinPack) return;
+    setPurchasingCoinPack(pkg.identifier);
+    const { success } = await purchasePackage(pkg);
+    setPurchasingCoinPack(null);
+    if (success) {
+      await earnCoins(coinsForPack);
+      track('coin_purchased', { packageId: pkg.identifier, coins: coinsForPack });
+    }
+  };
 
   const handlePress = async (id: string, cost: number, premiumOnly?: boolean) => {
     const owned = unlockedCosmetics.includes(id);
@@ -52,10 +79,40 @@ export function StoreScreen({ navigation }: Props) {
         numColumns={2}
         columnWrapperStyle={styles.row}
         ListHeaderComponent={
-          <View style={styles.balanceRow}>
-            <Text style={styles.balanceLabel}>YOUR BALANCE</Text>
-            <Text style={styles.balanceValue}>🪙 {coins}</Text>
-          </View>
+          <>
+            <View style={styles.balanceRow}>
+              <Text style={styles.balanceLabel}>YOUR BALANCE</Text>
+              <Text style={styles.balanceValue}>🪙 {coins}</Text>
+            </View>
+
+            {loadingCoinOffering ? (
+              <ActivityIndicator color={colors.textSecondary} style={styles.coinLoading} />
+            ) : coinPackages.length > 0 ? (
+              <View style={styles.buyCoinsSection}>
+                <Text style={styles.sectionLabel}>BUY COINS</Text>
+                <View style={styles.buyCoinsRow}>
+                  {coinPackages.map((pkg) => {
+                    const packCoins = coinsForPackageIdentifier(pkg.identifier);
+                    if (packCoins === null) return null;
+                    return (
+                      <GlassCard key={pkg.identifier} style={styles.coinPackCard}>
+                        <Pressable
+                          style={styles.coinPackInner}
+                          disabled={purchasingCoinPack !== null}
+                          onPress={() => handleBuyCoins(pkg)}
+                        >
+                          <Text style={styles.coinPackAmount}>🪙 {packCoins}</Text>
+                          <Text style={styles.coinPackPrice}>
+                            {purchasingCoinPack === pkg.identifier ? '…' : pkg.product.priceString}
+                          </Text>
+                        </Pressable>
+                      </GlassCard>
+                    );
+                  })}
+                </View>
+              </View>
+            ) : null}
+          </>
         }
         ListFooterComponent={
           !isPremium && hasUnaffordable ? (
@@ -135,6 +192,39 @@ const styles = StyleSheet.create({
     fontSize: 28,
     color: colors.streak,
     marginTop: 4,
+  },
+  coinLoading: {
+    marginBottom: spacing.xl,
+  },
+  buyCoinsSection: {
+    marginBottom: spacing.xl,
+    gap: spacing.sm,
+  },
+  sectionLabel: {
+    ...typography.statLabel,
+    color: colors.textTertiary,
+  },
+  buyCoinsRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  coinPackCard: {
+    flex: 1,
+  },
+  coinPackInner: {
+    alignItems: 'center',
+    padding: spacing.md,
+    gap: 4,
+  },
+  coinPackAmount: {
+    ...typography.body,
+    fontSize: 13,
+    color: colors.textPrimary,
+  },
+  coinPackPrice: {
+    ...typography.label,
+    fontSize: 11,
+    color: colors.streak,
   },
   row: {
     gap: spacing.md,

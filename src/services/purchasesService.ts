@@ -63,6 +63,19 @@ export async function fetchOfferings(): Promise<PurchasesOffering | null> {
   }
 }
 
+// For offerings other than the default "current" one — e.g. a dedicated
+// "coins" offering holding the consumable coin-pack products, configured
+// separately in the RevenueCat dashboard.
+export async function fetchOfferingByIdentifier(id: string): Promise<PurchasesOffering | null> {
+  if (!isNativePlatform() || !configured) return null;
+  try {
+    const offerings = await Purchases.getOfferings();
+    return offerings.all[id] ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function purchasePackage(
   pkg: PurchasesPackage
 ): Promise<{ success: boolean; info: CustomerInfo | null }> {

@@ -36,6 +36,30 @@ export const COSMETIC_RING_COLORS: CosmeticRingColor[] = [
 
 export const DEFAULT_RING_COLOR_ID = 'classic';
 
+// Dedicated RevenueCat offering (configured separately from the "current"
+// Premium offering) holding the consumable coin-pack products.
+export const COIN_OFFERING_ID = 'coins';
+
+export interface CoinPackageDef {
+  /** Must exactly match the Package identifier configured in RevenueCat. */
+  packageIdentifier: string;
+  coins: number;
+}
+
+// The coin amount per pack is defined here rather than parsed from store
+// metadata (fragile) — RevenueCat dashboard package identifiers must match
+// these exactly. Prices themselves always come from the real store product,
+// never hardcoded.
+export const COIN_IAP_PACKAGES: CoinPackageDef[] = [
+  { packageIdentifier: 'coins_small', coins: 500 },
+  { packageIdentifier: 'coins_medium', coins: 1500 },
+  { packageIdentifier: 'coins_large', coins: 5000 },
+];
+
+export function coinsForPackageIdentifier(identifier: string): number | null {
+  return COIN_IAP_PACKAGES.find((p) => p.packageIdentifier === identifier)?.coins ?? null;
+}
+
 export function ringColorForId(id: string): string {
   return COSMETIC_RING_COLORS.find((c) => c.id === id)?.color ?? COSMETIC_RING_COLORS[0].color;
 }
