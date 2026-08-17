@@ -18,6 +18,9 @@ export const DEFAULT_SETTINGS: AppSettings = {
   hapticsEnabled: true,
   lastSelectedGoalMs: DEFAULT_GOAL_MS,
   selectedRingColorId: DEFAULT_RING_COLOR_ID,
+  premiumThemeEnabled: false,
+  notificationsEnabled: false,
+  notificationsPermissionAsked: false,
 };
 
 // Cap stored history so device storage never grows unbounded.

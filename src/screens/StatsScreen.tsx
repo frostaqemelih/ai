@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
@@ -8,19 +8,21 @@ import { Header } from '../components/Header';
 import { GlassCard } from '../components/GlassCard';
 import { StatPill } from '../components/StatPill';
 import { WeekCalendar } from '../components/WeekCalendar';
-import { getWeeklyTotals } from '../storage/statsEngine';
+import { getMonthlyTotals, getWeeklyTotals } from '../storage/statsEngine';
 import { colors, spacing, typography } from '../theme';
 import { formatClock, formatDurationLong } from '../utils/time';
 import { toLocalDateKey, WEEKDAY_LABELS } from '../utils/date';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Stats'>;
 
-export function StatsScreen(_props: Props) {
+export function StatsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { sessions, stats } = useAppData();
+  const { sessions, stats, isPremium } = useAppData();
 
   const weekly = useMemo(() => getWeeklyTotals(sessions), [sessions]);
   const maxWeekly = Math.max(1, ...weekly.map((w) => w.totalMs));
+  const monthly = useMemo(() => getMonthlyTotals(sessions, 6), [sessions]);
+  const maxMonthly = Math.max(1, ...monthly.map((m) => m.totalMs));
   const todayKey = toLocalDateKey(Date.now());
 
   return (
@@ -92,6 +94,35 @@ export function StatsScreen(_props: Props) {
               );
             })}
           </View>
+        </GlassCard>
+
+        <GlassCard style={styles.section}>
+          <View style={styles.trendHeader}>
+            <Text style={styles.sectionTitle}>6-month trend</Text>
+            {!isPremium && <Text style={styles.lockGlyph}>🔒</Text>}
+          </View>
+          {isPremium ? (
+            <View style={styles.chart}>
+              {monthly.map((month) => {
+                const heightRatio = month.totalMs / maxMonthly;
+                const barHeightPx = Math.max(4, Math.round(heightRatio * 96));
+                return (
+                  <View key={month.key} style={styles.chartColumn}>
+                    <View style={styles.barTrack}>
+                      <View style={[styles.bar, { height: barHeightPx }]} />
+                    </View>
+                    <Text style={styles.barLabel}>{month.label}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          ) : (
+            <Pressable onPress={() => navigation.navigate('Paywall')} style={styles.lockedPreview}>
+              <Text style={styles.lockedPreviewText}>
+                See your focus trend over time — unlock with Premium
+              </Text>
+            </Pressable>
+          )}
         </GlassCard>
       </ScrollView>
     </View>
@@ -183,5 +214,23 @@ const styles = StyleSheet.create({
     ...typography.statValue,
     color: colors.textTertiary,
     marginTop: 4,
+  },
+  trendHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  lockGlyph: {
+    fontSize: 12,
+  },
+  lockedPreview: {
+    paddingVertical: spacing.lg,
+    alignItems: 'center',
+  },
+  lockedPreviewText: {
+    ...typography.body,
+    fontSize: 13,
+    color: colors.streak,
+    textAlign: 'center',
   },
 });

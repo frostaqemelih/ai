@@ -15,6 +15,7 @@ import { StatsScreen } from '../screens/StatsScreen';
 import { AchievementsScreen } from '../screens/AchievementsScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { StoreScreen } from '../screens/StoreScreen';
+import { PaywallScreen } from '../screens/PaywallScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -69,6 +70,11 @@ export function RootNavigator() {
         <Stack.Screen name="Achievements" component={AchievementsScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="Store" component={StoreScreen} />
+        <Stack.Screen
+          name="Paywall"
+          component={PaywallScreen}
+          options={{ presentation: 'modal' }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

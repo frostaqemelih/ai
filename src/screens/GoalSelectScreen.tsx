@@ -7,16 +7,17 @@ import type { RootStackParamList } from '../navigation/types';
 import { useAppData } from '../context/AppDataContext';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { colors, fonts, radius, spacing, typography } from '../theme';
-import { GOAL_PRESETS, MAX_CUSTOM_MINUTES, MIN_CUSTOM_MINUTES } from '../utils/goals';
+import { GOAL_PRESETS, MIN_CUSTOM_MINUTES, maxCustomMinutesFor } from '../utils/goals';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GoalSelect'>;
 
 export function GoalSelectScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { settings, updateSettings } = useAppData();
+  const { settings, updateSettings, isPremium } = useAppData();
   const [customMode, setCustomMode] = useState(false);
   const [customMinutes, setCustomMinutes] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const maxMinutes = maxCustomMinutesFor(isPremium);
 
   const choose = (ms: number) => {
     updateSettings({ lastSelectedGoalMs: ms });
@@ -25,11 +26,19 @@ export function GoalSelectScreen({ navigation }: Props) {
 
   const submitCustom = () => {
     const minutes = parseInt(customMinutes, 10);
-    if (!Number.isFinite(minutes) || minutes < MIN_CUSTOM_MINUTES || minutes > MAX_CUSTOM_MINUTES) {
-      setError(`Enter a number between ${MIN_CUSTOM_MINUTES} and ${MAX_CUSTOM_MINUTES}`);
+    if (!Number.isFinite(minutes) || minutes < MIN_CUSTOM_MINUTES || minutes > maxMinutes) {
+      setError(
+        isPremium
+          ? `Enter a number between ${MIN_CUSTOM_MINUTES} and ${maxMinutes}`
+          : `Free plan caps runs at ${maxMinutes} min. Go Premium for up to 24 hours.`
+      );
       return;
     }
     choose(minutes * 60 * 1000);
+  };
+
+  const goToPaywall = () => {
+    navigation.navigate('Paywall');
   };
 
   return (
@@ -79,6 +88,11 @@ export function GoalSelectScreen({ navigation }: Props) {
               maxLength={4}
             />
             {error ? <Text style={styles.error}>{error}</Text> : null}
+            {!isPremium && (
+              <Pressable onPress={goToPaywall} hitSlop={8}>
+                <Text style={styles.upsell}>🔒 Go Premium for runs up to 24 hours</Text>
+              </Pressable>
+            )}
             <PrimaryButton label="SET GOAL" onPress={submitCustom} />
             <Pressable onPress={() => setCustomMode(false)} hitSlop={8}>
               <Text style={styles.back}>Back to presets</Text>
@@ -172,5 +186,10 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
     fontSize: 13,
     marginTop: spacing.xs,
+  },
+  upsell: {
+    ...typography.label,
+    fontSize: 11,
+    color: colors.streak,
   },
 });

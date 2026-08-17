@@ -13,6 +13,9 @@ export interface CosmeticRingColor {
   label: string;
   color: string;
   cost: number;
+  /** Requires an active Premium subscription regardless of coin balance —
+   *  keeps the coin economy and the subscription tier from competing. */
+  premiumOnly?: boolean;
 }
 
 // Coin sink: cosmetic timer-ring colors for the idle Home screen. Purely
@@ -23,7 +26,7 @@ export const COSMETIC_RING_COLORS: CosmeticRingColor[] = [
   { id: 'ocean', label: 'Ocean', color: '#5AC8FA', cost: 100 },
   { id: 'ember', label: 'Ember', color: '#FF8A3D', cost: 100 },
   { id: 'violet', label: 'Violet', color: '#C084FC', cost: 150 },
-  { id: 'mint', label: 'Mint', color: '#4ADE80', cost: 150 },
+  { id: 'gold', label: 'Gold', color: '#FFD84D', cost: 0, premiumOnly: true },
 ];
 
 export const DEFAULT_RING_COLOR_ID = 'classic';

@@ -27,7 +27,7 @@ type AdPurpose = 'streak' | 'double' | null;
 export function SessionResultScreen({ navigation, route }: Props) {
   const { record, isNewRecord, newlyUnlocked, coinsEarned, streakBroken } = route.params;
   const insets = useSafeAreaInsets();
-  const { settings, stats, coins, earnCoins, saveStreakWithInsurance, saveStreakWithCoins } =
+  const { settings, stats, coins, isPremium, earnCoins, saveStreakWithInsurance, saveStreakWithCoins } =
     useAppData();
   const [showConfetti, setShowConfetti] = useState(false);
   const [adPurpose, setAdPurpose] = useState<AdPurpose>(null);
@@ -131,7 +131,7 @@ export function SessionResultScreen({ navigation, route }: Props) {
               <Text style={styles.coinText}>
                 🪙 +{coinsDoubled ? coinsEarned * 2 : coinsEarned} COINS
               </Text>
-              {!coinsDoubled ? (
+              {!coinsDoubled && !isPremium ? (
                 <Pressable
                   style={styles.adButton}
                   onPress={() => setAdPurpose('double')}
@@ -139,9 +139,9 @@ export function SessionResultScreen({ navigation, route }: Props) {
                 >
                   <Text style={styles.adButtonText}>🎬 DOUBLE (WATCH AD)</Text>
                 </Pressable>
-              ) : (
+              ) : coinsDoubled ? (
                 <Text style={styles.adDoneText}>✓ Doubled</Text>
-              )}
+              ) : null}
             </View>
           )}
 
@@ -151,13 +151,15 @@ export function SessionResultScreen({ navigation, route }: Props) {
                 <>
                   <Text style={styles.streakWarning}>Your streak is about to end.</Text>
                   <View style={styles.streakOptionsRow}>
-                    <Pressable
-                      style={styles.adButton}
-                      onPress={() => setAdPurpose('streak')}
-                      accessibilityRole="button"
-                    >
-                      <Text style={styles.adButtonText}>🎬 WATCH AD</Text>
-                    </Pressable>
+                    {!isPremium && (
+                      <Pressable
+                        style={styles.adButton}
+                        onPress={() => setAdPurpose('streak')}
+                        accessibilityRole="button"
+                      >
+                        <Text style={styles.adButtonText}>🎬 WATCH AD</Text>
+                      </Pressable>
+                    )}
                     <Pressable
                       style={[styles.adButton, coins < STREAK_FREEZE_COST && styles.adButtonDisabled]}
                       onPress={handleSpendCoinsForStreak}

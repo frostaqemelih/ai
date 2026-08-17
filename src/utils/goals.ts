@@ -15,7 +15,13 @@ export const GOAL_PRESETS: GoalPreset[] = [
 export const DEFAULT_GOAL_MS = GOAL_PRESETS[1].ms; // 5 minutes
 
 export const MIN_CUSTOM_MINUTES = 1;
+// Free tier caps custom runs at 1 hour — Premium unlocks the full 24-hour range.
+export const FREE_MAX_CUSTOM_MINUTES = 60;
 export const MAX_CUSTOM_MINUTES = 24 * 60;
+
+export function maxCustomMinutesFor(isPremium: boolean): number {
+  return isPremium ? MAX_CUSTOM_MINUTES : FREE_MAX_CUSTOM_MINUTES;
+}
 
 export function goalLabelForMs(ms: number): string {
   const preset = GOAL_PRESETS.find((g) => g.ms === ms);

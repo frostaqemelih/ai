@@ -1,7 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, premiumTheme, radius, spacing, typography } from '../theme';
+import { useAppData } from '../context/AppDataContext';
 
 interface PrimaryButtonProps {
   label: string;
@@ -18,6 +19,9 @@ export function PrimaryButton({
   style,
   disabled = false,
 }: PrimaryButtonProps) {
+  const { settings, isPremium } = useAppData();
+  const goldTheme = variant === 'primary' && isPremium && settings.premiumThemeEnabled;
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -34,14 +38,21 @@ export function PrimaryButton({
     >
       {variant === 'primary' && (
         <LinearGradient
-          colors={['#FFFFFF', '#E4E4E7']}
+          colors={goldTheme ? [premiumTheme.gradientStart, premiumTheme.gradientEnd] : ['#FFFFFF', '#E4E4E7']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={StyleSheet.absoluteFill}
         />
       )}
       <View style={styles.contentRow}>
-        <Text style={[styles.text, variant === 'primary' ? styles.textPrimary : styles.textOther]}>
+        <Text
+          style={[
+            styles.text,
+            variant === 'primary'
+              ? [styles.textPrimary, goldTheme && { color: premiumTheme.accentText }]
+              : styles.textOther,
+          ]}
+        >
           {label}
         </Text>
       </View>

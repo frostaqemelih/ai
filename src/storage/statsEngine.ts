@@ -19,6 +19,37 @@ export function getWeeklyTotals(sessions: SessionRecord[], now: number = Date.no
   return weekKeys.map((key) => ({ key, totalMs: totals.get(key) ?? 0 }));
 }
 
+export interface MonthlyTotal {
+  key: string; // "YYYY-MM"
+  label: string; // "Jan"
+  totalMs: number;
+}
+
+// Last `months` calendar months (oldest to newest), including the current one.
+export function getMonthlyTotals(
+  sessions: SessionRecord[],
+  months: number,
+  now: number = Date.now()
+): MonthlyTotal[] {
+  const nowDate = new Date(now);
+  const buckets: MonthlyTotal[] = [];
+  for (let i = months - 1; i >= 0; i--) {
+    const d = new Date(nowDate.getFullYear(), nowDate.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+    const label = d.toLocaleDateString('en-US', { month: 'short' });
+    buckets.push({ key, label, totalMs: 0 });
+  }
+  const byKey = new Map(buckets.map((b) => [b.key, b]));
+  for (const s of sessions) {
+    if (s.streakSaved) continue;
+    const d = new Date(s.endedAt);
+    const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+    const bucket = byKey.get(key);
+    if (bucket) bucket.totalMs += s.durationMs;
+  }
+  return buckets;
+}
+
 export function deriveStats(sessions: SessionRecord[], now: number = Date.now()): DerivedStats {
   // Every real attempt counts toward time-survived stats, whether the goal was hit
   // or not — only the streak cares about a completed goal. Streak-saved days (via

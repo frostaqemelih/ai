@@ -12,6 +12,16 @@ export const colors = {
   streak: '#FF8A3D',
 } as const;
 
+// Alternate "Gold" accent for the Premium Theme setting — swapped in by
+// PrimaryButton (and any other accent-driven surfaces) when
+// settings.premiumThemeEnabled && isPremium. Kept as a small, targeted
+// palette rather than a full re-theme of every screen.
+export const premiumTheme = {
+  gradientStart: '#FFE9A8',
+  gradientEnd: '#FFB300',
+  accentText: '#3A2600',
+} as const;
+
 // Danger-level ring/atmosphere colors, ordered SAFE -> UNTOUCHABLE.
 export const dangerColors = {
   safe: '#8A8A8F',

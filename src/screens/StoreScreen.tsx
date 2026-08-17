@@ -12,15 +12,20 @@ import { COSMETIC_RING_COLORS } from '../utils/economy';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Store'>;
 
-export function StoreScreen(_props: Props) {
+export function StoreScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { coins, unlockedCosmetics, settings, updateSettings, unlockCosmetic } = useAppData();
+  const { coins, unlockedCosmetics, settings, updateSettings, unlockCosmetic, isPremium } =
+    useAppData();
   const [pendingId, setPendingId] = useState<string | null>(null);
 
-  const handlePress = async (id: string, cost: number) => {
+  const handlePress = async (id: string, cost: number, premiumOnly?: boolean) => {
     const owned = unlockedCosmetics.includes(id);
     if (owned) {
       await updateSettings({ selectedRingColorId: id });
+      return;
+    }
+    if (premiumOnly && !isPremium) {
+      navigation.navigate('Paywall');
       return;
     }
     if (coins < cost || pendingId) return;
@@ -52,12 +57,13 @@ export function StoreScreen(_props: Props) {
           const owned = unlockedCosmetics.includes(item.id);
           const selected = settings.selectedRingColorId === item.id;
           const affordable = coins >= item.cost;
+          const locked = item.premiumOnly && !isPremium && !owned;
           return (
             <GlassCard style={styles.card}>
               <Pressable
                 style={styles.cardInner}
-                disabled={pendingId === item.id || (!owned && !affordable)}
-                onPress={() => handlePress(item.id, item.cost)}
+                disabled={pendingId === item.id || (!owned && !locked && !affordable)}
+                onPress={() => handlePress(item.id, item.cost, item.premiumOnly)}
               >
                 <CircularTimer
                   progress={0.7}
@@ -71,6 +77,8 @@ export function StoreScreen(_props: Props) {
                   <Text style={styles.selectedText}>✓ SELECTED</Text>
                 ) : owned ? (
                   <Text style={styles.ownedText}>OWNED</Text>
+                ) : locked ? (
+                  <Text style={styles.lockedText}>🔒 PREMIUM</Text>
                 ) : (
                   <Text style={[styles.costText, !affordable && styles.costTextDisabled]}>
                     🪙 {item.cost}
@@ -144,5 +152,10 @@ const styles = StyleSheet.create({
   },
   costTextDisabled: {
     color: colors.textTertiary,
+  },
+  lockedText: {
+    ...typography.label,
+    fontSize: 10,
+    color: colors.streak,
   },
 });

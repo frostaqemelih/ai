@@ -13,7 +13,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
 
 export function SettingsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { settings, updateSettings, resetProgress, coins } = useAppData();
+  const { settings, updateSettings, resetProgress, coins, isPremium } = useAppData();
 
   const confirmReset = () => {
     Alert.alert(
@@ -75,20 +75,44 @@ export function SettingsScreen({ navigation }: Props) {
         </GlassCard>
 
         <GlassCard style={styles.section}>
-          <Text style={styles.premiumTitle}>Premium</Text>
-          <Text style={styles.premiumSubtitle}>Coming soon</Text>
-          {[
-            'No ads, ever',
-            'Unlimited custom sessions',
-            'Advanced statistics',
-            'Premium themes',
-            'Exclusive sounds',
-            'Advanced achievements',
-          ].map((item) => (
-            <Text key={item} style={styles.premiumItem}>
-              · {item}
-            </Text>
-          ))}
+          <View style={styles.row}>
+            <Text style={styles.premiumTitle}>Premium</Text>
+            {isPremium && <Text style={styles.premiumBadge}>✓ ACTIVE</Text>}
+          </View>
+          {!isPremium ? (
+            <>
+              <Text style={styles.premiumSubtitle}>Unlock the full experience</Text>
+              {[
+                'No ads, ever',
+                'Custom runs up to 24 hours',
+                'Advanced stats trends',
+                'Premium timer theme',
+                'Exclusive cosmetics',
+              ].map((item) => (
+                <Text key={item} style={styles.premiumItem}>
+                  · {item}
+                </Text>
+              ))}
+              <PrimaryButton
+                label="GO PREMIUM"
+                onPress={() => navigation.navigate('Paywall')}
+                style={styles.premiumButton}
+              />
+            </>
+          ) : (
+            <>
+              <Row
+                label="Premium theme (gold)"
+                right={
+                  <Switch
+                    value={settings.premiumThemeEnabled}
+                    onValueChange={(v) => updateSettings({ premiumThemeEnabled: v })}
+                    trackColor={{ true: colors.streak, false: colors.border }}
+                  />
+                }
+              />
+            </>
+          )}
         </GlassCard>
 
         <View style={styles.noAccountBox}>
@@ -169,6 +193,16 @@ const styles = StyleSheet.create({
     ...typography.body,
     fontFamily: fonts.displaySemiBold,
     color: colors.textPrimary,
+  },
+  premiumBadge: {
+    ...typography.label,
+    fontSize: 10,
+    color: colors.success,
+  },
+  premiumButton: {
+    marginTop: spacing.md,
+    minWidth: 0,
+    alignSelf: 'stretch',
   },
   premiumSubtitle: {
     ...typography.body,

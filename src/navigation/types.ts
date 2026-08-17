@@ -18,6 +18,7 @@ export type RootStackParamList = {
   Achievements: undefined;
   Settings: undefined;
   Store: undefined;
+  Paywall: undefined;
 };
 
 export type NavProp = NativeStackNavigationProp<RootStackParamList>;

@@ -33,6 +33,14 @@ import {
 import { deriveAchievements, deriveStats, findNewlyUnlocked } from '../storage/statsEngine';
 import { DEFAULT_SETTINGS } from '../storage/storage';
 import { baseCoinsForSession, DEFAULT_RING_COLOR_ID, STREAK_FREEZE_COST } from '../utils/economy';
+import type { CustomerInfo, CustomerInfoUpdateListener } from 'react-native-purchases';
+import {
+  addCustomerInfoListener,
+  configurePurchases,
+  getCustomerInfoSafe,
+  isEntitled,
+  removeCustomerInfoListener,
+} from '../services/purchasesService';
 
 interface CompleteSessionInput {
   startedAt: number;
@@ -57,6 +65,8 @@ interface AppDataContextValue {
   achievements: AchievementState[];
   coins: number;
   unlockedCosmetics: string[];
+  isPremium: boolean;
+  refreshPremiumStatus: () => Promise<void>;
   updateSettings: (patch: Partial<AppSettings>) => Promise<void>;
   beginActiveSession: (goalMs: number) => Promise<number>;
   completeSession: (input: CompleteSessionInput) => Promise<CompleteSessionResult>;
@@ -80,6 +90,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
   const [coins, setCoins] = useState(0);
   const [unlockedCosmetics, setUnlockedCosmetics] = useState<string[]>([]);
+  const [isPremium, setIsPremium] = useState(false);
   const unlockTimestampsRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
@@ -126,6 +137,25 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       setUnlockedCosmetics(loadedCosmetics);
       setLoading(false);
     })();
+  }, []);
+
+  const refreshPremiumStatus = useCallback(async () => {
+    const info = await getCustomerInfoSafe();
+    setIsPremium(isEntitled(info));
+  }, []);
+
+  useEffect(() => {
+    let listener: CustomerInfoUpdateListener | null = null;
+    (async () => {
+      await configurePurchases();
+      await refreshPremiumStatus();
+      listener = (info: CustomerInfo) => setIsPremium(isEntitled(info));
+      addCustomerInfoListener(listener);
+    })();
+    return () => {
+      if (listener) removeCustomerInfoListener(listener);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const stats = useMemo(() => deriveStats(sessions), [sessions]);
@@ -296,6 +326,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     achievements,
     coins,
     unlockedCosmetics,
+    isPremium,
+    refreshPremiumStatus,
     updateSettings,
     beginActiveSession,
     completeSession,

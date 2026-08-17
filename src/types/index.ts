@@ -19,6 +19,9 @@ export interface AppSettings {
   hapticsEnabled: boolean;
   lastSelectedGoalMs: number;
   selectedRingColorId: string;
+  premiumThemeEnabled: boolean;
+  notificationsEnabled: boolean;
+  notificationsPermissionAsked: boolean;
 }
 
 export interface ActiveSession {
