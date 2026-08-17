@@ -66,17 +66,20 @@ itself, logs a warning) when its key is missing.
      docs) — without these, crashes still report but stack traces won't be
      symbolicated.
 
-5. **Supabase** (Friend Duel — fully optional feature, `src/services/
-   duelService.ts` / `supabaseClient.ts`)
+5. **Supabase** (Friend Duel + Global Stats — both fully optional features,
+   `src/services/duelService.ts` / `globalStatsService.ts` / `supabaseClient.ts`)
    - Create a project at [supabase.com](https://supabase.com).
-   - Run `supabase/migrations/0001_duels.sql` in the SQL editor (or via
-     `supabase db push`) to create the `duels` / `duel_participants` tables
-     and their RLS policies.
+   - Run **both** `supabase/migrations/0001_duels.sql` and
+     `supabase/migrations/0002_global_stats.sql` in the SQL editor (or via
+     `supabase db push`) — the first creates `duels`/`duel_participants`,
+     the second creates `daily_aggregate_stats` and its
+     `increment_global_stats()` RPC.
    - Copy the project URL and anon key into `.env` as
      `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
    - No user accounts are created — each device generates its own random
-     UUID locally. If left unconfigured, the Duel screen shows a plain
-     "not set up yet" message instead of crashing.
+     UUID locally (Duel only; Global Stats sends no identifier at all). If
+     left unconfigured, the Duel screen shows a plain "not set up yet"
+     message and Stats shows "Coming soon" instead of crashing.
 
 6. **Apple / Google subscription groups** — set up the actual monthly and
    annual subscription products in App Store Connect and Google Play
@@ -128,6 +131,43 @@ itself, logs a warning) when its key is missing.
     collection — but you can accurately claim **no data linked to
     identity**, since nothing here collects a name, email, or persistent
     cross-app identifier without explicit ATT consent.
+
+11. **RevenueCat intro/trial offer** (`src/utils/paywall.ts`,
+    `PaywallScreen.tsx`)
+    - The Paywall automatically displays whatever intro offer (free trial or
+      discounted intro price) is configured on a package's `introPrice` —
+      but nothing is configured by default. If you want a "3 days free,
+      then $4.99/mo" style offer, set it up as an **Introductory Offer** on
+      the underlying App Store Connect / Play Console subscription product
+      (RevenueCat surfaces whatever the store returns; it doesn't let you
+      define trial length independently of the store's own offer config).
+    - The "BEST VALUE · SAVE X%" badge on the annual package is computed
+      automatically from `offering.monthly` and `offering.annual` prices —
+      no action needed there once both packages exist.
+
+12. **App Store / Play Store URLs for the rating prompt fallback**
+    (`src/services/ratingService.ts` via `expo-store-review`)
+    - On iOS 10.3+ and Android 5+, `requestReview()` uses the OS's native
+      in-app rating sheet — no config needed.
+    - As a fallback on older Android versions, `expo-store-review` links out
+      to the store listing using `app.json`'s `ios.appStoreUrl` and
+      `android.playStoreUrl` — set these once the app has real store
+      listings, otherwise the fallback link silently does nothing (already
+      wrapped in `ratingService.ts`'s try/catch).
+
+13. **Remaining screens still in English only** (see the localization
+    commit for the full list) — `src/screens/`: StatsScreen, Achievements,
+    SettingsScreen (own labels), StoreScreen, DuelScreen, GoalSelectScreen,
+    and `LegalScreen`'s Privacy/Terms body copy. Also untranslated:
+    `dangerLevels.ts` labels (SAFE/FOCUS/…), `temptations.ts` and
+    `milestones.ts` in-session messages, and `achievementDefs.ts`
+    titles/descriptions — these live in data files rather than screens, so
+    migrating them means restructuring those files to hold both locales,
+    not just wrapping JSX in `t()`.
+
+14. **Store listing materials** (screenshots, app description, keyword
+    list, promo video/GIF) — not code, not in this repo. Ask separately
+    when you're ready to prepare the actual App Store / Play Store listing.
 
 ## Environment variables
 
