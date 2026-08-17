@@ -86,14 +86,18 @@ itself, logs a warning) when its key is missing.
      docs) — without these, crashes still report but stack traces won't be
      symbolicated.
 
-5. **Supabase** (Friend Duel + Global Stats — both fully optional features,
-   `src/services/duelService.ts` / `globalStatsService.ts` / `supabaseClient.ts`)
+5. **Supabase** (Friend Duel + Global Stats + Friend Streak — all fully
+   optional features, `src/services/duelService.ts` /
+   `globalStatsService.ts` / `friendStreakService.ts` / `supabaseClient.ts`)
    - Create a project at [supabase.com](https://supabase.com).
-   - Run **both** `supabase/migrations/0001_duels.sql` and
-     `supabase/migrations/0002_global_stats.sql` in the SQL editor (or via
+   - Run **all three** `supabase/migrations/0001_duels.sql`,
+     `supabase/migrations/0002_global_stats.sql`, and
+     `supabase/migrations/0003_friend_streaks.sql` in the SQL editor (or via
      `supabase db push`) — the first creates `duels`/`duel_participants`,
      the second creates `daily_aggregate_stats` and its
-     `increment_global_stats()` RPC.
+     `increment_global_stats()` RPC, the third creates `friend_links` /
+     `friend_checkins` for the persistent Friend Streak feature (Settings >
+     Friend Duel screen).
    - Copy the project URL and anon key into `.env` as
      `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
    - No user accounts are created — each device generates its own random

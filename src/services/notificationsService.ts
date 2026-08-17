@@ -3,9 +3,11 @@ import { Platform } from 'react-native';
 
 const STREAK_REMINDER_ID = 'streak-ending-reminder';
 const INACTIVITY_REMINDER_ID = 'inactivity-reminder';
+const FRIEND_STREAK_REMINDER_ID = 'friend-streak-ending-reminder';
 const STREAK_REMINDER_HOUR = 20;
 const INACTIVITY_DAYS = 3;
 const INACTIVITY_REMINDER_HOUR = 10;
+const FRIEND_STREAK_REMINDER_HOUR = 19;
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -100,7 +102,37 @@ export async function scheduleInactivityReminder(lastActivityAt: number | null):
   }
 }
 
+export async function scheduleFriendStreakReminder(shouldSchedule: boolean): Promise<void> {
+  await cancelSafe(FRIEND_STREAK_REMINDER_ID);
+  if (!shouldSchedule || !isNativePlatform()) return;
+
+  const now = new Date();
+  const target = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    FRIEND_STREAK_REMINDER_HOUR,
+    0,
+    0
+  );
+  if (target.getTime() <= now.getTime()) return;
+
+  try {
+    await Notifications.scheduleNotificationAsync({
+      identifier: FRIEND_STREAK_REMINDER_ID,
+      content: {
+        title: 'Your friend streak ends today',
+        body: "You haven't checked in yet — complete a run to keep it alive.",
+      },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: target },
+    });
+  } catch {
+    // Permission not granted, or notifications unavailable — silently skip.
+  }
+}
+
 export async function cancelAllReminders(): Promise<void> {
   await cancelSafe(STREAK_REMINDER_ID);
   await cancelSafe(INACTIVITY_REMINDER_ID);
+  await cancelSafe(FRIEND_STREAK_REMINDER_ID);
 }

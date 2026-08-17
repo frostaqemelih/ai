@@ -30,6 +30,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   adWatchDate: null,
   adWatchCountToday: 0,
   streakMilestonesClaimed: [],
+  friendLinkId: null,
+  friendLinkCode: null,
 };
 
 // Cap stored history so device storage never grows unbounded.

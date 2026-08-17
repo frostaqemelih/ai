@@ -34,6 +34,13 @@ export interface AppSettings {
    *  CURRENT unbroken streak — cleared back to [] whenever the streak
    *  resets, so the same milestone can be rewarded again on a future run. */
   streakMilestonesClaimed: number[];
+  /** Supabase friend_links.id this device is paired to, once linked (via
+   *  createFriendStreak/joinFriendStreak) — null until the user opts in. */
+  friendLinkId: string | null;
+  /** The share code for MY OWN friend link, kept locally so it can be
+   *  re-shown without a round trip — null if this device only ever joined
+   *  someone else's link, since joiners never own a code. */
+  friendLinkCode: string | null;
 }
 
 export interface ActiveSession {

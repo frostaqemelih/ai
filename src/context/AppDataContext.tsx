@@ -50,6 +50,7 @@ import {
 import {
   cancelAllReminders,
   requestNotificationPermission,
+  scheduleFriendStreakReminder,
   scheduleInactivityReminder,
   scheduleStreakReminder,
 } from '../services/notificationsService';
@@ -58,6 +59,12 @@ import { track } from '../services/analyticsService';
 import { requestTrackingPermission } from '../services/trackingService';
 import { requestAppReview, shouldPromptForRating } from '../services/ratingService';
 import { contributeToGlobalStats } from '../services/globalStatsService';
+import {
+  createFriendStreak as createFriendStreakRequest,
+  fetchFriendStreakStatus,
+  joinFriendStreak as joinFriendStreakRequest,
+  recordCheckin,
+} from '../services/friendStreakService';
 import { reportError } from '../services/crashService';
 
 interface CompleteSessionInput {
@@ -100,6 +107,8 @@ interface AppDataContextValue {
   recordAdWatched: () => Promise<number>;
   claimFirstDuelBonus: () => Promise<boolean>;
   maybeRequestRating: () => Promise<void>;
+  createFriendStreak: () => Promise<string | null>;
+  joinFriendStreak: (code: string) => Promise<boolean>;
   resetProgress: () => Promise<void>;
 }
 
@@ -347,6 +356,21 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         if (settings.contributeToGlobalStats) {
           contributeToGlobalStats(record.durationMs).catch((err) => reportError(err));
         }
+        if (settings.friendLinkId) {
+          const linkId = settings.friendLinkId;
+          // Best-effort, same as the global-stats contribution above — a
+          // failed sync never blocks the session result from showing, and
+          // the reminder is re-scheduled from freshly fetched status so a
+          // dropped write here just means a slightly stale reminder.
+          recordCheckin(linkId)
+            .then(() => fetchFriendStreakStatus(linkId))
+            .then((status) => {
+              if (status) {
+                scheduleFriendStreakReminder(status.currentStreak > 0 && !status.checkedInToday);
+              }
+            })
+            .catch((err) => reportError(err));
+        }
       } else {
         track('session_failed', {
           durationMs: record.durationMs,
@@ -375,6 +399,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       earnCoins,
       settings.notificationsEnabled,
       settings.contributeToGlobalStats,
+      settings.friendLinkId,
       settings.streakMilestonesClaimed,
       updateSettings,
       rescheduleReminders,
@@ -470,6 +495,28 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     await cancelAllReminders();
   }, [updateSettings]);
 
+  // Creates a fresh friend link and returns its share code, or null if
+  // already linked or Supabase isn't configured. This device becomes
+  // device_a; a friend joins with joinFriendStreak(code) to become device_b.
+  const createFriendStreak = useCallback(async (): Promise<string | null> => {
+    if (settings.friendLinkId) return settings.friendLinkCode;
+    const result = await createFriendStreakRequest();
+    if (!result) return null;
+    await updateSettings({ friendLinkId: result.linkId, friendLinkCode: result.code });
+    return result.code;
+  }, [settings.friendLinkId, settings.friendLinkCode, updateSettings]);
+
+  const joinFriendStreak = useCallback(
+    async (code: string): Promise<boolean> => {
+      if (settings.friendLinkId) return true;
+      const result = await joinFriendStreakRequest(code);
+      if (!result) return false;
+      await updateSettings({ friendLinkId: result.linkId, friendLinkCode: null });
+      return true;
+    },
+    [settings.friendLinkId, updateSettings]
+  );
+
   const resetProgress = useCallback(async () => {
     await resetAllData();
     await cancelAllReminders();
@@ -508,6 +555,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     recordAdWatched,
     claimFirstDuelBonus,
     maybeRequestRating,
+    createFriendStreak,
+    joinFriendStreak,
     resetProgress,
   };
 
