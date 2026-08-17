@@ -1,20 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Platform, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import * as Sharing from 'expo-sharing';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { useAppData } from '../context/AppDataContext';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { Confetti } from '../components/Confetti';
 import { RewardedAdModal } from '../components/RewardedAdModal';
+import { ShareCard } from '../components/ShareCard';
 import { colors, radius, spacing, typography } from '../theme';
 import { formatClock } from '../utils/time';
 import { STREAK_FREEZE_COST } from '../utils/economy';
 import { buildShareMessage } from '../utils/share';
 import { reportError } from '../services/crashService';
 import { track } from '../services/analyticsService';
+import { captureShareCard } from '../services/shareCardService';
 import { fetchDuelStatus, type DuelStatus } from '../services/duelService';
 import { DUEL_REFERRAL_BONUS_COINS } from '../utils/economy';
 import { useTranslation } from '../i18n';
@@ -54,6 +57,8 @@ export function SessionResultScreen({ navigation, route }: Props) {
   const [duelStatus, setDuelStatus] = useState<DuelStatus | null>(null);
   const [checkingDuel, setCheckingDuel] = useState(false);
   const [duelBonusClaimed, setDuelBonusClaimed] = useState(false);
+  const [sharingCard, setSharingCard] = useState(false);
+  const shareCardRef = useRef<View>(null);
 
   const checkDuel = async () => {
     if (!duelId || checkingDuel) return;
@@ -104,10 +109,36 @@ export function SessionResultScreen({ navigation, route }: Props) {
     navigation.reset({ index: 1, routes: [{ name: 'Home' }, { name: 'Stats' }] });
   };
 
-  const shareResult = () => {
+  const shareTextFallback = () => {
     Share.share({ message: buildShareMessage(record, stats.currentStreak) }).catch((err) =>
       reportError(err)
     );
+  };
+
+  const shareResult = async () => {
+    if (sharingCard) return;
+    // Image sharing needs a native view snapshot + the native share sheet —
+    // neither exists on web, so keep the original text-only share there.
+    if (Platform.OS === 'web' || !shareCardRef.current) {
+      shareTextFallback();
+      return;
+    }
+    setSharingCard(true);
+    try {
+      const uri = await captureShareCard(shareCardRef);
+      const canShareImage = uri && (await Sharing.isAvailableAsync());
+      if (canShareImage && uri) {
+        await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: t('sessionResult.shareResult') });
+        track('share_card_shared');
+      } else {
+        shareTextFallback();
+      }
+    } catch (err) {
+      reportError(err as Error);
+      shareTextFallback();
+    } finally {
+      setSharingCard(false);
+    }
   };
 
   const handleSpendCoinsForStreak = async () => {
@@ -311,11 +342,19 @@ export function SessionResultScreen({ navigation, route }: Props) {
               <PrimaryButton label={t('sessionResult.viewStats')} variant="ghost" onPress={viewStats} />
             </>
           )}
-          <Pressable onPress={shareResult} hitSlop={8} accessibilityRole="button">
-            <Text style={styles.shareText}>{t('sessionResult.shareResult')}</Text>
+          <Pressable onPress={shareResult} hitSlop={8} accessibilityRole="button" disabled={sharingCard}>
+            <Text style={styles.shareText}>
+              {sharingCard ? '…' : t('sessionResult.shareResult')}
+            </Text>
           </Pressable>
         </View>
       </View>
+
+      {Platform.OS !== 'web' && (
+        <View style={styles.offscreen} pointerEvents="none">
+          <ShareCard record={record} currentStreak={stats.currentStreak} isNewRecord={isNewRecord} />
+        </View>
+      )}
 
       <RewardedAdModal
         visible={adPurpose !== null}
@@ -330,6 +369,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  offscreen: {
+    position: 'absolute',
+    top: -10000,
+    left: 0,
   },
   content: {
     flex: 1,

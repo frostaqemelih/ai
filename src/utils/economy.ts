@@ -60,6 +60,15 @@ export function coinsForPackageIdentifier(identifier: string): number | null {
   return COIN_IAP_PACKAGES.find((p) => p.packageIdentifier === identifier)?.coins ?? null;
 }
 
+// Streak lengths (in days) that count as a celebration-worthy milestone —
+// shared between the share card's highlight badge and the future streak
+// reward ladder so the two stay in sync.
+export const STREAK_MILESTONE_DAYS: number[] = [7, 30, 100, 365];
+
+export function isStreakMilestoneDay(streak: number): boolean {
+  return STREAK_MILESTONE_DAYS.includes(streak);
+}
+
 export function ringColorForId(id: string): string {
   return COSMETIC_RING_COLORS.find((c) => c.id === id)?.color ?? COSMETIC_RING_COLORS[0].color;
 }
