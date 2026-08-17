@@ -1,0 +1,172 @@
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AppState, BackHandler, StyleSheet, Text, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../navigation/types';
+import { useAppData } from '../context/AppDataContext';
+import { CircularTimer } from '../components/CircularTimer';
+import { PulseWrapper } from '../components/PulseWrapper';
+import { DangerAtmosphere } from '../components/DangerAtmosphere';
+import { FadeMessage } from '../components/FadeMessage';
+import { GhostPbBanner } from '../components/GhostPbBanner';
+import { useSessionClock } from '../hooks/useSessionClock';
+import { useSessionEvents } from '../hooks/useSessionEvents';
+import { getDangerLevel, type HapticIntensity } from '../utils/dangerLevels';
+import { colors, spacing, typography } from '../theme';
+import { formatClock } from '../utils/time';
+import type { FailReason } from '../types';
+
+type Props = NativeStackScreenProps<RootStackParamList, 'Session'>;
+
+const HAPTIC_STYLE: Record<HapticIntensity, Haptics.ImpactFeedbackStyle> = {
+  light: Haptics.ImpactFeedbackStyle.Light,
+  medium: Haptics.ImpactFeedbackStyle.Medium,
+  heavy: Haptics.ImpactFeedbackStyle.Heavy,
+};
+
+export function SessionScreen({ navigation, route }: Props) {
+  const { goalMs } = route.params;
+  const { beginActiveSession, completeSession, stats, settings } = useAppData();
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const settledRef = useRef(false);
+  const previousBestMsRef = useRef(stats.personalBestMs);
+
+  useEffect(() => {
+    let cancelled = false;
+    beginActiveSession(goalMs).then((ts) => {
+      if (!cancelled) setStartedAt(ts);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [goalMs]);
+
+  const settle = useCallback(
+    async (completed: boolean, failReason?: FailReason) => {
+      if (settledRef.current || startedAt === null) return;
+      settledRef.current = true;
+      const result = await completeSession({ startedAt, goalMs, completed, failReason });
+      navigation.replace('SessionResult', {
+        record: result.record,
+        isNewRecord: result.isNewRecord,
+        newlyUnlocked: result.newlyUnlocked,
+        coinsEarned: result.coinsEarned,
+        streakBroken: result.streakBroken,
+      });
+    },
+    [startedAt, goalMs, completeSession, navigation]
+  );
+
+  const onComplete = useCallback(() => {
+    settle(true);
+  }, [settle]);
+
+  const clock = useSessionClock(startedAt ?? Date.now(), goalMs, onComplete);
+  const dangerLevel = useMemo(() => getDangerLevel(clock.elapsedMs), [clock.elapsedMs]);
+  const { temptation, milestone, clearTemptation, clearMilestone } = useSessionEvents(
+    clock.elapsedMs,
+    goalMs
+  );
+
+  const isFirstLevel = useRef(true);
+  useEffect(() => {
+    if (isFirstLevel.current) {
+      isFirstLevel.current = false;
+      return;
+    }
+    if (settings.hapticsEnabled) {
+      Haptics.impactAsync(HAPTIC_STYLE[dangerLevel.haptic]).catch(() => {});
+    }
+  }, [dangerLevel.id, settings.hapticsEnabled]);
+
+  // Any transition away from the foreground (home button, app switch, or the
+  // OS auto-locking the screen) is the only reliable proxy we have for "the
+  // user picked their phone up" — there is no lower-level touch API available
+  // to a React Native app.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (next) => {
+      if (next === 'background') {
+        settle(false, 'backgrounded');
+      }
+    });
+    return () => sub.remove();
+  }, [settle]);
+
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      settle(false, 'touch');
+      return true;
+    });
+    return () => sub.remove();
+  }, [settle]);
+
+  return (
+    <View
+      style={styles.container}
+      onStartShouldSetResponder={() => true}
+      onResponderGrant={() => settle(false, 'touch')}
+    >
+      <DangerAtmosphere color={dangerLevel.color} levelId={dangerLevel.id} />
+
+      <View style={styles.content} pointerEvents="none">
+        <PulseWrapper durationMs={dangerLevel.pulseDurationMs}>
+          <CircularTimer
+            progress={clock.progress}
+            label={formatClock(clock.elapsedMs)}
+            size={280}
+            strokeWidth={4}
+            large
+            ringColor={dangerLevel.color}
+          />
+        </PulseWrapper>
+        <Text style={[styles.levelLabel, { color: dangerLevel.color }]}>{dangerLevel.label}</Text>
+        <GhostPbBanner elapsedMs={clock.elapsedMs} previousBestMs={previousBestMsRef.current} />
+        <Text style={styles.hint}>DON'T TOUCH</Text>
+      </View>
+
+      {milestone && (
+        <FadeMessage
+          key={`m-${milestone.key}`}
+          message={milestone.text}
+          visible
+          variant="milestone"
+          onHidden={clearMilestone}
+        />
+      )}
+      {temptation && (
+        <FadeMessage
+          key={`t-${temptation.key}`}
+          message={temptation.text}
+          visible
+          variant="temptation"
+          onHidden={clearTemptation}
+        />
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  content: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.lg,
+  },
+  levelLabel: {
+    ...typography.label,
+    letterSpacing: 3,
+    marginTop: -spacing.sm,
+  },
+  hint: {
+    ...typography.label,
+    color: colors.textTertiary,
+    letterSpacing: 3,
+  },
+});
