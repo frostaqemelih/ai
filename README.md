@@ -30,13 +30,30 @@ itself, logs a warning) when its key is missing.
    - Add your App Store / Play Store apps, create a `premium` **entitlement**
      (must match `PREMIUM_ENTITLEMENT_ID` in `purchasesService.ts` — rename
      one side if you use a different name).
-   - Create an **Offering** with `monthly` and `annual` **Packages** (the
-     Paywall screen reads `offering.monthly` / `offering.annual` directly).
+   - Create an **Offering** (the "current" one) with `monthly`, `annual`,
+     and `lifetime` **Packages** (the Paywall screen reads
+     `offering.monthly` / `offering.annual` / `offering.lifetime`
+     directly — `lifetime` is optional and the paywall simply won't show a
+     lifetime card if it's absent).
    - Copy the iOS and Android public SDK keys into `.env` as
      `EXPO_PUBLIC_REVENUECAT_IOS_KEY` / `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY`.
    - In App Store Connect / Play Console, create the actual subscription
      products (monthly ~$4.99, annual ~$24.99 per the original brief) and
      link them to the RevenueCat packages.
+   - **Lifetime package**: also create a **non-consumable** (App Store) /
+     **one-time managed** (Play Console) product for lifetime access
+     (~$59.99 suggested — priced above ~2 years of annual per the Faz 7
+     pricing strategy) and link it to the `lifetime` Package in the same
+     RevenueCat Offering. It grants the same `premium` entitlement as the
+     subscriptions.
+   - **Coin packs** (`src/utils/economy.ts`, `StoreScreen.tsx`): create a
+     **second Offering** with identifier `coins` (matches
+     `COIN_OFFERING_ID`), containing three **consumable** products —
+     `coins_small` (500 coins), `coins_medium` (1500 coins), `coins_large`
+     (5000 coins). These identifiers must exactly match
+     `COIN_IAP_PACKAGES` in `economy.ts`. Consumables must be configured
+     as consumable (not non-consumable) in both App Store Connect and
+     Play Console, since they can be purchased repeatedly.
    - **This requires moving off plain Expo Go** — run `npx expo prebuild`
      and build with EAS (`eas build`) or a local custom dev client, since
      `react-native-purchases` ships native code.
@@ -82,10 +99,10 @@ itself, logs a warning) when its key is missing.
      message and Stats shows "Coming soon" instead of crashing.
 
 6. **Apple / Google subscription groups** — set up the actual monthly and
-   annual subscription products in App Store Connect and Google Play
-   Console (referenced in step 1), including localized pricing and any
-   required subscription-group configuration for upgrade/downgrade
-   proration.
+   annual subscription products (same subscription group, for
+   upgrade/downgrade proration) plus the separate lifetime non-consumable
+   product in App Store Connect and Google Play Console (referenced in
+   step 1), including localized pricing.
 
 7. **Widget / Live Activity** — not implemented; see
    `docs/WIDGET_AND_LIVE_ACTIVITY_GUIDE.md` for the concrete setup path
