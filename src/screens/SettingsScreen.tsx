@@ -13,7 +13,23 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
 
 export function SettingsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { settings, updateSettings, resetProgress, coins, isPremium } = useAppData();
+  const {
+    settings,
+    updateSettings,
+    resetProgress,
+    coins,
+    isPremium,
+    requestNotificationsPermission,
+    disableNotifications,
+  } = useAppData();
+
+  const handleNotificationsToggle = async (value: boolean) => {
+    if (value) {
+      await requestNotificationsPermission();
+    } else {
+      await disableNotifications();
+    }
+  };
 
   const confirmReset = () => {
     Alert.alert(
@@ -68,6 +84,17 @@ export function SettingsScreen({ navigation }: Props) {
               <Switch
                 value={settings.hapticsEnabled}
                 onValueChange={(v) => updateSettings({ hapticsEnabled: v })}
+                trackColor={{ true: colors.streak, false: colors.border }}
+              />
+            }
+          />
+          <Divider />
+          <Row
+            label="Reminders"
+            right={
+              <Switch
+                value={settings.notificationsEnabled}
+                onValueChange={handleNotificationsToggle}
                 trackColor={{ true: colors.streak, false: colors.border }}
               />
             }

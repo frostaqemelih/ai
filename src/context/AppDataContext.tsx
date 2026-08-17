@@ -41,6 +41,13 @@ import {
   isEntitled,
   removeCustomerInfoListener,
 } from '../services/purchasesService';
+import {
+  cancelAllReminders,
+  requestNotificationPermission,
+  scheduleInactivityReminder,
+  scheduleStreakReminder,
+} from '../services/notificationsService';
+import { toLocalDateKey } from '../utils/date';
 
 interface CompleteSessionInput {
   startedAt: number;
@@ -75,6 +82,8 @@ interface AppDataContextValue {
   saveStreakWithInsurance: () => Promise<void>;
   saveStreakWithCoins: () => Promise<boolean>;
   unlockCosmetic: (id: string, cost: number) => Promise<boolean>;
+  requestNotificationsPermission: () => Promise<boolean>;
+  disableNotifications: () => Promise<void>;
   resetProgress: () => Promise<void>;
 }
 
@@ -136,8 +145,32 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       setCoins(loadedCoins);
       setUnlockedCosmetics(loadedCosmetics);
       setLoading(false);
+
+      if (loadedSettings.notificationsEnabled) {
+        const bootStats = deriveStats(effectiveSessions);
+        await rescheduleReminders(effectiveSessions, bootStats);
+      }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Reschedules both local reminders from current data. Local notifications can't
+  // be recomputed in the background, so this fires at boot and after every
+  // completed session — the best approximation available without a background task.
+  const rescheduleReminders = useCallback(
+    async (currentSessions: SessionRecord[], currentStats: DerivedStats) => {
+      const todayKey = toLocalDateKey(Date.now());
+      const streakActiveToday = currentStats.streakDateKeys.has(todayKey);
+      await scheduleStreakReminder(currentStats.currentStreak > 0 && !streakActiveToday);
+
+      const lastActivityAt = currentSessions.reduce<number | null>(
+        (max, s) => (max === null || s.endedAt > max ? s.endedAt : max),
+        null
+      );
+      await scheduleInactivityReminder(lastActivityAt);
+    },
+    []
+  );
 
   const refreshPremiumStatus = useCallback(async () => {
     const info = await getCustomerInfoSafe();
@@ -268,6 +301,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
       const streakBroken = !completed && previousStreak > 0 && nextStats.currentStreak < previousStreak;
 
+      if (settings.notificationsEnabled) {
+        await rescheduleReminders(nextSessions, nextStats);
+      }
+
       return {
         record,
         isNewRecord: record.durationMs > previousBest,
@@ -276,7 +313,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         streakBroken,
       };
     },
-    [sessions, stats.personalBestMs, stats.currentStreak, earnCoins]
+    [sessions, stats.personalBestMs, stats.currentStreak, earnCoins, settings.notificationsEnabled, rescheduleReminders]
   );
 
   const grantStreakSave = useCallback(async () => {
@@ -305,8 +342,23 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     return true;
   }, [spendCoins, grantStreakSave]);
 
+  const requestNotificationsPermission = useCallback(async (): Promise<boolean> => {
+    const granted = await requestNotificationPermission();
+    await updateSettings({ notificationsPermissionAsked: true, notificationsEnabled: granted });
+    if (granted) {
+      await rescheduleReminders(sessions, stats);
+    }
+    return granted;
+  }, [updateSettings, rescheduleReminders, sessions, stats]);
+
+  const disableNotifications = useCallback(async () => {
+    await updateSettings({ notificationsEnabled: false });
+    await cancelAllReminders();
+  }, [updateSettings]);
+
   const resetProgress = useCallback(async () => {
     await resetAllData();
+    await cancelAllReminders();
     unlockTimestampsRef.current = {};
     setSessions([]);
     setCoins(0);
@@ -336,6 +388,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     saveStreakWithInsurance,
     saveStreakWithCoins,
     unlockCosmetic,
+    requestNotificationsPermission,
+    disableNotifications,
     resetProgress,
   };
 

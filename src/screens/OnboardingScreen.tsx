@@ -21,12 +21,15 @@ const STEPS = [
 
 export function OnboardingScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { updateSettings } = useAppData();
+  const { updateSettings, settings, requestNotificationsPermission } = useAppData();
   const [step, setStep] = useState(0);
   const fade = useRef(new Animated.Value(1)).current;
 
   const finish = () => {
     updateSettings({ hasOnboarded: true });
+    if (!settings.notificationsPermissionAsked) {
+      requestNotificationsPermission().catch(() => {});
+    }
     navigation.replace('Home');
   };
 
