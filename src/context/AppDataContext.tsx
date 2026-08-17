@@ -87,6 +87,7 @@ interface AppDataContextValue {
   requestNotificationsPermission: () => Promise<boolean>;
   disableNotifications: () => Promise<void>;
   requestTracking: () => Promise<boolean>;
+  recordAdWatched: () => Promise<number>;
   resetProgress: () => Promise<void>;
 }
 
@@ -374,6 +375,15 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     return granted;
   }, [updateSettings]);
 
+  // Tracks how many rewarded ads the user has watched today, so the UI can
+  // offer a "tired of ads? go Premium" nudge after a few — never a block.
+  const recordAdWatched = useCallback(async (): Promise<number> => {
+    const todayKey = toLocalDateKey(Date.now());
+    const nextCount = settings.adWatchDate === todayKey ? settings.adWatchCountToday + 1 : 1;
+    await updateSettings({ adWatchDate: todayKey, adWatchCountToday: nextCount });
+    return nextCount;
+  }, [settings.adWatchDate, settings.adWatchCountToday, updateSettings]);
+
   const disableNotifications = useCallback(async () => {
     await updateSettings({ notificationsEnabled: false });
     await cancelAllReminders();
@@ -414,6 +424,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     requestNotificationsPermission,
     disableNotifications,
     requestTracking,
+    recordAdWatched,
     resetProgress,
   };
 

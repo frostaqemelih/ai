@@ -30,8 +30,17 @@ type AdPurpose = 'streak' | 'double' | null;
 export function SessionResultScreen({ navigation, route }: Props) {
   const { record, isNewRecord, newlyUnlocked, coinsEarned, streakBroken, duelId } = route.params;
   const insets = useSafeAreaInsets();
-  const { settings, stats, coins, isPremium, earnCoins, saveStreakWithInsurance, saveStreakWithCoins } =
-    useAppData();
+  const {
+    settings,
+    stats,
+    coins,
+    isPremium,
+    earnCoins,
+    saveStreakWithInsurance,
+    saveStreakWithCoins,
+    recordAdWatched,
+  } = useAppData();
+  const [adFatigue, setAdFatigue] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [adPurpose, setAdPurpose] = useState<AdPurpose>(null);
   const [streakSaved, setStreakSaved] = useState(false);
@@ -96,6 +105,8 @@ export function SessionResultScreen({ navigation, route }: Props) {
     setAdPurpose(null);
     if (!rewarded || !purpose) return;
     track('rewarded_ad_watched', { purpose });
+    const countToday = await recordAdWatched();
+    if (countToday >= 3 && !isPremium) setAdFatigue(true);
     if (purpose === 'streak') {
       await saveStreakWithInsurance();
       setStreakSaved(true);
@@ -134,6 +145,29 @@ export function SessionResultScreen({ navigation, route }: Props) {
               <Text style={styles.recordText}>
                 {record.completed ? 'PERSONAL BEST!' : 'NEW RECORD!'}
               </Text>
+            </View>
+          )}
+
+          {isNewRecord && !isPremium && (
+            <Pressable
+              onPress={() => navigation.navigate('Paywall')}
+              hitSlop={8}
+              style={styles.upsellLink}
+            >
+              <Text style={styles.upsellLinkText}>Unlock unlimited custom runs with Premium →</Text>
+            </Pressable>
+          )}
+
+          {adFatigue && (
+            <View style={styles.fatigueBox}>
+              <Text style={styles.fatigueText}>Tired of ads?</Text>
+              <Pressable
+                onPress={() => navigation.navigate('Paywall')}
+                hitSlop={8}
+                style={styles.fatigueButton}
+              >
+                <Text style={styles.fatigueButtonText}>GO AD-FREE</Text>
+              </Pressable>
             </View>
           )}
 
@@ -405,5 +439,35 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: colors.textTertiary,
     marginTop: spacing.xs,
+  },
+  upsellLink: {
+    marginTop: spacing.sm,
+  },
+  upsellLinkText: {
+    ...typography.label,
+    fontSize: 10,
+    color: colors.streak,
+  },
+  fatigueBox: {
+    marginTop: spacing.lg,
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  fatigueText: {
+    ...typography.body,
+    fontSize: 12,
+    color: colors.textTertiary,
+  },
+  fatigueButton: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.streak,
+  },
+  fatigueButtonText: {
+    ...typography.label,
+    fontSize: 11,
+    color: colors.streak,
   },
 });

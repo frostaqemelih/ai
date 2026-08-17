@@ -27,6 +27,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   lastRatingPromptAt: null,
   languageCode: 'system',
   contributeToGlobalStats: false,
+  adWatchDate: null,
+  adWatchCountToday: 0,
 };
 
 // Cap stored history so device storage never grows unbounded.

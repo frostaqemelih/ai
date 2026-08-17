@@ -28,6 +28,8 @@ export interface AppSettings {
   lastRatingPromptAt: number | null;
   languageCode: 'system' | 'en' | 'tr';
   contributeToGlobalStats: boolean;
+  adWatchDate: string | null;
+  adWatchCountToday: number;
 }
 
 export interface ActiveSession {

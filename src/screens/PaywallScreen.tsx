@@ -10,6 +10,7 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { colors, radius, spacing, typography } from '../theme';
 import { fetchOfferings, isEntitled, purchasePackage, restorePurchases } from '../services/purchasesService';
 import { track } from '../services/analyticsService';
+import { computeAnnualSavingsPercent, describeIntroOffer } from '../utils/paywall';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Paywall'>;
 
@@ -69,6 +70,7 @@ export function PaywallScreen({ navigation }: Props) {
   const packages = offering
     ? [offering.monthly, offering.annual].filter((p): p is PurchasesPackage => p !== null)
     : [];
+  const savingsPercent = computeAnnualSavingsPercent(offering?.monthly ?? null, offering?.annual ?? null);
 
   return (
     <View style={styles.screen}>
@@ -93,19 +95,35 @@ export function PaywallScreen({ navigation }: Props) {
             </Text>
           ) : (
             <View style={styles.packages}>
-              {packages.map((pkg) => (
-                <Pressable
-                  key={pkg.identifier}
-                  style={styles.packageCard}
-                  disabled={purchasingId !== null}
-                  onPress={() => handlePurchase(pkg)}
-                >
-                  <Text style={styles.packageTitle}>{pkg.product.title || pkg.identifier}</Text>
-                  <Text style={styles.packagePrice}>
-                    {purchasingId === pkg.identifier ? '…' : pkg.product.priceString}
-                  </Text>
-                </Pressable>
-              ))}
+              {packages.map((pkg) => {
+                const isAnnual = offering?.annual?.identifier === pkg.identifier;
+                const showBestValue = isAnnual && savingsPercent !== null;
+                return (
+                  <Pressable
+                    key={pkg.identifier}
+                    style={[styles.packageCard, showBestValue && styles.packageCardHighlighted]}
+                    disabled={purchasingId !== null}
+                    onPress={() => handlePurchase(pkg)}
+                  >
+                    {showBestValue && (
+                      <View style={styles.bestValueBadge}>
+                        <Text style={styles.bestValueBadgeText}>BEST VALUE · SAVE {savingsPercent}%</Text>
+                      </View>
+                    )}
+                    <View style={styles.packageRow}>
+                      <Text style={styles.packageTitle}>{pkg.product.title || pkg.identifier}</Text>
+                      <Text style={styles.packagePrice}>
+                        {purchasingId === pkg.identifier ? '…' : pkg.product.priceString}
+                      </Text>
+                    </View>
+                    {pkg.product.introPrice && (
+                      <Text style={styles.introOfferText}>
+                        {describeIntroOffer(pkg.product.introPrice)}, then {pkg.product.priceString}
+                      </Text>
+                    )}
+                  </Pressable>
+                );
+              })}
             </View>
           )}
 
@@ -179,6 +197,13 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: radius.md,
     padding: spacing.lg,
+    gap: spacing.xs,
+  },
+  packageCardHighlighted: {
+    borderColor: colors.streak,
+    borderWidth: 2,
+  },
+  packageRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -190,6 +215,24 @@ const styles = StyleSheet.create({
   packagePrice: {
     ...typography.statValue,
     color: colors.streak,
+  },
+  bestValueBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.streak,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    marginBottom: spacing.xs,
+  },
+  bestValueBadgeText: {
+    ...typography.label,
+    fontSize: 9,
+    color: colors.background,
+  },
+  introOfferText: {
+    ...typography.body,
+    fontSize: 11,
+    color: colors.textTertiary,
   },
   message: {
     ...typography.body,

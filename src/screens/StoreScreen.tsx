@@ -37,6 +37,10 @@ export function StoreScreen({ navigation }: Props) {
     }
   };
 
+  const hasUnaffordable = COSMETIC_RING_COLORS.some(
+    (item) => !unlockedCosmetics.includes(item.id) && !item.premiumOnly && coins < item.cost
+  );
+
   return (
     <View style={styles.screen}>
       <Header title="STORE" />
@@ -52,6 +56,19 @@ export function StoreScreen({ navigation }: Props) {
             <Text style={styles.balanceLabel}>YOUR BALANCE</Text>
             <Text style={styles.balanceValue}>🪙 {coins}</Text>
           </View>
+        }
+        ListFooterComponent={
+          !isPremium && hasUnaffordable ? (
+            <Pressable
+              onPress={() => navigation.navigate('Paywall')}
+              hitSlop={8}
+              style={styles.upsellFooter}
+            >
+              <Text style={styles.upsellFooterText}>
+                Short on coins? Premium unlocks everything, no grinding →
+              </Text>
+            </Pressable>
+          ) : null
         }
         renderItem={({ item }) => {
           const owned = unlockedCosmetics.includes(item.id);
@@ -157,5 +174,15 @@ const styles = StyleSheet.create({
     ...typography.label,
     fontSize: 10,
     color: colors.streak,
+  },
+  upsellFooter: {
+    marginTop: spacing.md,
+    alignItems: 'center',
+  },
+  upsellFooterText: {
+    ...typography.body,
+    fontSize: 12,
+    color: colors.streak,
+    textAlign: 'center',
   },
 });
