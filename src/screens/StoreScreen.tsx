@@ -19,26 +19,53 @@ import {
 } from '../utils/economy';
 import { fetchOfferingByIdentifier, purchasePackage } from '../services/purchasesService';
 import { track } from '../services/analyticsService';
+import { PersonaOption } from '../components/PersonaOption';
+import { PERSONAS, PERSONA_ORDER, isPersonaUnlocked, type PersonaId } from '../personas';
+import { useTranslation } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Store'>;
 
 export function StoreScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const {
     coins,
     unlockedCosmetics,
+    unlockedPersonas,
     settings,
     updateSettings,
     unlockCosmetic,
     isPremium,
     earnCoins,
     buyStreakFreeze,
+    selectPersona,
+    unlockPersonaWithCoins,
   } = useAppData();
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [coinOffering, setCoinOffering] = useState<PurchasesOffering | null>(null);
   const [loadingCoinOffering, setLoadingCoinOffering] = useState(true);
   const [purchasingCoinPack, setPurchasingCoinPack] = useState<string | null>(null);
   const [buyingFreeze, setBuyingFreeze] = useState(false);
+  const [pendingPersonaId, setPendingPersonaId] = useState<PersonaId | null>(null);
+
+  const handlePersonaPress = async (id: PersonaId) => {
+    const unlocked = isPersonaUnlocked(id, unlockedPersonas, isPremium);
+    if (unlocked) {
+      await selectPersona(id, 'settings');
+      return;
+    }
+    const persona = PERSONAS[id];
+    if (persona.unlock.type === 'premium') {
+      navigation.navigate('Paywall');
+      return;
+    }
+    if (persona.unlock.type === 'coins' && coins >= persona.unlock.cost && pendingPersonaId === null) {
+      setPendingPersonaId(id);
+      const success = await unlockPersonaWithCoins(id);
+      setPendingPersonaId(null);
+      if (success) await selectPersona(id, 'settings');
+    }
+  };
 
   useEffect(() => {
     fetchOfferingByIdentifier(COIN_OFFERING_ID).then((offering) => {
@@ -137,6 +164,24 @@ export function StoreScreen({ navigation }: Props) {
               </View>
             ) : null}
 
+            <View style={styles.personaSection}>
+              <Text style={styles.sectionLabel}>PERSONAS</Text>
+              <Text style={styles.freezeSubtitle}>
+                A persona is more than a color — it changes how the app talks to you.
+              </Text>
+              <View style={styles.personaList}>
+                {PERSONA_ORDER.map((id) => (
+                  <PersonaOption
+                    key={id}
+                    persona={PERSONAS[id]}
+                    selected={settings.personaId === id}
+                    unlocked={isPersonaUnlocked(id, unlockedPersonas, isPremium)}
+                    onSelect={() => handlePersonaPress(id)}
+                  />
+                ))}
+              </View>
+            </View>
+
             <View style={styles.freezeSection}>
               <Text style={styles.sectionLabel}>STREAK FREEZES</Text>
               <Text style={styles.freezeSubtitle}>
@@ -161,6 +206,8 @@ export function StoreScreen({ navigation }: Props) {
                 </Text>
               </Pressable>
             </View>
+
+            <Text style={[styles.sectionLabel, styles.ringColorsLabel]}>RING COLORS</Text>
           </>
         }
         ListFooterComponent={
@@ -274,6 +321,16 @@ const styles = StyleSheet.create({
     ...typography.label,
     fontSize: 11,
     color: colors.streak,
+  },
+  personaSection: {
+    marginBottom: spacing.xl,
+    gap: spacing.sm,
+  },
+  personaList: {
+    gap: spacing.sm,
+  },
+  ringColorsLabel: {
+    marginBottom: spacing.sm,
   },
   freezeSection: {
     marginBottom: spacing.xl,
