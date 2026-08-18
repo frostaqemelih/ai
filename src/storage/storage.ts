@@ -39,6 +39,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   personaId: DEFAULT_PERSONA_ID,
   schedule: null,
   scheduleHintDismissed: false,
+  onboardingGoalReason: null,
 };
 
 // Cap stored history so device storage never grows unbounded.

@@ -67,6 +67,9 @@ export interface AppSettings {
   /** Whether the user has dismissed Home's "set up a schedule" hint — once
    *  dismissed (or once a schedule exists), it never shows again. */
   scheduleHintDismissed: boolean;
+  /** Which ONBOARDING_REASONS id the user picked at onboarding — drives the
+   *  pre-filled first goal + suggested schedule. Null if skipped. */
+  onboardingGoalReason: string | null;
 }
 
 export interface SessionSchedule {
