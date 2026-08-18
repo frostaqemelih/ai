@@ -107,7 +107,12 @@
       },
       "milestoneSurvived": "{{minutes}} DK HAYATTA KALDIN",
       "milestoneCelebrationLabel": "GÜNLÜK SERİ MİLESTONE'U",
-      "milestoneCelebrationDismiss": "HARİKA"
+      "milestoneCelebrationDismiss": "HARİKA",
+      "shareCard": {
+        "survived": "DOKUNMADAN HAYATTA KALDI",
+        "beforeTouching": "DOKUNMADAN ÖNCE",
+        "footer": "Bunu geçebilir misin?"
+      }
     },
     "calm": {
       "name": "Sakin",
@@ -146,7 +151,12 @@
       },
       "milestoneSurvived": "{{minutes}} DK VAR OLDUN",
       "milestoneCelebrationLabel": "GÜNLÜK VAR OLUŞ",
-      "milestoneCelebrationDismiss": "TEŞEKKÜRLER"
+      "milestoneCelebrationDismiss": "TEŞEKKÜRLER",
+      "shareCard": {
+        "survived": "VAR OLARAK GEÇEN SÜRE",
+        "beforeTouching": "AN GEÇMEDEN ÖNCE",
+        "footer": "Sen ne kadar kalabilirdin?"
+      }
     },
     "playful": {
       "name": "Şen",
@@ -185,7 +195,12 @@
       },
       "milestoneSurvived": "{{minutes}} DK, UMURSAMADAN",
       "milestoneCelebrationLabel": "GÜNLÜK SERİ, HADİ BAKALIM",
-      "milestoneCelebrationDismiss": "AYNEN ÖYLE"
+      "milestoneCelebrationDismiss": "AYNEN ÖYLE",
+      "shareCard": {
+        "survived": "PES ETMEDEN",
+        "beforeTouching": "PES ETMEDEN ÖNCE",
+        "footer": "Bunu geçebileceğine bahse girerim. 😏"
+      }
     },
     "coach": {
       "name": "Koç",
@@ -224,7 +239,12 @@
       },
       "milestoneSurvived": "{{minutes}} DK KAYDEDİLDİ",
       "milestoneCelebrationLabel": "GÜNLÜK SERİ — SAĞLAM SERİ",
-      "milestoneCelebrationDismiss": "DEVAM ET"
+      "milestoneCelebrationDismiss": "DEVAM ET",
+      "shareCard": {
+        "survived": "TELEFONSUZ KAYDEDİLDİ",
+        "beforeTouching": "SET BİTMEDEN ÖNCE",
+        "footer": "Bu tekrarı geçebilir misin?"
+      }
     },
     "monk": {
       "name": "Keşiş",
@@ -261,7 +281,12 @@
       },
       "milestoneSurvived": "{{minutes}} DK DURGUNLUK",
       "milestoneCelebrationLabel": "GÜNLÜK DURGUNLUK",
-      "milestoneCelebrationDismiss": "DEVAM ET"
+      "milestoneCelebrationDismiss": "DEVAM ET",
+      "shareCard": {
+        "survived": "DURGUNLUK İÇİNDE",
+        "beforeTouching": "DURGUNLUK BOZULMADAN ÖNCE",
+        "footer": "Sen ne kadar kalabilirsin?"
+      }
     }
   },
   "paywall": {

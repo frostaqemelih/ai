@@ -107,7 +107,12 @@
       },
       "milestoneSurvived": "{{minutes}} MIN SURVIVED",
       "milestoneCelebrationLabel": "DAY STREAK MILESTONE",
-      "milestoneCelebrationDismiss": "NICE"
+      "milestoneCelebrationDismiss": "NICE",
+      "shareCard": {
+        "survived": "SURVIVED WITHOUT TOUCHING",
+        "beforeTouching": "BEFORE TOUCHING",
+        "footer": "Think you can beat that?"
+      }
     },
     "calm": {
       "name": "Calm",
@@ -146,7 +151,12 @@
       },
       "milestoneSurvived": "{{minutes}} MIN OF PRESENCE",
       "milestoneCelebrationLabel": "DAYS OF PRESENCE",
-      "milestoneCelebrationDismiss": "THANK YOU"
+      "milestoneCelebrationDismiss": "THANK YOU",
+      "shareCard": {
+        "survived": "TIME SPENT PRESENT",
+        "beforeTouching": "BEFORE THE MOMENT PASSED",
+        "footer": "How long could you stay?"
+      }
     },
     "playful": {
       "name": "Playful",
@@ -185,7 +195,12 @@
       },
       "milestoneSurvived": "{{minutes}} MIN, UNBOTHERED",
       "milestoneCelebrationLabel": "DAY STREAK, LET'S GO",
-      "milestoneCelebrationDismiss": "HECK YEAH"
+      "milestoneCelebrationDismiss": "HECK YEAH",
+      "shareCard": {
+        "survived": "WITHOUT CAVING",
+        "beforeTouching": "BEFORE CAVING",
+        "footer": "Bet you can't beat this. 😏"
+      }
     },
     "coach": {
       "name": "Coach",
@@ -224,7 +239,12 @@
       },
       "milestoneSurvived": "{{minutes}} MIN LOGGED",
       "milestoneCelebrationLabel": "DAY STREAK — SOLID STREAK",
-      "milestoneCelebrationDismiss": "KEEP GOING"
+      "milestoneCelebrationDismiss": "KEEP GOING",
+      "shareCard": {
+        "survived": "LOGGED, NO PHONE",
+        "beforeTouching": "BEFORE THE SET ENDED",
+        "footer": "Think you can top this rep?"
+      }
     },
     "monk": {
       "name": "Monk",
@@ -261,7 +281,12 @@
       },
       "milestoneSurvived": "{{minutes}} MIN OF STILLNESS",
       "milestoneCelebrationLabel": "DAYS OF STILLNESS",
-      "milestoneCelebrationDismiss": "CONTINUE"
+      "milestoneCelebrationDismiss": "CONTINUE",
+      "shareCard": {
+        "survived": "IN STILLNESS",
+        "beforeTouching": "BEFORE THE STILLNESS BROKE",
+        "footer": "How long can you remain?"
+      }
     }
   },
   "paywall": {

@@ -5,6 +5,9 @@ import type { SessionRecord } from '../types';
 import { colors, fonts, radius, spacing } from '../theme';
 import { formatClock } from '../utils/time';
 import { isStreakMilestoneDay } from '../utils/economy';
+import { useAppData } from '../context/AppDataContext';
+import { getPersona } from '../personas';
+import { useTranslation } from '../i18n';
 
 interface ShareCardProps {
   record: SessionRecord;
@@ -15,8 +18,15 @@ interface ShareCardProps {
 // Off-screen, fixed-size card captured via react-native-view-shot and
 // shared as an image. Kept as its own component (rather than reusing
 // SessionResultScreen's layout) so its dimensions and content stay fixed
-// regardless of the live screen's scroll/safe-area state.
+// regardless of the live screen's scroll/safe-area state. Uses the active
+// persona's accent color and copy so a shared card reflects the sharer's
+// own choice — two people's cards should look and read differently
+// (Faz 9 finding: people share an identity, not a feature list).
 export const ShareCard = forwardRef<View, ShareCardProps>(({ record, currentStreak, isNewRecord }, ref) => {
+  const { settings } = useAppData();
+  const { t } = useTranslation();
+  const persona = getPersona(settings.personaId);
+  const personaKey = `personas.${persona.id}`;
   const milestone = isStreakMilestoneDay(currentStreak);
 
   return (
@@ -29,25 +39,34 @@ export const ShareCard = forwardRef<View, ShareCardProps>(({ record, currentStre
 
       <View style={styles.body}>
         {isNewRecord && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{record.completed ? 'PERSONAL BEST' : 'NEW RECORD'}</Text>
+          <View style={[styles.badge, { borderColor: persona.accent }]}>
+            <Text style={[styles.badgeText, { color: persona.accent }]}>
+              {record.completed
+                ? t(`${personaKey}.result.personalBest`)
+                : t(`${personaKey}.result.newRecord`)}
+            </Text>
           </View>
         )}
         <Text style={styles.duration}>{formatClock(record.durationMs)}</Text>
         <Text style={styles.subtitle}>
-          {record.completed ? 'SURVIVED WITHOUT TOUCHING' : 'BEFORE TOUCHING'}
+          {t(record.completed ? `${personaKey}.shareCard.survived` : `${personaKey}.shareCard.beforeTouching`)}
         </Text>
 
         {currentStreak > 1 && (
-          <View style={[styles.streakBadge, milestone && styles.streakBadgeMilestone]}>
-            <Text style={[styles.streakText, milestone && styles.streakTextMilestone]}>
+          <View
+            style={[
+              styles.streakBadge,
+              milestone && { borderColor: persona.accent, backgroundColor: colors.surfaceRaised },
+            ]}
+          >
+            <Text style={[styles.streakText, milestone && { color: persona.accent }]}>
               🔥 {currentStreak} DAY STREAK{milestone ? ' · MILESTONE' : ''}
             </Text>
           </View>
         )}
       </View>
 
-      <Text style={styles.footer}>Think you can beat that?</Text>
+      <Text style={styles.footer}>{t(`${personaKey}.shareCard.footer`)}</Text>
     </View>
   );
 });
