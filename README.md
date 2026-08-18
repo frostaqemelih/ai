@@ -20,6 +20,43 @@ client / EAS build** — see the manual steps below. In plain Expo Go the
 share button still works, it just falls back to the original text-only
 share (`captureShareCard` fails safe and returns `null`).
 
+## Building for a real device
+
+**As of Faz 8, this app has still never been compiled as a native binary —
+every check so far has been `tsc --noEmit` plus the web preview.** Several
+native modules (RevenueCat, AdMob, notifications, ATT, the share card's
+image capture, haptics) cannot be meaningfully tested outside a real device
+build. This is the first-build path:
+
+```bash
+npm install -g eas-cli   # one-time, if you don't already have it
+eas login                # your Expo account
+eas init                 # links this repo to an EAS project (one-time)
+
+npm run build:dev        # development build — for daily local dev with a dev client
+npm run build:preview    # preview build — installable APK / internal TestFlight-free distribution
+npm run build:prod       # production build — the one that goes to app review
+```
+
+- **Confirm the bundle identifier first** — `app.config.js`'s
+  `ios.bundleIdentifier` / `android.package` (currently the placeholder
+  `com.melihturan.donttouch`) is a **one-time, irreversible** choice locked
+  in on your first upload to App Store Connect / Play Console. Change it in
+  `app.config.js` before your first `eas build` if you want something else.
+- **Accounts needed**: an [Expo account](https://expo.dev) (free, for `eas
+  login`/`eas init`/builds), an [Apple Developer Program](https://developer.apple.com/programs/)
+  membership ($99/year, required for any iOS build beyond a simulator
+  build), and a [Google Play Console](https://play.google.com/console/) account
+  ($25 one-time, required for any Android build beyond `preview`'s APK).
+- `development` and `preview` builds need no store account at all —
+  `preview` produces a directly-installable Android APK and an
+  ad-hoc/internal iOS build, both good enough for testing on your own
+  devices or handing to a few friends.
+- Once you have a build installed, work through
+  [`docs/DEVICE_TEST_CHECKLIST.md`](docs/DEVICE_TEST_CHECKLIST.md) — this
+  is the actual verification step; nothing in this codebase's automated
+  checks (`tsc`, the web preview) can confirm any of it.
+
 ## Manual steps required before shipping
 
 None of the third-party services below have real credentials in this repo

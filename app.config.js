@@ -22,10 +22,29 @@ module.exports = {
     icon: './assets/icon.png',
     userInterfaceStyle: 'dark',
     backgroundColor: '#0A0A0B',
+    // Placeholder — a bundle identifier is a ONE-TIME, irreversible choice
+    // (App Store Connect and Play Console both lock it in forever on first
+    // upload). "com.melihturan.donttouch" is a suggestion only; confirm or
+    // change it here before the very first `eas build`, see README.
     ios: {
       supportsTablet: false,
+      bundleIdentifier: 'com.melihturan.donttouch',
+      buildNumber: '1',
+      infoPlist: {
+        // Avoids an App Store Connect "export compliance" prompt on every
+        // submission — the app uses only standard HTTPS/TLS, no custom
+        // encryption. expo-notifications and expo-tracking-transparency
+        // already inject their own required Info.plist entries via their
+        // config plugins (notification icon, NSUserTrackingUsageDescription
+        // above) — nothing else needs a manual entry here. This app has no
+        // genuine background-execution need (keep-awake only runs while
+        // foregrounded), so no UIBackgroundModes are declared.
+        ITSAppUsesNonExemptEncryption: false,
+      },
     },
     android: {
+      package: 'com.melihturan.donttouch',
+      versionCode: 1,
       adaptiveIcon: {
         backgroundColor: '#0A0A0B',
         foregroundImage: './assets/android-icon-foreground.png',
