@@ -13,6 +13,10 @@ export interface SessionRecord {
   /** True for a day rescued via Streak Insurance rather than an actual timed run —
    *  counts toward the streak but is excluded from performance stats. */
   streakSaved?: boolean;
+  /** Date.getTimezoneOffset() at the moment this session ended — purely for
+   *  the cross_timezone achievement (a traveler/frequent-flyer signal).
+   *  Absent on older records and on streak-freeze/interrupted records. */
+  tzOffsetMinutes?: number;
 }
 
 export interface AppSettings {
@@ -103,7 +107,10 @@ export interface AchievementDef {
   id: string;
   title: string;
   description: string;
-  check: (stats: DerivedStats, sessions: SessionRecord[]) => boolean;
+  /** `settings` is optional and only needed by achievements that depend on
+   *  user config (e.g. schedule adherence) rather than pure session/stats
+   *  math — every pre-existing achievement ignores it. */
+  check: (stats: DerivedStats, sessions: SessionRecord[], settings?: AppSettings) => boolean;
 }
 
 export interface AchievementState {

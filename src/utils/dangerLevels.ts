@@ -23,6 +23,8 @@ const DANGER_THRESHOLDS: Array<Pick<DangerLevel, 'id' | 'thresholdMs' | 'pulseDu
   { id: 'extreme', thresholdMs: 20 * 60 * 1000, pulseDurationMs: 1200, haptic: 'medium' },
   { id: 'insane', thresholdMs: 30 * 60 * 1000, pulseDurationMs: 850, haptic: 'heavy' },
   { id: 'untouchable', thresholdMs: 60 * 60 * 1000, pulseDurationMs: 600, haptic: 'heavy' },
+  { id: 'transcendent', thresholdMs: 90 * 60 * 1000, pulseDurationMs: 450, haptic: 'heavy' },
+  { id: 'eternal', thresholdMs: 120 * 60 * 1000, pulseDurationMs: 320, haptic: 'heavy' },
 ];
 
 export function getDangerLevel(elapsedMs: number, persona: Persona): DangerLevel {

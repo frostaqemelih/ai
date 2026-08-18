@@ -95,7 +95,9 @@
         "danger": "TEHLİKE",
         "extreme": "AŞIRI",
         "insane": "ÇILGINLIK",
-        "untouchable": "DOKUNULMAZ"
+        "untouchable": "DOKUNULMAZ",
+        "transcendent": "İNSANÜSTÜ",
+        "eternal": "EBEDİ"
       },
       "temptations": [
         "DOKUNMA",
@@ -145,7 +147,9 @@
         "danger": "DERİNLEŞİYOR",
         "extreme": "YERLEŞTİ",
         "insane": "DURGUN",
-        "untouchable": "DERİN ODAK"
+        "untouchable": "DERİN ODAK",
+        "transcendent": "SINIRSIZ",
+        "eternal": "ZAMANSIZ"
       },
       "temptations": [
         "İsteği fark et, geçmesine izin ver.",
@@ -193,7 +197,9 @@
         "danger": "KIZIŞTI",
         "extreme": "RİSKLİ İŞ",
         "insane": "ÇILGIN",
-        "untouchable": "EFSANE"
+        "untouchable": "EFSANE",
+        "transcendent": "MİTİK",
+        "eternal": "TELEFONUN İÇİN OYUN BİTTİ"
       },
       "temptations": [
         "Pist. Telefonun seni özledi.",
@@ -241,7 +247,9 @@
         "danger": "ZORLUYORSUN",
         "extreme": "DERİNE İNİYORSUN",
         "insane": "ZİRVE PERFORMANS",
-        "untouchable": "KİŞİSEL REKOR TEMPOSU"
+        "untouchable": "KİŞİSEL REKOR TEMPOSU",
+        "transcendent": "ELİT SEVİYE",
+        "eternal": "ŞEREF LİSTESİ"
       },
       "temptations": [
         "Devam et — gelişim burada olur.",
@@ -289,7 +297,9 @@
         "danger": "DERİNLEŞİYOR",
         "extreme": "SESSİZ",
         "insane": "BOŞ",
-        "untouchable": "SESSİZLİK"
+        "untouchable": "SESSİZLİK",
+        "transcendent": "BOŞLUK",
+        "eternal": "BENLİKSİZ"
       },
       "temptations": [
         "Geçmesine izin ver.",
@@ -346,6 +356,10 @@
     "dayFri": "CUM",
     "daySat": "CMT",
     "daySun": "PAZ"
+  },
+  "stats": {
+    "nextMilestone": "SIRADAKİ MİLESTONE",
+    "allUnlocked": "Tüm milestone'lar açıldı. Sen uzun oyunu oynuyorsun."
   },
   "paywall": {
     "title": "PREMIUM",

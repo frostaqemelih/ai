@@ -267,8 +267,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
   const stats = useMemo(() => deriveStats(sessions), [sessions]);
   const achievements = useMemo(
-    () => deriveAchievements(stats, sessions, unlockTimestampsRef.current),
-    [stats, sessions]
+    () => deriveAchievements(stats, sessions, unlockTimestampsRef.current, settings),
+    [stats, sessions, settings]
   );
 
   const updateSettings = useCallback(async (patch: Partial<AppSettings>) => {
@@ -368,6 +368,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         durationMs,
         completed,
         failReason: completed ? undefined : failReason,
+        tzOffsetMinutes: new Date().getTimezoneOffset(),
       };
 
       const previousBest = stats.personalBestMs;
@@ -405,7 +406,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       const nextAchievements = deriveAchievements(
         nextStats,
         nextSessions,
-        unlockTimestampsRef.current
+        unlockTimestampsRef.current,
+        settings
       );
       const newlyUnlockedIds = findNewlyUnlocked(nextAchievements, unlockTimestampsRef.current);
 

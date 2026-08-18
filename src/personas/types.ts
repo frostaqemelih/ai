@@ -7,6 +7,8 @@ export interface PersonaDangerColors {
   extreme: string;
   insane: string;
   untouchable: string;
+  transcendent: string;
+  eternal: string;
 }
 
 export type PersonaUnlock = { type: 'free' } | { type: 'coins'; cost: number } | { type: 'premium' };

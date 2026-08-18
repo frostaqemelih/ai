@@ -95,7 +95,9 @@
         "danger": "DANGER",
         "extreme": "EXTREME",
         "insane": "INSANE",
-        "untouchable": "UNTOUCHABLE"
+        "untouchable": "UNTOUCHABLE",
+        "transcendent": "BEYOND HUMAN",
+        "eternal": "ETERNAL"
       },
       "temptations": [
         "DON'T TOUCH",
@@ -145,7 +147,9 @@
         "danger": "DEEPENING",
         "extreme": "SETTLED",
         "insane": "STILL",
-        "untouchable": "DEEP FOCUS"
+        "untouchable": "DEEP FOCUS",
+        "transcendent": "BOUNDLESS",
+        "eternal": "TIMELESS"
       },
       "temptations": [
         "Notice the urge, then let it pass.",
@@ -193,7 +197,9 @@
         "danger": "SPICY",
         "extreme": "RISKY BUSINESS",
         "insane": "UNHINGED",
-        "untouchable": "LEGEND"
+        "untouchable": "LEGEND",
+        "transcendent": "MYTHIC",
+        "eternal": "GAME OVER FOR YOUR PHONE"
       },
       "temptations": [
         "Psst. Your phone misses you.",
@@ -241,7 +247,9 @@
         "danger": "PUSHING",
         "extreme": "DIGGING DEEP",
         "insane": "PEAK EFFORT",
-        "untouchable": "PERSONAL BEST PACE"
+        "untouchable": "PERSONAL BEST PACE",
+        "transcendent": "ELITE TIER",
+        "eternal": "HALL OF FAME"
       },
       "temptations": [
         "Stay with it — this is where growth happens.",
@@ -289,7 +297,9 @@
         "danger": "DEEPENING",
         "extreme": "QUIET",
         "insane": "EMPTY",
-        "untouchable": "SILENCE"
+        "untouchable": "SILENCE",
+        "transcendent": "VOID",
+        "eternal": "NO SELF"
       },
       "temptations": [
         "Let it pass.",
@@ -346,6 +356,10 @@
     "dayFri": "FRI",
     "daySat": "SAT",
     "daySun": "SUN"
+  },
+  "stats": {
+    "nextMilestone": "NEXT MILESTONE",
+    "allUnlocked": "Every milestone unlocked. You're the long game."
   },
   "paywall": {
     "title": "PREMIUM",

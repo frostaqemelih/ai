@@ -13,13 +13,16 @@ import { colors, spacing, typography } from '../theme';
 import { formatClock, formatDurationLong } from '../utils/time';
 import { toLocalDateKey, WEEKDAY_LABELS } from '../utils/date';
 import { fetchGlobalTotalTodayMs, isSupabaseConfigured } from '../services/globalStatsService';
+import { useTranslation } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Stats'>;
 
 export function StatsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { sessions, stats, isPremium } = useAppData();
+  const { sessions, stats, isPremium, achievements } = useAppData();
+  const { t } = useTranslation();
   const [globalTodayMs, setGlobalTodayMs] = useState<number | null>(null);
+  const nextMilestone = useMemo(() => achievements.find((a) => !a.unlocked), [achievements]);
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
@@ -59,6 +62,21 @@ export function StatsScreen({ navigation }: Props) {
             <StatPill label="Longest Streak" value={`${stats.longestStreak} days`} />
           </View>
         </View>
+
+        <GlassCard style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('stats.nextMilestone')}</Text>
+          {nextMilestone ? (
+            <View style={styles.milestoneRow}>
+              <Text style={styles.milestoneGlyph}>🎯</Text>
+              <View style={styles.milestoneText}>
+                <Text style={styles.milestoneTitle}>{nextMilestone.title}</Text>
+                <Text style={styles.milestoneDescription}>{nextMilestone.description}</Text>
+              </View>
+            </View>
+          ) : (
+            <Text style={styles.milestoneDescription}>{t('stats.allUnlocked')}</Text>
+          )}
+        </GlassCard>
 
         <GlassCard style={styles.section}>
           <Text style={styles.sectionTitle}>This week</Text>
@@ -206,6 +224,28 @@ const styles = StyleSheet.create({
   },
   barLabelToday: {
     color: colors.textPrimary,
+  },
+  milestoneRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  milestoneGlyph: {
+    fontSize: 24,
+  },
+  milestoneText: {
+    flex: 1,
+    gap: 2,
+  },
+  milestoneTitle: {
+    ...typography.body,
+    fontSize: 15,
+    color: colors.textPrimary,
+  },
+  milestoneDescription: {
+    ...typography.body,
+    fontSize: 12,
+    color: colors.textTertiary,
   },
   leaderboardRow: {
     flexDirection: 'row',

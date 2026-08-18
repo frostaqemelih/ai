@@ -1,4 +1,4 @@
-import type { AchievementState, DerivedStats, SessionRecord } from '../types';
+import type { AchievementState, AppSettings, DerivedStats, SessionRecord } from '../types';
 import { addDaysToKey, getCurrentWeekKeys, toLocalDateKey } from '../utils/date';
 import { ACHIEVEMENT_DEFS } from './achievementDefs';
 
@@ -130,10 +130,11 @@ function computeStreaks(
 export function deriveAchievements(
   stats: DerivedStats,
   sessions: SessionRecord[],
-  unlockTimestamps: Record<string, number>
+  unlockTimestamps: Record<string, number>,
+  settings?: AppSettings
 ): AchievementState[] {
   return ACHIEVEMENT_DEFS.map((def) => {
-    const unlocked = def.check(stats, sessions);
+    const unlocked = def.check(stats, sessions, settings);
     return {
       id: def.id,
       title: def.title,

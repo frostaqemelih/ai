@@ -1,4 +1,5 @@
 import type { AchievementDef } from '../types';
+import { computeScheduleAdherenceWeeks } from '../utils/scheduleAdherence';
 
 export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   {
@@ -61,5 +62,65 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
       }
       return improvements >= 2;
     },
+  },
+  // Long-game tier (Faz 10-D) — these sit well beyond the first-week goals
+  // above and exist to give committed users something to chase months in.
+  {
+    id: 'total_focus_10h',
+    title: '10 Hours Away',
+    description: 'Accumulate 10 hours of total focus time',
+    check: (stats) => stats.totalFocusMs >= 10 * 60 * 60 * 1000,
+  },
+  {
+    id: 'total_focus_50h',
+    title: '50 Hours Away',
+    description: 'Accumulate 50 hours of total focus time',
+    check: (stats) => stats.totalFocusMs >= 50 * 60 * 60 * 1000,
+  },
+  {
+    id: 'total_focus_100h',
+    title: '100 Hours Away',
+    description: 'Accumulate 100 hours of total focus time',
+    check: (stats) => stats.totalFocusMs >= 100 * 60 * 60 * 1000,
+  },
+  {
+    id: 'same_goal_10',
+    title: 'Creature of Habit',
+    description: 'Complete 10 sessions in a row with the same goal',
+    check: (_stats, sessions) => {
+      const ordered = sessions
+        .filter((s) => s.completed && !s.streakSaved)
+        .sort((a, b) => b.endedAt - a.endedAt);
+      if (ordered.length < 10) return false;
+      const goalMs = ordered[0].goalMs;
+      return ordered.slice(0, 10).every((s) => s.goalMs === goalMs);
+    },
+  },
+  {
+    id: 'cross_timezone',
+    title: 'No Matter Where',
+    description: 'Complete sessions from 3 different timezones',
+    check: (_stats, sessions) => {
+      const offsets = new Set(
+        sessions
+          .filter((s) => s.completed && !s.streakSaved && s.tzOffsetMinutes !== undefined)
+          .map((s) => s.tzOffsetMinutes)
+      );
+      return offsets.size >= 3;
+    },
+  },
+  {
+    id: 'schedule_4_weeks',
+    title: 'Creature of Routine',
+    description: 'Hit every scheduled session for 4 straight weeks',
+    check: (_stats, sessions, settings) =>
+      computeScheduleAdherenceWeeks(sessions, settings?.schedule ?? null) >= 4,
+  },
+  {
+    id: 'schedule_12_weeks',
+    title: 'It Stuck',
+    description: 'Hit every scheduled session for 12 straight weeks',
+    check: (_stats, sessions, settings) =>
+      computeScheduleAdherenceWeeks(sessions, settings?.schedule ?? null) >= 12,
   },
 ];
