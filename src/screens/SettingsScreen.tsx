@@ -266,7 +266,9 @@ export function SettingsScreen({ navigation }: Props) {
         <View style={styles.noAccountBox}>
           <Text style={styles.noAccountText}>NO ACCOUNT REQUIRED</Text>
           <Text style={styles.noAccountSubtext}>
-            All your data stays on this device. Nothing is uploaded anywhere.
+            No usage-access permission. No app list read. No account. No profile setup. All your
+            data stays on this device — nothing is uploaded anywhere unless you turn on an
+            optional feature above (Friend Duel, global stats) yourself.
           </Text>
         </View>
 

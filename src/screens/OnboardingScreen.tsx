@@ -27,6 +27,7 @@ export function OnboardingScreen({ navigation }: Props) {
     { title: t('onboarding.step1Title') },
     { title: t('onboarding.step2Title'), subtitle: t('onboarding.step2Subtitle') },
     { title: t('onboarding.step3Title') },
+    { title: t('onboarding.step4Title'), subtitle: t('onboarding.step4Subtitle') },
     { persona: true },
   ];
   const isPersonaStep = Boolean(STEPS[step].persona);
