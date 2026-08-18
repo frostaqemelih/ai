@@ -306,6 +306,14 @@
     "featureCustomRuns": "Custom runs up to 24 hours",
     "featureStatsTrends": "Advanced stats: monthly & 3-month trends",
     "featurePremiumTheme": "Premium timer theme",
-    "featureCosmetics": "Exclusive cosmetic ring colors"
+    "featureCosmetics": "Exclusive cosmetic ring colors",
+    "renewalOneTime": "One-time payment of {{price}}. You're never charged again.",
+    "renewalTrial": "Free until {{date}}, then {{price}} every {{period}} — cancel before then to avoid the charge.",
+    "renewalRecurring": "{{price}} charged today, then every {{period}}. Cancel anytime.",
+    "manageSubscription": "MANAGE SUBSCRIPTION",
+    "periodDay": "day",
+    "periodWeek": "week",
+    "periodMonth": "month",
+    "periodYear": "year"
   }
 }

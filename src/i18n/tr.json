@@ -306,6 +306,14 @@
     "featureCustomRuns": "24 saate kadar özel oturumlar",
     "featureStatsTrends": "Gelişmiş istatistik: aylık ve 3 aylık trendler",
     "featurePremiumTheme": "Premium timer teması",
-    "featureCosmetics": "Özel kozmetik ring renkleri"
+    "featureCosmetics": "Özel kozmetik ring renkleri",
+    "renewalOneTime": "{{price}} tek seferlik ödeme. Bir daha asla tahsilat yapılmaz.",
+    "renewalTrial": "{{date}} tarihine kadar ücretsiz, sonra her {{period}} {{price}} — tahsilatı önlemek için o tarihten önce iptal edin.",
+    "renewalRecurring": "{{price}} bugün tahsil edilir, sonra her {{period}}. İstediğiniz zaman iptal edin.",
+    "manageSubscription": "ABONELİĞİ YÖNET",
+    "periodDay": "gün",
+    "periodWeek": "hafta",
+    "periodMonth": "ay",
+    "periodYear": "yıl"
   }
 }

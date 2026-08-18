@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Linking, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
@@ -10,6 +10,8 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { colors, fonts, spacing, typography } from '../theme';
 import { PERSONAS } from '../personas';
 import { useTranslation } from '../i18n';
+import { reportError } from '../services/crashService';
+import { getCustomerInfoSafe } from '../services/purchasesService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
 
@@ -210,6 +212,26 @@ export function SettingsScreen({ navigation }: Props) {
                   />
                 }
               />
+              <Pressable
+                style={styles.storeLink}
+                onPress={async () => {
+                  // Prefer RevenueCat's own managementURL — it points to
+                  // whichever store the purchase actually came from. Falls
+                  // back to the generic store URL only if that's
+                  // unavailable (e.g. lifetime purchases have no
+                  // subscription to manage, or the info fetch failed).
+                  const info = await getCustomerInfoSafe();
+                  const url =
+                    info?.managementURL ??
+                    (Platform.OS === 'ios'
+                      ? 'https://apps.apple.com/account/subscriptions'
+                      : 'https://play.google.com/store/account/subscriptions');
+                  Linking.openURL(url).catch((err) => reportError(err));
+                }}
+                accessibilityRole="button"
+              >
+                <Text style={styles.storeLinkText}>{t('paywall.manageSubscription')} ›</Text>
+              </Pressable>
             </>
           )}
         </GlassCard>

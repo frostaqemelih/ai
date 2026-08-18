@@ -10,7 +10,7 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { colors, radius, spacing, typography } from '../theme';
 import { fetchOfferings, isEntitled, purchasePackage, restorePurchases } from '../services/purchasesService';
 import { track } from '../services/analyticsService';
-import { computeAnnualSavingsPercent, describeIntroOffer } from '../utils/paywall';
+import { computeAnnualSavingsPercent, describeRenewalTerms } from '../utils/paywall';
 import { useTranslation } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Paywall'>;
@@ -134,11 +134,7 @@ export function PaywallScreen({ navigation }: Props) {
                         {t('paywall.perMonth', { price: pkg.product.pricePerMonthString })}
                       </Text>
                     )}
-                    {pkg.product.introPrice && (
-                      <Text style={styles.introOfferText}>
-                        {describeIntroOffer(pkg.product.introPrice)}, then {pkg.product.priceString}
-                      </Text>
-                    )}
+                    <Text style={styles.renewalText}>{describeRenewalTerms(pkg, t)}</Text>
                   </Pressable>
                 );
               })}
@@ -269,6 +265,13 @@ const styles = StyleSheet.create({
     ...typography.body,
     fontSize: 11,
     color: colors.textTertiary,
+  },
+  renewalText: {
+    ...typography.body,
+    fontSize: 11,
+    color: colors.textTertiary,
+    marginTop: 4,
+    lineHeight: 15,
   },
   message: {
     ...typography.body,

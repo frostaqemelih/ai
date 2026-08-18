@@ -4,10 +4,12 @@ import { Platform } from 'react-native';
 const STREAK_REMINDER_ID = 'streak-ending-reminder';
 const INACTIVITY_REMINDER_ID = 'inactivity-reminder';
 const FRIEND_STREAK_REMINDER_ID = 'friend-streak-ending-reminder';
+const TRIAL_ENDING_REMINDER_ID = 'trial-ending-reminder';
 const STREAK_REMINDER_HOUR = 20;
 const INACTIVITY_DAYS = 3;
 const INACTIVITY_REMINDER_HOUR = 10;
 const FRIEND_STREAK_REMINDER_HOUR = 19;
+const TRIAL_REMINDER_HOUR = 10;
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -123,6 +125,36 @@ export async function scheduleFriendStreakReminder(shouldSchedule: boolean): Pro
       content: {
         title: 'Your friend streak ends today',
         body: "You haven't checked in yet — complete a run to keep it alive.",
+      },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: target },
+    });
+  } catch {
+    // Permission not granted, or notifications unavailable — silently skip.
+  }
+}
+
+// A day-before heads-up for a free trial converting to a paid subscription —
+// unexpected charges are the single largest complaint category for this app
+// category (Faz 9 Bölüm D), and this is the cheapest way to prevent one.
+// Deliberately NOT included in cancelAllReminders/disableNotifications —
+// this is a financial notice, not a retention nudge, so it stays scheduled
+// independently of the user's "Reminders" preference as long as OS
+// notification permission was granted at some point.
+export async function scheduleTrialEndingReminder(expirationDateMillis: number | null): Promise<void> {
+  await cancelSafe(TRIAL_ENDING_REMINDER_ID);
+  if (!expirationDateMillis || !isNativePlatform()) return;
+
+  const target = new Date(expirationDateMillis);
+  target.setDate(target.getDate() - 1);
+  target.setHours(TRIAL_REMINDER_HOUR, 0, 0, 0);
+  if (target.getTime() <= Date.now()) return;
+
+  try {
+    await Notifications.scheduleNotificationAsync({
+      identifier: TRIAL_ENDING_REMINDER_ID,
+      content: {
+        title: 'Your free trial ends tomorrow',
+        body: "You'll be charged for Premium unless you cancel before then. Manage it anytime in Settings.",
       },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: target },
     });

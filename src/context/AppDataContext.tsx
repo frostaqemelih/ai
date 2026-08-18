@@ -49,6 +49,7 @@ import {
   configurePurchases,
   getCustomerInfoSafe,
   isEntitled,
+  PREMIUM_ENTITLEMENT_ID,
   removeCustomerInfoListener,
 } from '../services/purchasesService';
 import {
@@ -57,6 +58,7 @@ import {
   scheduleFriendStreakReminder,
   scheduleInactivityReminder,
   scheduleStreakReminder,
+  scheduleTrialEndingReminder,
 } from '../services/notificationsService';
 import { toLocalDateKey } from '../utils/date';
 import { track } from '../services/analyticsService';
@@ -216,17 +218,32 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  // Keeps the trial-ending local reminder in sync with whatever RevenueCat
+  // currently reports — scheduled while an entitlement is genuinely mid-trial,
+  // cancelled the instant it isn't (converted to paid, cancelled, expired).
+  const syncTrialReminder = useCallback((info: CustomerInfo | null) => {
+    const entitlement = info?.entitlements.active[PREMIUM_ENTITLEMENT_ID];
+    const inTrial = entitlement?.periodType === 'TRIAL';
+    scheduleTrialEndingReminder(inTrial ? entitlement!.expirationDateMillis : null).catch((err) =>
+      reportError(err)
+    );
+  }, []);
+
   const refreshPremiumStatus = useCallback(async () => {
     const info = await getCustomerInfoSafe();
     setIsPremium(isEntitled(info));
-  }, []);
+    syncTrialReminder(info);
+  }, [syncTrialReminder]);
 
   useEffect(() => {
     let listener: CustomerInfoUpdateListener | null = null;
     (async () => {
       await configurePurchases();
       await refreshPremiumStatus();
-      listener = (info: CustomerInfo) => setIsPremium(isEntitled(info));
+      listener = (info: CustomerInfo) => {
+        setIsPremium(isEntitled(info));
+        syncTrialReminder(info);
+      };
       addCustomerInfoListener(listener);
     })();
     return () => {
