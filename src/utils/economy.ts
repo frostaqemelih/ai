@@ -1,3 +1,6 @@
+import { DEFAULT_PERSONA_ID, getPersona } from '../personas';
+import type { CosmeticRingVariant, PersonaId } from '../personas/types';
+
 // 1 coin per minute survived on a completed run, minimum 1. Failed and
 // streak-saved runs earn nothing — coins reward reaching the goal.
 export function baseCoinsForSession(durationMs: number, completed: boolean): number {
@@ -27,28 +30,29 @@ export function streakFreezeCap(isPremium: boolean): number {
 // AppDataContext.claimFirstDuelBonus.
 export const DUEL_REFERRAL_BONUS_COINS = 100;
 
-export interface CosmeticRingColor {
-  id: string;
-  label: string;
-  color: string;
-  cost: number;
-  /** Requires an active Premium subscription regardless of coin balance —
-   *  keeps the coin economy and the subscription tier from competing. */
-  premiumOnly?: boolean;
+// Idle-screen ring color cosmetics (Faz 10-E) live inside each persona's
+// own `ringVariants` (src/personas) rather than a persona-independent list —
+// a ring color is owned by the persona that wears it, so switching persona
+// switches which ring options are even on offer. See ringVariantsForPersona
+// / ringColorForSelection below for the read side of that.
+export const DEFAULT_RING_COLOR_ID = `${DEFAULT_PERSONA_ID}-default`;
+
+export function ringVariantsForPersona(personaId: PersonaId): CosmeticRingVariant[] {
+  return getPersona(personaId).ringVariants;
 }
 
-// Coin sink: cosmetic timer-ring colors for the idle Home screen. Purely
-// visual — no gameplay advantage, so this never has to touch danger-level
-// colors (those stay functional, tied to session state).
-export const COSMETIC_RING_COLORS: CosmeticRingColor[] = [
-  { id: 'classic', label: 'Classic', color: '#F5F5F7', cost: 0 },
-  { id: 'ocean', label: 'Ocean', color: '#5AC8FA', cost: 100 },
-  { id: 'ember', label: 'Ember', color: '#FF8A3D', cost: 100 },
-  { id: 'violet', label: 'Violet', color: '#C084FC', cost: 150 },
-  { id: 'gold', label: 'Gold', color: '#FFD84D', cost: 0, premiumOnly: true },
-];
-
-export const DEFAULT_RING_COLOR_ID = 'classic';
+// Resolves the actual color for a stored selectedRingColorId, scoped to
+// whichever persona is currently active. Falls back to that persona's own
+// default variant (always present, always free) if the stored id belonged
+// to a different persona — e.g. right after switching personas.
+export function ringColorForSelection(personaId: PersonaId, selectedRingColorId: string): string {
+  const variants = ringVariantsForPersona(personaId);
+  return (
+    variants.find((v) => v.id === selectedRingColorId)?.color ??
+    variants[0]?.color ??
+    getPersona(personaId).accent
+  );
+}
 
 // Dedicated RevenueCat offering (configured separately from the "current"
 // Premium offering) holding the consumable coin-pack products.
@@ -119,8 +123,4 @@ export function checkStreakMilestone(
 
   claimed = [...claimed, newlyCrossedDay];
   return { claimed, milestone: { day: newlyCrossedDay, coins: STREAK_MILESTONE_REWARDS[newlyCrossedDay] } };
-}
-
-export function ringColorForId(id: string): string {
-  return COSMETIC_RING_COLORS.find((c) => c.id === id)?.color ?? COSMETIC_RING_COLORS[0].color;
 }

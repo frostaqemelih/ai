@@ -1,6 +1,6 @@
 import type { Persona, PersonaId } from './types';
 
-export type { Persona, PersonaId, PersonaDangerColors, PersonaUnlock } from './types';
+export type { Persona, PersonaId, PersonaDangerColors, PersonaUnlock, CosmeticRingVariant } from './types';
 
 // All persona identity, tone, and copy lives in two places: this file (id,
 // color, haptic softening, unlock rule — anything a screen needs before
@@ -24,6 +24,10 @@ export const PERSONAS: Record<PersonaId, Persona> = {
     },
     hapticMultiplier: 1,
     unlock: { type: 'free' },
+    ringVariants: [
+      { id: 'ruthless-default', label: 'Ruthless', color: '#FF5C4D', cost: 0 },
+      { id: 'ruthless-inferno', label: 'Inferno', color: '#FF3B1F', cost: 150 },
+    ],
   },
   calm: {
     id: 'calm',
@@ -40,6 +44,10 @@ export const PERSONAS: Record<PersonaId, Persona> = {
     },
     hapticMultiplier: 0.5,
     unlock: { type: 'free' },
+    ringVariants: [
+      { id: 'calm-default', label: 'Calm', color: '#4ADE80', cost: 0 },
+      { id: 'calm-lagoon', label: 'Lagoon', color: '#5AC8FA', cost: 100 },
+    ],
   },
   playful: {
     id: 'playful',
@@ -56,6 +64,10 @@ export const PERSONAS: Record<PersonaId, Persona> = {
     },
     hapticMultiplier: 1,
     unlock: { type: 'free' },
+    ringVariants: [
+      { id: 'playful-default', label: 'Playful', color: '#FF6FB5', cost: 0 },
+      { id: 'playful-sunburst', label: 'Sunburst', color: '#FFD84D', cost: 100 },
+    ],
   },
   coach: {
     id: 'coach',
@@ -72,6 +84,10 @@ export const PERSONAS: Record<PersonaId, Persona> = {
     },
     hapticMultiplier: 1,
     unlock: { type: 'coins', cost: 400 },
+    ringVariants: [
+      { id: 'coach-default', label: 'Coach', color: '#FFB300', cost: 0 },
+      { id: 'coach-steel', label: 'Steel', color: '#94A3B8', cost: 100 },
+    ],
   },
   monk: {
     id: 'monk',
@@ -88,6 +104,10 @@ export const PERSONAS: Record<PersonaId, Persona> = {
     },
     hapticMultiplier: 0.4,
     unlock: { type: 'premium' },
+    ringVariants: [
+      { id: 'monk-default', label: 'Monk', color: '#8B5CF6', cost: 0 },
+      { id: 'monk-void', label: 'Void', color: '#1F1B24', cost: 0, premiumOnly: true },
+    ],
   },
 };
 

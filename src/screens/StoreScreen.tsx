@@ -11,8 +11,8 @@ import { CircularTimer } from '../components/CircularTimer';
 import { colors, spacing, typography } from '../theme';
 import {
   COIN_OFFERING_ID,
-  COSMETIC_RING_COLORS,
   coinsForPackageIdentifier,
+  ringVariantsForPersona,
   STREAK_FREEZE_COST,
   STREAK_FREEZE_PREMIUM_CAP,
   streakFreezeCap,
@@ -115,7 +115,12 @@ export function StoreScreen({ navigation }: Props) {
     setBuyingFreeze(false);
   };
 
-  const hasUnaffordable = COSMETIC_RING_COLORS.some(
+  // Ring colors are owned by whichever persona is currently equipped
+  // (Faz 10-E) — the list below is that persona's own ringVariants, not a
+  // persona-independent global palette. Switching the active persona above
+  // switches this list too.
+  const activeRingVariants = ringVariantsForPersona(settings.personaId);
+  const hasUnaffordable = activeRingVariants.some(
     (item) => !unlockedCosmetics.includes(item.id) && !item.premiumOnly && coins < item.cost
   );
 
@@ -125,7 +130,7 @@ export function StoreScreen({ navigation }: Props) {
       <FlatList
         style={styles.container}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xl }]}
-        data={COSMETIC_RING_COLORS}
+        data={activeRingVariants}
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.row}
@@ -207,7 +212,9 @@ export function StoreScreen({ navigation }: Props) {
               </Pressable>
             </View>
 
-            <Text style={[styles.sectionLabel, styles.ringColorsLabel]}>RING COLORS</Text>
+            <Text style={[styles.sectionLabel, styles.ringColorsLabel]}>
+              {t(`personas.${settings.personaId}.name`).toUpperCase()} — RING COLORS
+            </Text>
           </>
         }
         ListFooterComponent={

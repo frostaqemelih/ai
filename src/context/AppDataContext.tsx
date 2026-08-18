@@ -345,7 +345,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
   const selectPersona = useCallback(
     async (id: PersonaId, source: 'onboarding' | 'settings'): Promise<void> => {
-      await updateSettings({ personaId: id });
+      // Ring colors live inside each persona (Faz 10-E) — switching persona
+      // re-scopes which ring variants are even available, so the selection
+      // resets to the new persona's own free default rather than pointing
+      // at an id that belongs to the persona just left.
+      const defaultVariantId = getPersona(id).ringVariants[0]?.id ?? DEFAULT_RING_COLOR_ID;
+      await updateSettings({ personaId: id, selectedRingColorId: defaultVariantId });
       track(source === 'onboarding' ? 'persona_selected' : 'persona_changed', { personaId: id });
     },
     [updateSettings]

@@ -12,7 +12,7 @@ import { StatPill } from '../components/StatPill';
 import { colors, fonts, radius, spacing, typography } from '../theme';
 import { formatClock } from '../utils/time';
 import { goalLabelForMs } from '../utils/goals';
-import { ringColorForId } from '../utils/economy';
+import { ringColorForSelection } from '../utils/economy';
 import { useTranslation } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
@@ -91,7 +91,7 @@ export function HomeScreen({ navigation }: Props) {
             label="00:00"
             size={240}
             strokeWidth={3}
-            ringColor={ringColorForId(settings.selectedRingColorId)}
+            ringColor={ringColorForSelection(settings.personaId, settings.selectedRingColorId)}
           />
         </View>
 
