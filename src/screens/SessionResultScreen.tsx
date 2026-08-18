@@ -34,8 +34,16 @@ const FAIL_MESSAGE_KEYS: Record<string, string> = {
 type AdPurpose = 'streak' | 'double' | null;
 
 export function SessionResultScreen({ navigation, route }: Props) {
-  const { record, isNewRecord, newlyUnlocked, coinsEarned, streakBroken, streakMilestone, duelId } =
-    route.params;
+  const {
+    record,
+    isNewRecord,
+    newlyUnlocked,
+    coinsEarned,
+    streakBroken,
+    streakMilestone,
+    streakAutoFrozen,
+    duelId,
+  } = route.params;
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const {
@@ -255,6 +263,12 @@ export function SessionResultScreen({ navigation, route }: Props) {
               ) : coinsDoubled ? (
                 <Text style={styles.adDoneText}>✓ {t('sessionResult.doubled')}</Text>
               ) : null}
+            </View>
+          )}
+
+          {!record.completed && streakAutoFrozen && (
+            <View style={styles.streakBox}>
+              <Text style={styles.adDoneText}>🧊 {t('sessionResult.streakFreezeAutoUsed')}</Text>
             </View>
           )}
 

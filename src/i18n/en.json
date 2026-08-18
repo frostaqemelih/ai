@@ -55,7 +55,8 @@
     "watchingDouble": "Watching to double your coins…",
     "streakMilestoneLabel": "DAY STREAK MILESTONE",
     "streakMilestoneCoins": "+{{amount}} BONUS COINS",
-    "streakMilestoneDismiss": "NICE"
+    "streakMilestoneDismiss": "NICE",
+    "streakFreezeAutoUsed": "Streak Freeze auto-used — your streak is safe"
   },
   "paywall": {
     "title": "PREMIUM",

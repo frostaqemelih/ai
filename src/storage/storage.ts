@@ -32,6 +32,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   streakMilestonesClaimed: [],
   friendLinkId: null,
   friendLinkCode: null,
+  streakFreezesOwned: 0,
 };
 
 // Cap stored history so device storage never grows unbounded.

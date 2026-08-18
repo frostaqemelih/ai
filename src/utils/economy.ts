@@ -6,7 +6,21 @@ export function baseCoinsForSession(durationMs: number, completed: boolean): num
 }
 
 // Spend coins to save a broken streak instantly, without watching an ad.
+// Also the price of pre-buying one stockpiled freeze in the Store — the
+// same "50 coins buys one save" economy, whether spent reactively in the
+// moment or proactively ahead of time.
 export const STREAK_FREEZE_COST = 50;
+
+// Stockpile caps for pre-bought freezes (Duolingo-style) — auto-consumed by
+// completeSession the instant a streak would otherwise break, no ad or
+// reactive coin spend required. Premium gets a bigger cushion, matching the
+// tier's "less friction" positioning without being unlimited.
+export const STREAK_FREEZE_FREE_CAP = 2;
+export const STREAK_FREEZE_PREMIUM_CAP = 5;
+
+export function streakFreezeCap(isPremium: boolean): number {
+  return isPremium ? STREAK_FREEZE_PREMIUM_CAP : STREAK_FREEZE_FREE_CAP;
+}
 
 // One-time bonus awarded to a device the first time it ever sees a
 // completed Friend Duel (as inviter or accepter) — see

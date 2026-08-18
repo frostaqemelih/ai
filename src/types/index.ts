@@ -41,6 +41,10 @@ export interface AppSettings {
    *  re-shown without a round trip — null if this device only ever joined
    *  someone else's link, since joiners never own a code. */
   friendLinkCode: string | null;
+  /** Pre-bought Streak Freezes in inventory, capped by streakFreezeCap() —
+   *  auto-consumed by completeSession the moment a streak would otherwise
+   *  break, before falling back to the reactive ad/coin rescue prompt. */
+  streakFreezesOwned: number;
 }
 
 export interface ActiveSession {

@@ -9,7 +9,14 @@ import { Header } from '../components/Header';
 import { GlassCard } from '../components/GlassCard';
 import { CircularTimer } from '../components/CircularTimer';
 import { colors, spacing, typography } from '../theme';
-import { COIN_OFFERING_ID, COSMETIC_RING_COLORS, coinsForPackageIdentifier } from '../utils/economy';
+import {
+  COIN_OFFERING_ID,
+  COSMETIC_RING_COLORS,
+  coinsForPackageIdentifier,
+  STREAK_FREEZE_COST,
+  STREAK_FREEZE_PREMIUM_CAP,
+  streakFreezeCap,
+} from '../utils/economy';
 import { fetchOfferingByIdentifier, purchasePackage } from '../services/purchasesService';
 import { track } from '../services/analyticsService';
 
@@ -17,12 +24,21 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Store'>;
 
 export function StoreScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { coins, unlockedCosmetics, settings, updateSettings, unlockCosmetic, isPremium, earnCoins } =
-    useAppData();
+  const {
+    coins,
+    unlockedCosmetics,
+    settings,
+    updateSettings,
+    unlockCosmetic,
+    isPremium,
+    earnCoins,
+    buyStreakFreeze,
+  } = useAppData();
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [coinOffering, setCoinOffering] = useState<PurchasesOffering | null>(null);
   const [loadingCoinOffering, setLoadingCoinOffering] = useState(true);
   const [purchasingCoinPack, setPurchasingCoinPack] = useState<string | null>(null);
+  const [buyingFreeze, setBuyingFreeze] = useState(false);
 
   useEffect(() => {
     fetchOfferingByIdentifier(COIN_OFFERING_ID).then((offering) => {
@@ -62,6 +78,14 @@ export function StoreScreen({ navigation }: Props) {
     if (success) {
       await updateSettings({ selectedRingColorId: id });
     }
+  };
+
+  const freezeCap = streakFreezeCap(isPremium);
+  const handleBuyFreeze = async () => {
+    if (buyingFreeze || settings.streakFreezesOwned >= freezeCap || coins < STREAK_FREEZE_COST) return;
+    setBuyingFreeze(true);
+    await buyStreakFreeze();
+    setBuyingFreeze(false);
   };
 
   const hasUnaffordable = COSMETIC_RING_COLORS.some(
@@ -112,6 +136,31 @@ export function StoreScreen({ navigation }: Props) {
                 </View>
               </View>
             ) : null}
+
+            <View style={styles.freezeSection}>
+              <Text style={styles.sectionLabel}>STREAK FREEZES</Text>
+              <Text style={styles.freezeSubtitle}>
+                Auto-saves your streak the instant you miss a day. {settings.streakFreezesOwned}/
+                {freezeCap} owned{isPremium ? '' : ` (Premium raises the cap to ${STREAK_FREEZE_PREMIUM_CAP})`}.
+              </Text>
+              <Pressable
+                style={[
+                  styles.freezeBuyButton,
+                  (settings.streakFreezesOwned >= freezeCap || coins < STREAK_FREEZE_COST) &&
+                    styles.freezeBuyButtonDisabled,
+                ]}
+                disabled={buyingFreeze || settings.streakFreezesOwned >= freezeCap || coins < STREAK_FREEZE_COST}
+                onPress={handleBuyFreeze}
+              >
+                <Text style={styles.freezeBuyText}>
+                  {buyingFreeze
+                    ? '…'
+                    : settings.streakFreezesOwned >= freezeCap
+                      ? 'CAP REACHED'
+                      : `🧊 BUY FREEZE — 🪙 ${STREAK_FREEZE_COST}`}
+                </Text>
+              </Pressable>
+            </View>
           </>
         }
         ListFooterComponent={
@@ -225,6 +274,31 @@ const styles = StyleSheet.create({
     ...typography.label,
     fontSize: 11,
     color: colors.streak,
+  },
+  freezeSection: {
+    marginBottom: spacing.xl,
+    gap: spacing.sm,
+  },
+  freezeSubtitle: {
+    ...typography.body,
+    fontSize: 12,
+    color: colors.textTertiary,
+  },
+  freezeBuyButton: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  freezeBuyButtonDisabled: {
+    opacity: 0.4,
+  },
+  freezeBuyText: {
+    ...typography.label,
+    fontSize: 11,
+    color: colors.textSecondary,
   },
   row: {
     gap: spacing.md,

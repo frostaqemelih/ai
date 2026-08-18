@@ -55,7 +55,8 @@
     "watchingDouble": "Coin'lerini katlamak için izleniyor…",
     "streakMilestoneLabel": "GÜNLÜK SERİ MİLESTONE'U",
     "streakMilestoneCoins": "+{{amount}} BONUS COIN",
-    "streakMilestoneDismiss": "HARİKA"
+    "streakMilestoneDismiss": "HARİKA",
+    "streakFreezeAutoUsed": "Streak Freeze otomatik kullanıldı — serin güvende"
   },
   "paywall": {
     "title": "PREMIUM",

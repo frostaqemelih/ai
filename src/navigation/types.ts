@@ -14,6 +14,7 @@ export type RootStackParamList = {
     coinsEarned: number;
     streakBroken: boolean;
     streakMilestone: { day: number; coins: number } | null;
+    streakAutoFrozen: boolean;
     duelId?: string;
   };
   Stats: undefined;

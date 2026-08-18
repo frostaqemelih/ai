@@ -38,6 +38,7 @@ import {
   DEFAULT_RING_COLOR_ID,
   DUEL_REFERRAL_BONUS_COINS,
   STREAK_FREEZE_COST,
+  streakFreezeCap,
 } from '../utils/economy';
 import type { CustomerInfo, CustomerInfoUpdateListener } from 'react-native-purchases';
 import {
@@ -81,6 +82,7 @@ interface CompleteSessionResult {
   coinsEarned: number;
   streakBroken: boolean;
   streakMilestone: { day: number; coins: number } | null;
+  streakAutoFrozen: boolean;
 }
 
 interface AppDataContextValue {
@@ -100,6 +102,7 @@ interface AppDataContextValue {
   spendCoins: (amount: number) => Promise<boolean>;
   saveStreakWithInsurance: () => Promise<void>;
   saveStreakWithCoins: () => Promise<boolean>;
+  buyStreakFreeze: () => Promise<boolean>;
   unlockCosmetic: (id: string, cost: number) => Promise<boolean>;
   requestNotificationsPermission: () => Promise<boolean>;
   disableNotifications: () => Promise<void>;
@@ -126,6 +129,11 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [unlockedCosmetics, setUnlockedCosmetics] = useState<string[]>([]);
   const [isPremium, setIsPremium] = useState(false);
   const unlockTimestampsRef = useRef<Record<string, number>>({});
+  // Guards buyStreakFreeze against a double-fire (e.g. a fast double-tap)
+  // landing two calls before React re-renders with the disabled button —
+  // state alone can't catch that since both calls read it before either
+  // update commits, so this needs a synchronous ref instead.
+  const buyingFreezeRef = useRef(false);
 
   useEffect(() => {
     (async () => {
@@ -297,10 +305,35 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       const previousBest = stats.personalBestMs;
       const previousStreak = stats.currentStreak;
       await clearActiveSession();
-      const nextSessions = await appendSession(sessions, record);
+      let nextSessions = await appendSession(sessions, record);
+      let nextStats = deriveStats(nextSessions);
+
+      let streakBroken = !completed && previousStreak > 0 && nextStats.currentStreak < previousStreak;
+      let streakAutoFrozen = false;
+
+      if (streakBroken && settings.streakFreezesOwned > 0) {
+        // A pre-bought Streak Freeze absorbs the break automatically — same
+        // mechanism as the reactive ad/coin save (a zero-duration
+        // streakSaved record), just spent from inventory instead of prompted.
+        const freezeRecord: SessionRecord = {
+          id: makeId(),
+          startedAt: endedAt,
+          endedAt,
+          goalMs: 0,
+          durationMs: 0,
+          completed: true,
+          streakSaved: true,
+        };
+        nextSessions = await appendSession(nextSessions, freezeRecord);
+        nextStats = deriveStats(nextSessions);
+        streakBroken = false;
+        streakAutoFrozen = true;
+        await updateSettings({ streakFreezesOwned: settings.streakFreezesOwned - 1 });
+        track('streak_freeze_auto_used', { remaining: settings.streakFreezesOwned - 1 });
+      }
+
       setSessions(nextSessions);
 
-      const nextStats = deriveStats(nextSessions);
       const nextAchievements = deriveAchievements(
         nextStats,
         nextSessions,
@@ -328,10 +361,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         await earnCoins(coinsEarned);
       }
 
-      const streakBroken = !completed && previousStreak > 0 && nextStats.currentStreak < previousStreak;
-
       let streakMilestone: { day: number; coins: number } | null = null;
-      if (completed) {
+      if (completed || streakAutoFrozen) {
         const { claimed, milestone } = checkStreakMilestone(
           previousStreak,
           nextStats.currentStreak,
@@ -390,6 +421,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         coinsEarned,
         streakBroken,
         streakMilestone,
+        streakAutoFrozen,
       };
     },
     [
@@ -401,6 +433,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       settings.contributeToGlobalStats,
       settings.friendLinkId,
       settings.streakMilestonesClaimed,
+      settings.streakFreezesOwned,
       updateSettings,
       rescheduleReminders,
     ]
@@ -446,6 +479,23 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     await grantStreakSave();
     return true;
   }, [spendCoins, grantStreakSave]);
+
+  // Pre-buys one Streak Freeze into inventory, capped by streakFreezeCap —
+  // completeSession auto-consumes these before ever falling back to the
+  // reactive ad/coin prompt.
+  const buyStreakFreeze = useCallback(async (): Promise<boolean> => {
+    if (buyingFreezeRef.current) return false;
+    if (settings.streakFreezesOwned >= streakFreezeCap(isPremium)) return false;
+    buyingFreezeRef.current = true;
+    try {
+      const success = await spendCoins(STREAK_FREEZE_COST);
+      if (!success) return false;
+      await updateSettings({ streakFreezesOwned: settings.streakFreezesOwned + 1 });
+      return true;
+    } finally {
+      buyingFreezeRef.current = false;
+    }
+  }, [settings.streakFreezesOwned, isPremium, spendCoins, updateSettings]);
 
   const requestNotificationsPermission = useCallback(async (): Promise<boolean> => {
     const granted = await requestNotificationPermission();
@@ -548,6 +598,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     spendCoins,
     saveStreakWithInsurance,
     saveStreakWithCoins,
+    buyStreakFreeze,
     unlockCosmetic,
     requestNotificationsPermission,
     disableNotifications,

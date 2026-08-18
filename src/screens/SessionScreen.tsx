@@ -61,6 +61,7 @@ export function SessionScreen({ navigation, route }: Props) {
         coinsEarned: result.coinsEarned,
         streakBroken: result.streakBroken,
         streakMilestone: result.streakMilestone,
+        streakAutoFrozen: result.streakAutoFrozen,
         duelId,
       });
     },
