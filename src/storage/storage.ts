@@ -33,6 +33,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   friendLinkId: null,
   friendLinkCode: null,
   streakFreezesOwned: 0,
+  keepScreenAwakeEnabled: true,
 };
 
 // Cap stored history so device storage never grows unbounded.

@@ -45,6 +45,12 @@ export interface AppSettings {
    *  auto-consumed by completeSession the moment a streak would otherwise
    *  break, before falling back to the reactive ad/coin rescue prompt. */
   streakFreezesOwned: number;
+  /** When true (default), SessionScreen keeps the screen awake for the
+   *  duration of a run — without this, the OS's own auto-lock (as little as
+   *  30s on iOS) would background the app and fail the session even though
+   *  the user never touched the phone. When false, Settings must warn the
+   *  user that an auto-lock will end their run. */
+  keepScreenAwakeEnabled: boolean;
 }
 
 export interface ActiveSession {

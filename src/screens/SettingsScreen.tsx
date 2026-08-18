@@ -100,6 +100,23 @@ export function SettingsScreen({ navigation }: Props) {
             }
           />
           <Divider />
+          <Row
+            label="Keep screen awake during sessions"
+            right={
+              <Switch
+                value={settings.keepScreenAwakeEnabled}
+                onValueChange={(v) => updateSettings({ keepScreenAwakeEnabled: v })}
+                trackColor={{ true: colors.streak, false: colors.border }}
+              />
+            }
+          />
+          {!settings.keepScreenAwakeEnabled && (
+            <Text style={styles.keepAwakeWarning}>
+              If your screen locks on its own during a run, the session will end — even if you
+              never touched the phone.
+            </Text>
+          )}
+          <Divider />
           <View style={styles.languageRow}>
             <Text style={styles.rowLabel}>Language</Text>
             <View style={styles.languageOptions}>
@@ -266,6 +283,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textTertiary,
     marginTop: spacing.xs,
+  },
+  keepAwakeWarning: {
+    ...typography.body,
+    fontSize: 12,
+    color: colors.danger,
+    paddingBottom: spacing.sm,
   },
   storeLink: {
     marginTop: spacing.sm,

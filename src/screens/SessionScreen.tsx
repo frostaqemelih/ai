@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, BackHandler, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { useAppData } from '../context/AppDataContext';
@@ -20,6 +21,8 @@ import { submitDuelResult } from '../services/duelService';
 import { useTranslation } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Session'>;
+
+const KEEP_AWAKE_TAG = 'donttouch-session';
 
 const HAPTIC_STYLE: Record<HapticIntensity, Haptics.ImpactFeedbackStyle> = {
   light: Haptics.ImpactFeedbackStyle.Light,
@@ -90,10 +93,28 @@ export function SessionScreen({ navigation, route }: Props) {
     }
   }, [dangerLevel.id, settings.hapticsEnabled]);
 
-  // Any transition away from the foreground (home button, app switch, or the
-  // OS auto-locking the screen) is the only reliable proxy we have for "the
-  // user picked their phone up" — there is no lower-level touch API available
-  // to a React Native app.
+  // Without this, the OS's own screen auto-lock (as little as ~30s on iOS)
+  // backgrounds the app mid-run and fails a session the user never actually
+  // touched — this is what keeps a 1-hour goal from being physically
+  // reachable on a real device. Bound to a fixed tag rather than the
+  // component's implicit identity so a stray double-mount can never leave
+  // two overlapping locks that both need releasing.
+  useEffect(() => {
+    if (!settings.keepScreenAwakeEnabled) return;
+    activateKeepAwakeAsync(KEEP_AWAKE_TAG).catch((err) => reportError(err));
+    return () => {
+      deactivateKeepAwake(KEEP_AWAKE_TAG).catch((err) => reportError(err));
+    };
+  }, [settings.keepScreenAwakeEnabled]);
+
+  // Any transition to the OS-level 'background' state (home button, app
+  // switch, or — with the keep-awake fix above no longer disabled — the
+  // screen auto-locking) is the only reliable proxy we have for "the user
+  // picked their phone up"; there is no lower-level touch API available to
+  // a React Native app. Deliberately does NOT match 'inactive': iOS uses
+  // that transient state for notification banners, Control Center, and the
+  // app switcher preview, none of which should end a run — only an actual
+  // background transition should.
   useEffect(() => {
     const sub = AppState.addEventListener('change', (next) => {
       if (next === 'background') {
