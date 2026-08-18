@@ -58,6 +58,212 @@
     "streakMilestoneDismiss": "NICE",
     "streakFreezeAutoUsed": "Streak Freeze auto-used — your streak is safe"
   },
+  "personaPicker": {
+    "title": "HOW DO YOU WANT TO BE MOTIVATED?",
+    "subtitle": "Pick the voice that keeps you going — you can change this anytime in Settings.",
+    "unlockCoins": "🪙 {{cost}} to unlock",
+    "unlockPremium": "Premium only",
+    "select": "SELECT",
+    "changeButton": "CHANGE PERSONA",
+    "settingsTitle": "PERSONA"
+  },
+  "personas": {
+    "ruthless": {
+      "name": "Ruthless",
+      "description": "No excuses. No sympathy. Just the timer.",
+      "sample": "You touched your phone.",
+      "sessionHint": "DON'T TOUCH",
+      "dangerLabels": {
+        "safe": "SAFE",
+        "focus": "FOCUS",
+        "danger": "DANGER",
+        "extreme": "EXTREME",
+        "insane": "INSANE",
+        "untouchable": "UNTOUCHABLE"
+      },
+      "temptations": [
+        "DON'T TOUCH",
+        "KEEP GOING",
+        "RESIST",
+        "CHECK YOUR PHONE",
+        "Someone might have messaged you.",
+        "Just one tap...",
+        "Don't break the streak.",
+        "STAY STRONG",
+        "ALMOST THERE",
+        "DON'T TOUCH\n10 SECONDS"
+      ],
+      "result": {
+        "completed": "SESSION COMPLETE",
+        "sessionOver": "SESSION OVER",
+        "stayedAway": "You stayed away from your phone.",
+        "touchedPhone": "You touched your phone.",
+        "leftApp": "You left the app.",
+        "interrupted": "The session was interrupted.",
+        "personalBest": "PERSONAL BEST!",
+        "newRecord": "NEW RECORD!",
+        "streakEndingWarning": "Your streak is about to end.",
+        "streakFreezeAutoUsed": "Streak Freeze auto-used — your streak is safe"
+      },
+      "milestoneSurvived": "{{minutes}} MIN SURVIVED",
+      "milestoneCelebrationLabel": "DAY STREAK MILESTONE",
+      "milestoneCelebrationDismiss": "NICE"
+    },
+    "calm": {
+      "name": "Calm",
+      "description": "No pressure. No guilt. Just presence.",
+      "sample": "Session ended. Try again whenever you're ready.",
+      "sessionHint": "STAY PRESENT",
+      "dangerLabels": {
+        "safe": "PRESENT",
+        "focus": "STEADY",
+        "danger": "DEEPENING",
+        "extreme": "SETTLED",
+        "insane": "STILL",
+        "untouchable": "DEEP FOCUS"
+      },
+      "temptations": [
+        "Notice the urge, then let it pass.",
+        "You can check later.",
+        "This moment is enough.",
+        "Whatever it is, it can wait.",
+        "Breathe. Stay a little longer.",
+        "You're doing fine.",
+        "No rush.",
+        "Still here, still calm."
+      ],
+      "result": {
+        "completed": "SESSION ENDED",
+        "sessionOver": "SESSION ENDED",
+        "stayedAway": "You gave yourself that time.",
+        "touchedPhone": "Session ended. Try again whenever you're ready.",
+        "leftApp": "Session ended. No judgment — try again whenever you're ready.",
+        "interrupted": "The session was interrupted. That's alright.",
+        "personalBest": "YOUR LONGEST YET",
+        "newRecord": "A NEW PERSONAL BEST",
+        "streakEndingWarning": "Your streak is ending today, if you'd like to keep it going.",
+        "streakFreezeAutoUsed": "A Streak Freeze quietly kept your streak going."
+      },
+      "milestoneSurvived": "{{minutes}} MIN OF PRESENCE",
+      "milestoneCelebrationLabel": "DAYS OF PRESENCE",
+      "milestoneCelebrationDismiss": "THANK YOU"
+    },
+    "playful": {
+      "name": "Playful",
+      "description": "A little cheeky. Never mean.",
+      "sample": "Oop — caught red-handed. 📱",
+      "sessionHint": "HANDS OFF",
+      "dangerLabels": {
+        "safe": "CHILL",
+        "focus": "LOCKED IN",
+        "danger": "SPICY",
+        "extreme": "RISKY BUSINESS",
+        "insane": "UNHINGED",
+        "untouchable": "LEGEND"
+      },
+      "temptations": [
+        "Psst. Your phone misses you.",
+        "Just a peek?",
+        "I bet it's nothing important.",
+        "One little tap won't hurt... or will it?",
+        "Ooh, what if it's something juicy?",
+        "Your thumb is twitching, isn't it?",
+        "Resist the itch!",
+        "Not today, phone."
+      ],
+      "result": {
+        "completed": "NAILED IT",
+        "sessionOver": "WELP.",
+        "stayedAway": "You out-willed your phone. Respect.",
+        "touchedPhone": "Oop — caught red-handed. 📱",
+        "leftApp": "You wandered off. It happens.",
+        "interrupted": "Something interrupted you. Not your fault this time.",
+        "personalBest": "NEW HIGH SCORE",
+        "newRecord": "RECORD SMASHED",
+        "streakEndingWarning": "Your streak's on thin ice today.",
+        "streakFreezeAutoUsed": "A Streak Freeze swooped in and saved the day 🧊"
+      },
+      "milestoneSurvived": "{{minutes}} MIN, UNBOTHERED",
+      "milestoneCelebrationLabel": "DAY STREAK, LET'S GO",
+      "milestoneCelebrationDismiss": "HECK YEAH"
+    },
+    "coach": {
+      "name": "Coach",
+      "description": "Structured, encouraging, keeps score.",
+      "sample": "Good rep. Let's log it and go again.",
+      "sessionHint": "STAY IN IT",
+      "dangerLabels": {
+        "safe": "WARM-UP",
+        "focus": "IN THE ZONE",
+        "danger": "PUSHING",
+        "extreme": "DIGGING DEEP",
+        "insane": "PEAK EFFORT",
+        "untouchable": "PERSONAL BEST PACE"
+      },
+      "temptations": [
+        "Stay with it — this is where growth happens.",
+        "One more minute. You've got this.",
+        "Champions don't check their phones mid-set.",
+        "Discomfort is the rep working.",
+        "Hold the line.",
+        "This is the part that counts.",
+        "Eyes on the goal.",
+        "Almost through the hard part."
+      ],
+      "result": {
+        "completed": "REP COMPLETE",
+        "sessionOver": "SET ENDED EARLY",
+        "stayedAway": "That's a logged rep. Good work.",
+        "touchedPhone": "Set ended early. Log it and go again.",
+        "leftApp": "You stepped out of the set. Next one's yours.",
+        "interrupted": "Interrupted — doesn't count against you.",
+        "personalBest": "NEW PERSONAL BEST",
+        "newRecord": "PR! NEW RECORD",
+        "streakEndingWarning": "Don't skip today's rep — your streak's on the line.",
+        "streakFreezeAutoUsed": "Coach called in a Streak Freeze. Streak's intact."
+      },
+      "milestoneSurvived": "{{minutes}} MIN LOGGED",
+      "milestoneCelebrationLabel": "DAY STREAK — SOLID STREAK",
+      "milestoneCelebrationDismiss": "KEEP GOING"
+    },
+    "monk": {
+      "name": "Monk",
+      "description": "Minimal words. Maximum stillness.",
+      "sample": "The session has ended.",
+      "sessionHint": "BE STILL",
+      "dangerLabels": {
+        "safe": "STILLNESS",
+        "focus": "SETTLING",
+        "danger": "DEEPENING",
+        "extreme": "QUIET",
+        "insane": "EMPTY",
+        "untouchable": "SILENCE"
+      },
+      "temptations": [
+        "Let it pass.",
+        "Not this.",
+        "Return to stillness.",
+        "Notice, and continue.",
+        "This too will pass.",
+        "Stay."
+      ],
+      "result": {
+        "completed": "THE SESSION HAS ENDED",
+        "sessionOver": "THE SESSION HAS ENDED",
+        "stayedAway": "You remained.",
+        "touchedPhone": "The stillness was broken.",
+        "leftApp": "You stepped away.",
+        "interrupted": "It was interrupted.",
+        "personalBest": "YOUR LONGEST STILLNESS",
+        "newRecord": "A NEW STILLNESS",
+        "streakEndingWarning": "The streak fades today, unless you return.",
+        "streakFreezeAutoUsed": "A freeze held the streak in place."
+      },
+      "milestoneSurvived": "{{minutes}} MIN OF STILLNESS",
+      "milestoneCelebrationLabel": "DAYS OF STILLNESS",
+      "milestoneCelebrationDismiss": "CONTINUE"
+    }
+  },
   "paywall": {
     "title": "PREMIUM",
     "heading": "Go Premium",

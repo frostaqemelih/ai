@@ -1,18 +1,9 @@
 // Non-interactive flavor text shown briefly during a run to create psychological
-// pressure. These are never real buttons — touching the screen anywhere (including
-// on top of this text) ends the run via the same handler as everything else.
-export const TEMPTATION_MESSAGES = [
-  "DON'T TOUCH",
-  'KEEP GOING',
-  'RESIST',
-  'CHECK YOUR PHONE',
-  'Someone might have messaged you.',
-  'Just one tap...',
-  "Don't break the streak.",
-  'STAY STRONG',
-  'ALMOST THERE',
-  "DON'T TOUCH\n10 SECONDS",
-];
+// pressure (or, for gentler personas, encouragement). These are never real
+// buttons — touching the screen anywhere (including on top of this text) ends
+// the run via the same handler as everything else. The actual message pool is
+// persona+language-specific, read from i18n by the caller (useSessionEvents)
+// and passed in here — this file only handles the timing and random pick.
 
 const MIN_GAP_MS = 25_000;
 const MAX_GAP_MS = 55_000;
@@ -26,9 +17,9 @@ export function firstTemptationDelay(): number {
   return FIRST_DELAY_MS;
 }
 
-export function randomTemptationMessage(exclude?: string): string {
-  const pool = exclude
-    ? TEMPTATION_MESSAGES.filter((m) => m !== exclude)
-    : TEMPTATION_MESSAGES;
-  return pool[Math.floor(Math.random() * pool.length)];
+export function randomTemptationMessage(pool: string[], exclude?: string): string {
+  if (pool.length === 0) return '';
+  const filtered = exclude ? pool.filter((m) => m !== exclude) : pool;
+  const source = filtered.length > 0 ? filtered : pool;
+  return source[Math.floor(Math.random() * source.length)];
 }

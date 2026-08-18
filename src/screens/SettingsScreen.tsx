@@ -8,11 +8,14 @@ import { Header } from '../components/Header';
 import { GlassCard } from '../components/GlassCard';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { colors, fonts, spacing, typography } from '../theme';
+import { PERSONAS } from '../personas';
+import { useTranslation } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
 
 export function SettingsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const {
     settings,
     updateSettings,
@@ -63,6 +66,22 @@ export function SettingsScreen({ navigation }: Props) {
             accessibilityRole="button"
           >
             <Text style={styles.storeLinkText}>OPEN STORE ›</Text>
+          </Pressable>
+        </GlassCard>
+
+        <GlassCard style={styles.section}>
+          <View style={styles.row}>
+            <Text style={styles.rowLabel}>{t('personaPicker.settingsTitle')}</Text>
+            <Text style={[styles.coinValue, { color: PERSONAS[settings.personaId].accent, fontSize: 16 }]}>
+              {t(`personas.${settings.personaId}.name`)}
+            </Text>
+          </View>
+          <Pressable
+            style={styles.storeLink}
+            onPress={() => navigation.navigate('Persona')}
+            accessibilityRole="button"
+          >
+            <Text style={styles.storeLinkText}>{t('personaPicker.changeButton')} ›</Text>
           </Pressable>
         </GlassCard>
 

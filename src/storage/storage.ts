@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ActiveSession, AppSettings, SessionRecord } from '../types';
 import { DEFAULT_GOAL_MS } from '../utils/goals';
 import { DEFAULT_RING_COLOR_ID } from '../utils/economy';
+import { DEFAULT_PERSONA_ID } from '../personas';
 
 const KEYS = {
   sessions: '@dt/sessions',
@@ -10,6 +11,7 @@ const KEYS = {
   activeSession: '@dt/activeSession',
   coins: '@dt/coins',
   unlockedCosmetics: '@dt/unlockedCosmetics',
+  unlockedPersonas: '@dt/unlockedPersonas',
 } as const;
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -34,6 +36,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   friendLinkCode: null,
   streakFreezesOwned: 0,
   keepScreenAwakeEnabled: true,
+  personaId: DEFAULT_PERSONA_ID,
 };
 
 // Cap stored history so device storage never grows unbounded.
@@ -136,6 +139,22 @@ export async function saveUnlockedCosmetics(ids: string[]): Promise<void> {
   await AsyncStorage.setItem(KEYS.unlockedCosmetics, JSON.stringify(ids));
 }
 
+export async function loadUnlockedPersonas(): Promise<string[]> {
+  const raw = await AsyncStorage.getItem(KEYS.unlockedPersonas);
+  if (!raw) return [DEFAULT_PERSONA_ID];
+  try {
+    const parsed = JSON.parse(raw) as string[];
+    if (!Array.isArray(parsed)) return [DEFAULT_PERSONA_ID];
+    return parsed.includes(DEFAULT_PERSONA_ID) ? parsed : [DEFAULT_PERSONA_ID, ...parsed];
+  } catch {
+    return [DEFAULT_PERSONA_ID];
+  }
+}
+
+export async function saveUnlockedPersonas(ids: string[]): Promise<void> {
+  await AsyncStorage.setItem(KEYS.unlockedPersonas, JSON.stringify(ids));
+}
+
 export async function resetAllData(): Promise<void> {
   await AsyncStorage.multiRemove([
     KEYS.sessions,
@@ -143,11 +162,13 @@ export async function resetAllData(): Promise<void> {
     KEYS.activeSession,
     KEYS.coins,
     KEYS.unlockedCosmetics,
+    KEYS.unlockedPersonas,
   ]);
   const settings = await loadSettings();
   await saveSettings({
     ...settings,
     lastSelectedGoalMs: DEFAULT_GOAL_MS,
     selectedRingColorId: DEFAULT_RING_COLOR_ID,
+    personaId: DEFAULT_PERSONA_ID,
   });
 }

@@ -19,6 +19,7 @@ import type { FailReason } from '../types';
 import { reportError } from '../services/crashService';
 import { submitDuelResult } from '../services/duelService';
 import { useTranslation } from '../i18n';
+import { getPersona } from '../personas';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Session'>;
 
@@ -29,11 +30,23 @@ const HAPTIC_STYLE: Record<HapticIntensity, Haptics.ImpactFeedbackStyle> = {
   medium: Haptics.ImpactFeedbackStyle.Medium,
   heavy: Haptics.ImpactFeedbackStyle.Heavy,
 };
+const HAPTIC_ORDER: HapticIntensity[] = ['light', 'medium', 'heavy'];
+
+// A persona can only ever soften a level's assigned haptic, never intensify
+// it — dangerLevels.ts's own thresholds stay the single source of truth for
+// how alarming a given elapsed time "should" feel.
+function softenHaptic(intensity: HapticIntensity, multiplier: number): HapticIntensity {
+  const steps = multiplier < 0.6 ? 2 : multiplier < 1 ? 1 : 0;
+  const index = Math.max(0, HAPTIC_ORDER.indexOf(intensity) - steps);
+  return HAPTIC_ORDER[index];
+}
 
 export function SessionScreen({ navigation, route }: Props) {
   const { goalMs, duelId } = route.params;
   const { beginActiveSession, completeSession, stats, settings } = useAppData();
-  const { t } = useTranslation();
+  const { t, list } = useTranslation();
+  const persona = getPersona(settings.personaId);
+  const personaKey = `personas.${persona.id}`;
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const settledRef = useRef(false);
   const previousBestMsRef = useRef(stats.personalBestMs);
@@ -76,10 +89,20 @@ export function SessionScreen({ navigation, route }: Props) {
   }, [settle]);
 
   const clock = useSessionClock(startedAt ?? Date.now(), goalMs, onComplete);
-  const dangerLevel = useMemo(() => getDangerLevel(clock.elapsedMs), [clock.elapsedMs]);
+  const dangerLevel = useMemo(
+    () => getDangerLevel(clock.elapsedMs, persona),
+    [clock.elapsedMs, persona]
+  );
+  const temptationPool = useMemo(() => list(`${personaKey}.temptations`), [personaKey, list]);
+  const formatMilestoneLabel = useCallback(
+    (minutes: number) => t(`${personaKey}.milestoneSurvived`, { minutes }),
+    [personaKey, t]
+  );
   const { temptation, milestone, clearTemptation, clearMilestone } = useSessionEvents(
     clock.elapsedMs,
-    goalMs
+    goalMs,
+    temptationPool,
+    formatMilestoneLabel
   );
 
   const isFirstLevel = useRef(true);
@@ -89,9 +112,10 @@ export function SessionScreen({ navigation, route }: Props) {
       return;
     }
     if (settings.hapticsEnabled) {
-      Haptics.impactAsync(HAPTIC_STYLE[dangerLevel.haptic]).catch((err) => reportError(err));
+      const intensity = softenHaptic(dangerLevel.haptic, persona.hapticMultiplier);
+      Haptics.impactAsync(HAPTIC_STYLE[intensity]).catch((err) => reportError(err));
     }
-  }, [dangerLevel.id, settings.hapticsEnabled]);
+  }, [dangerLevel.id, settings.hapticsEnabled, persona.hapticMultiplier]);
 
   // Without this, the OS's own screen auto-lock (as little as ~30s on iOS)
   // backgrounds the app mid-run and fails a session the user never actually
@@ -151,9 +175,11 @@ export function SessionScreen({ navigation, route }: Props) {
             ringColor={dangerLevel.color}
           />
         </PulseWrapper>
-        <Text style={[styles.levelLabel, { color: dangerLevel.color }]}>{dangerLevel.label}</Text>
+        <Text style={[styles.levelLabel, { color: dangerLevel.color }]}>
+          {t(`${personaKey}.dangerLabels.${dangerLevel.id}`)}
+        </Text>
         <GhostPbBanner elapsedMs={clock.elapsedMs} previousBestMs={previousBestMsRef.current} />
-        <Text style={styles.hint}>{t('session.dontTouch')}</Text>
+        <Text style={styles.hint}>{t(`${personaKey}.sessionHint`)}</Text>
       </View>
 
       {milestone && (

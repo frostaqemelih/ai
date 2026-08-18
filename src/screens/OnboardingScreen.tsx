@@ -6,6 +6,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { useAppData } from '../context/AppDataContext';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { PersonaOption } from '../components/PersonaOption';
+import { PERSONAS, FREE_PERSONA_IDS, DEFAULT_PERSONA_ID, type PersonaId } from '../personas';
 import { colors, spacing, typography } from '../theme';
 import { reportError } from '../services/crashService';
 import { useTranslation } from '../i18n';
@@ -14,18 +16,23 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
 
 export function OnboardingScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { updateSettings, settings, requestNotificationsPermission, requestTracking } = useAppData();
+  const { updateSettings, settings, requestNotificationsPermission, requestTracking, selectPersona } =
+    useAppData();
   const { t } = useTranslation();
   const [step, setStep] = useState(0);
+  const [chosenPersonaId, setChosenPersonaId] = useState<PersonaId>(DEFAULT_PERSONA_ID);
   const fade = useRef(new Animated.Value(1)).current;
 
-  const STEPS = [
+  const STEPS: Array<{ title?: string; subtitle?: string; persona?: boolean }> = [
     { title: t('onboarding.step1Title') },
     { title: t('onboarding.step2Title'), subtitle: t('onboarding.step2Subtitle') },
     { title: t('onboarding.step3Title') },
+    { persona: true },
   ];
+  const isPersonaStep = Boolean(STEPS[step].persona);
 
   const finish = async () => {
+    await selectPersona(chosenPersonaId, 'onboarding');
     await updateSettings({ hasOnboarded: true });
     navigation.replace('Home');
 
@@ -65,10 +72,30 @@ export function OnboardingScreen({ navigation }: Props) {
       </Pressable>
 
       <Animated.View style={[styles.content, { opacity: fade }]}>
-        <Text style={styles.title}>{STEPS[step].title}</Text>
-        {STEPS[step].subtitle ? (
-          <Text style={styles.subtitle}>{STEPS[step].subtitle}</Text>
-        ) : null}
+        {isPersonaStep ? (
+          <View style={styles.personaStep}>
+            <Text style={styles.personaTitle}>{t('personaPicker.title')}</Text>
+            <Text style={styles.personaSubtitle}>{t('personaPicker.subtitle')}</Text>
+            <View style={styles.personaList}>
+              {FREE_PERSONA_IDS.map((id) => (
+                <PersonaOption
+                  key={id}
+                  persona={PERSONAS[id]}
+                  selected={chosenPersonaId === id}
+                  unlocked
+                  onSelect={() => setChosenPersonaId(id)}
+                />
+              ))}
+            </View>
+          </View>
+        ) : (
+          <>
+            <Text style={styles.title}>{STEPS[step].title}</Text>
+            {STEPS[step].subtitle ? (
+              <Text style={styles.subtitle}>{STEPS[step].subtitle}</Text>
+            ) : null}
+          </>
+        )}
       </Animated.View>
 
       <View style={styles.footer}>
@@ -119,6 +146,25 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: spacing.lg,
     lineHeight: 22,
+  },
+  personaStep: {
+    width: '100%',
+    gap: spacing.md,
+  },
+  personaTitle: {
+    ...typography.title,
+    color: colors.textPrimary,
+    textAlign: 'center',
+  },
+  personaSubtitle: {
+    ...typography.body,
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  personaList: {
+    gap: spacing.sm,
   },
   footer: {
     alignItems: 'center',

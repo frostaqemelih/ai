@@ -1,3 +1,5 @@
+import type { PersonaId } from '../personas/types';
+
 export type FailReason = 'touch' | 'backgrounded' | 'interrupted';
 
 export interface SessionRecord {
@@ -51,6 +53,12 @@ export interface AppSettings {
    *  the user never touched the phone. When false, Settings must warn the
    *  user that an auto-lock will end their run. */
   keepScreenAwakeEnabled: boolean;
+  /** Active persona — drives danger-level labels/colors, temptation copy,
+   *  session-result tone, and haptic softening. Purely local/cosmetic,
+   *  never sent anywhere; default 'ruthless' matches the app's original
+   *  (pre-Faz 9) tone exactly, so existing users see no change until they
+   *  actively pick something else. */
+  personaId: PersonaId;
 }
 
 export interface ActiveSession {

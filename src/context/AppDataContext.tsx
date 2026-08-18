@@ -23,13 +23,16 @@ import {
   loadSessions,
   loadSettings,
   loadUnlockedCosmetics,
+  loadUnlockedPersonas,
   resetAllData,
   saveAchievementUnlocks,
   saveCoins,
   saveSettings,
   saveUnlockedCosmetics,
+  saveUnlockedPersonas,
   setActiveSession,
 } from '../storage/storage';
+import { DEFAULT_PERSONA_ID, getPersona, type PersonaId } from '../personas';
 import { deriveAchievements, deriveStats, findNewlyUnlocked } from '../storage/statsEngine';
 import { DEFAULT_SETTINGS } from '../storage/storage';
 import {
@@ -94,6 +97,7 @@ interface AppDataContextValue {
   achievements: AchievementState[];
   coins: number;
   unlockedCosmetics: string[];
+  unlockedPersonas: string[];
   isPremium: boolean;
   refreshPremiumStatus: () => Promise<void>;
   updateSettings: (patch: Partial<AppSettings>) => Promise<void>;
@@ -113,6 +117,8 @@ interface AppDataContextValue {
   maybeRequestRating: () => Promise<void>;
   createFriendStreak: () => Promise<string | null>;
   joinFriendStreak: (code: string) => Promise<boolean>;
+  selectPersona: (id: PersonaId, source: 'onboarding' | 'settings') => Promise<void>;
+  unlockPersonaWithCoins: (id: PersonaId) => Promise<boolean>;
   resetProgress: () => Promise<void>;
 }
 
@@ -128,6 +134,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
   const [coins, setCoins] = useState(0);
   const [unlockedCosmetics, setUnlockedCosmetics] = useState<string[]>([]);
+  const [unlockedPersonas, setUnlockedPersonas] = useState<string[]>([]);
   const [isPremium, setIsPremium] = useState(false);
   const unlockTimestampsRef = useRef<Record<string, number>>({});
   // Guards buyStreakFreeze against a double-fire (e.g. a fast double-tap)
@@ -145,6 +152,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         leftoverActive,
         loadedCoins,
         loadedCosmetics,
+        loadedPersonas,
       ] = await Promise.all([
         loadSettings(),
         loadSessions(),
@@ -152,6 +160,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         loadActiveSession(),
         loadCoins(),
         loadUnlockedCosmetics(),
+        loadUnlockedPersonas(),
       ]);
 
       unlockTimestampsRef.current = loadedUnlocks;
@@ -178,6 +187,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       setSessions(effectiveSessions);
       setCoins(loadedCoins);
       setUnlockedCosmetics(loadedCosmetics);
+      setUnlockedPersonas(loadedPersonas);
       setLoading(false);
 
       if (loadedSettings.notificationsEnabled) {
@@ -289,6 +299,33 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       return true;
     },
     [unlockedCosmetics, spendCoins]
+  );
+
+  // Coin-unlock only — a premium persona never gets added to this list, its
+  // availability is checked live against `isPremium` (isPersonaUnlocked)
+  // instead, matching the existing gold-cosmetic pattern (premiumOnly ring
+  // colors also aren't tracked in unlockedCosmetics).
+  const unlockPersonaWithCoins = useCallback(
+    async (id: PersonaId): Promise<boolean> => {
+      if (unlockedPersonas.includes(id)) return true;
+      const persona = getPersona(id);
+      if (persona.unlock.type !== 'coins') return false;
+      const success = await spendCoins(persona.unlock.cost);
+      if (!success) return false;
+      const next = [...unlockedPersonas, id];
+      setUnlockedPersonas(next);
+      await saveUnlockedPersonas(next);
+      return true;
+    },
+    [unlockedPersonas, spendCoins]
+  );
+
+  const selectPersona = useCallback(
+    async (id: PersonaId, source: 'onboarding' | 'settings'): Promise<void> => {
+      await updateSettings({ personaId: id });
+      track(source === 'onboarding' ? 'persona_selected' : 'persona_changed', { personaId: id });
+    },
+    [updateSettings]
   );
 
   const completeSession = useCallback(
@@ -582,10 +619,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     setSessions([]);
     setCoins(0);
     setUnlockedCosmetics([DEFAULT_RING_COLOR_ID]);
+    setUnlockedPersonas([DEFAULT_PERSONA_ID]);
     setSettings((prev) => ({
       ...prev,
       lastSelectedGoalMs: DEFAULT_SETTINGS.lastSelectedGoalMs,
       selectedRingColorId: DEFAULT_RING_COLOR_ID,
+      personaId: DEFAULT_PERSONA_ID,
     }));
   }, []);
 
@@ -597,6 +636,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     achievements,
     coins,
     unlockedCosmetics,
+    unlockedPersonas,
     isPremium,
     refreshPremiumStatus,
     updateSettings,
@@ -616,6 +656,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     maybeRequestRating,
     createFriendStreak,
     joinFriendStreak,
+    selectPersona,
+    unlockPersonaWithCoins,
     resetProgress,
   };
 

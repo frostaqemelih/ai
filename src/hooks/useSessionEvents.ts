@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MILESTONE_MS, milestoneLabel } from '../utils/milestones';
+import { MILESTONE_MS, minutesForMilestone } from '../utils/milestones';
 import { firstTemptationDelay, nextTemptationDelay, randomTemptationMessage } from '../utils/temptations';
 
 interface ToastState {
@@ -10,7 +10,16 @@ interface ToastState {
 const MIN_GOAL_FOR_TEMPTATIONS_MS = 90_000;
 const TEMPTATION_SAFETY_MARGIN_MS = 15_000;
 
-export function useSessionEvents(elapsedMs: number, goalMs: number) {
+// Persona-specific copy lives in i18n; this hook only owns timing/selection
+// logic, so it takes the resolved message pool and a minutes->label
+// formatter from the caller (SessionScreen, which has both the active
+// persona and `t()`) rather than importing either itself.
+export function useSessionEvents(
+  elapsedMs: number,
+  goalMs: number,
+  temptationPool: string[],
+  formatMilestoneLabel: (minutes: number) => string
+) {
   const [temptation, setTemptation] = useState<ToastState | null>(null);
   const [milestone, setMilestone] = useState<ToastState | null>(null);
 
@@ -32,7 +41,7 @@ export function useSessionEvents(elapsedMs: number, goalMs: number) {
       if (threshold < goalMs && elapsedMs >= threshold && !shownMilestones.current.has(threshold)) {
         shownMilestones.current.add(threshold);
         toastKey.current += 1;
-        setMilestone({ key: toastKey.current, text: milestoneLabel(threshold) });
+        setMilestone({ key: toastKey.current, text: formatMilestoneLabel(minutesForMilestone(threshold)) });
         break;
       }
     }
@@ -45,9 +54,10 @@ export function useSessionEvents(elapsedMs: number, goalMs: number) {
     ) {
       temptationActive.current = true;
       toastKey.current += 1;
-      setTemptation({ key: toastKey.current, text: randomTemptationMessage() });
+      setTemptation({ key: toastKey.current, text: randomTemptationMessage(temptationPool) });
       nextTemptationAt.current = elapsedMs + nextTemptationDelay();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [elapsedMs, goalMs]);
 
   const clearTemptation = () => {

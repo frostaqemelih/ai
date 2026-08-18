@@ -58,6 +58,212 @@
     "streakMilestoneDismiss": "HARİKA",
     "streakFreezeAutoUsed": "Streak Freeze otomatik kullanıldı — serin güvende"
   },
+  "personaPicker": {
+    "title": "NASIL MOTİVE OLURSUN?",
+    "subtitle": "Seni devam ettirecek sesi seç — Ayarlar'dan istediğin zaman değiştirebilirsin.",
+    "unlockCoins": "🪙 {{cost}} ile aç",
+    "unlockPremium": "Sadece Premium",
+    "select": "SEÇ",
+    "changeButton": "PERSONA DEĞİŞTİR",
+    "settingsTitle": "PERSONA"
+  },
+  "personas": {
+    "ruthless": {
+      "name": "Acımasız",
+      "description": "Bahane yok. Merhamet yok. Sadece sayaç.",
+      "sample": "Telefonuna dokundun.",
+      "sessionHint": "DOKUNMA",
+      "dangerLabels": {
+        "safe": "GÜVENDE",
+        "focus": "ODAK",
+        "danger": "TEHLİKE",
+        "extreme": "AŞIRI",
+        "insane": "ÇILGINLIK",
+        "untouchable": "DOKUNULMAZ"
+      },
+      "temptations": [
+        "DOKUNMA",
+        "DEVAM ET",
+        "DAYAN",
+        "TELEFONUNU KONTROL ET",
+        "Biri sana mesaj atmış olabilir.",
+        "Sadece bir dokunuş...",
+        "Serini bozma.",
+        "GÜÇLÜ KAL",
+        "NEREDEYSE TAMAM",
+        "DOKUNMA\n10 SANİYE"
+      ],
+      "result": {
+        "completed": "OTURUM TAMAMLANDI",
+        "sessionOver": "OTURUM BİTTİ",
+        "stayedAway": "Telefonundan uzak durdun.",
+        "touchedPhone": "Telefonuna dokundun.",
+        "leftApp": "Uygulamadan çıktın.",
+        "interrupted": "Oturum kesintiye uğradı.",
+        "personalBest": "KİŞİSEL REKOR!",
+        "newRecord": "YENİ REKOR!",
+        "streakEndingWarning": "Serin bitmek üzere.",
+        "streakFreezeAutoUsed": "Streak Freeze otomatik kullanıldı — serin güvende"
+      },
+      "milestoneSurvived": "{{minutes}} DK HAYATTA KALDIN",
+      "milestoneCelebrationLabel": "GÜNLÜK SERİ MİLESTONE'U",
+      "milestoneCelebrationDismiss": "HARİKA"
+    },
+    "calm": {
+      "name": "Sakin",
+      "description": "Baskı yok. Suçluluk yok. Sadece an.",
+      "sample": "Oturum bitti. Ne zaman istersen tekrar dene.",
+      "sessionHint": "BURADA KAL",
+      "dangerLabels": {
+        "safe": "BURADASIN",
+        "focus": "SAKİN",
+        "danger": "DERİNLEŞİYOR",
+        "extreme": "YERLEŞTİ",
+        "insane": "DURGUN",
+        "untouchable": "DERİN ODAK"
+      },
+      "temptations": [
+        "İsteği fark et, geçmesine izin ver.",
+        "Sonra bakabilirsin.",
+        "Bu an yeterli.",
+        "Ne olursa olsun bekleyebilir.",
+        "Nefes al. Biraz daha kal.",
+        "İyi gidiyorsun.",
+        "Acele yok.",
+        "Hâlâ buradasın, hâlâ sakin."
+      ],
+      "result": {
+        "completed": "OTURUM BİTTİ",
+        "sessionOver": "OTURUM BİTTİ",
+        "stayedAway": "Kendine o zamanı ayırdın.",
+        "touchedPhone": "Oturum bitti. Ne zaman istersen tekrar dene.",
+        "leftApp": "Oturum bitti. Yargı yok — ne zaman istersen tekrar dene.",
+        "interrupted": "Oturum kesintiye uğradı. Sorun değil.",
+        "personalBest": "EN UZUN SÜREN",
+        "newRecord": "YENİ KİŞİSEL REKOR",
+        "streakEndingWarning": "İstersen bugün serini sürdürebilirsin.",
+        "streakFreezeAutoUsed": "Bir Streak Freeze sessizce serini sürdürdü."
+      },
+      "milestoneSurvived": "{{minutes}} DK VAR OLDUN",
+      "milestoneCelebrationLabel": "GÜNLÜK VAR OLUŞ",
+      "milestoneCelebrationDismiss": "TEŞEKKÜRLER"
+    },
+    "playful": {
+      "name": "Şen",
+      "description": "Biraz şakacı. Asla kırıcı değil.",
+      "sample": "Vay be, suçüstü yakalandın. 📱",
+      "sessionHint": "ELLERİNİ ÇEK",
+      "dangerLabels": {
+        "safe": "KEYFİNE BAK",
+        "focus": "ODAKLANDIN",
+        "danger": "KIZIŞTI",
+        "extreme": "RİSKLİ İŞ",
+        "insane": "ÇILGIN",
+        "untouchable": "EFSANE"
+      },
+      "temptations": [
+        "Pist. Telefonun seni özledi.",
+        "Bir bakış olur mu?",
+        "Bahse girerim önemli değildir.",
+        "Küçük bir dokunuş zarar vermez... değil mi?",
+        "Ya önemli bir şeyse?",
+        "Başparmağın seğiriyor, değil mi?",
+        "Dürtüye direnç göster!",
+        "Bugün olmaz, telefon."
+      ],
+      "result": {
+        "completed": "BAŞARDIN",
+        "sessionOver": "EYVAH.",
+        "stayedAway": "Telefonuna karşı iradeni kanıtladın. Saygılar.",
+        "touchedPhone": "Vay be, suçüstü yakalandın. 📱",
+        "leftApp": "Bir yerlere kayboldun. Olur böyle şeyler.",
+        "interrupted": "Bir şey araya girdi. Bu sefer senin suçun değil.",
+        "personalBest": "YENİ YÜKSEK SKOR",
+        "newRecord": "REKOR PARÇALANDI",
+        "streakEndingWarning": "Serin bugün buz üstünde.",
+        "streakFreezeAutoUsed": "Bir Streak Freeze son anda yetişti 🧊"
+      },
+      "milestoneSurvived": "{{minutes}} DK, UMURSAMADAN",
+      "milestoneCelebrationLabel": "GÜNLÜK SERİ, HADİ BAKALIM",
+      "milestoneCelebrationDismiss": "AYNEN ÖYLE"
+    },
+    "coach": {
+      "name": "Koç",
+      "description": "Yapılandırılmış, teşvik edici, skoru tutar.",
+      "sample": "İyi tekrar. Kaydedelim ve devam edelim.",
+      "sessionHint": "İÇİNDE KAL",
+      "dangerLabels": {
+        "safe": "ISINMA",
+        "focus": "ODAKTA",
+        "danger": "ZORLUYORSUN",
+        "extreme": "DERİNE İNİYORSUN",
+        "insane": "ZİRVE PERFORMANS",
+        "untouchable": "KİŞİSEL REKOR TEMPOSU"
+      },
+      "temptations": [
+        "Devam et — gelişim burada olur.",
+        "Bir dakika daha. Yapabilirsin.",
+        "Şampiyonlar set ortasında telefona bakmaz.",
+        "Rahatsızlık, çalışan tekrardır.",
+        "Hattı koru.",
+        "Sayılan kısım burası.",
+        "Gözler hedefte.",
+        "Zor kısmı neredeyse bitirdin."
+      ],
+      "result": {
+        "completed": "TEKRAR TAMAMLANDI",
+        "sessionOver": "SET ERKEN BİTTİ",
+        "stayedAway": "Bu, kaydedilmiş bir tekrar. İyi iş.",
+        "touchedPhone": "Set erken bitti. Kaydet ve devam et.",
+        "leftApp": "Setin dışına çıktın. Bir sonraki senin.",
+        "interrupted": "Kesintiye uğradı — aleyhine sayılmaz.",
+        "personalBest": "YENİ KİŞİSEL REKOR",
+        "newRecord": "PR! YENİ REKOR",
+        "streakEndingWarning": "Bugünkü tekrarı atlama — serin tehlikede.",
+        "streakFreezeAutoUsed": "Koç bir Streak Freeze devreye soktu. Serin sağlam."
+      },
+      "milestoneSurvived": "{{minutes}} DK KAYDEDİLDİ",
+      "milestoneCelebrationLabel": "GÜNLÜK SERİ — SAĞLAM SERİ",
+      "milestoneCelebrationDismiss": "DEVAM ET"
+    },
+    "monk": {
+      "name": "Keşiş",
+      "description": "Az söz. Çok durgunluk.",
+      "sample": "Oturum sona erdi.",
+      "sessionHint": "SAKİN KAL",
+      "dangerLabels": {
+        "safe": "DURGUNLUK",
+        "focus": "YERLEŞİYOR",
+        "danger": "DERİNLEŞİYOR",
+        "extreme": "SESSİZ",
+        "insane": "BOŞ",
+        "untouchable": "SESSİZLİK"
+      },
+      "temptations": [
+        "Geçmesine izin ver.",
+        "Bu değil.",
+        "Durgunluğa dön.",
+        "Fark et, devam et.",
+        "Bu da geçecek.",
+        "Kal."
+      ],
+      "result": {
+        "completed": "OTURUM SONA ERDİ",
+        "sessionOver": "OTURUM SONA ERDİ",
+        "stayedAway": "Kaldın.",
+        "touchedPhone": "Durgunluk bozuldu.",
+        "leftApp": "Uzaklaştın.",
+        "interrupted": "Kesintiye uğradı.",
+        "personalBest": "EN UZUN DURGUNLUĞUN",
+        "newRecord": "YENİ BİR DURGUNLUK",
+        "streakEndingWarning": "Dönmezsen seri bugün sönecek.",
+        "streakFreezeAutoUsed": "Bir dondurma serini yerinde tuttu."
+      },
+      "milestoneSurvived": "{{minutes}} DK DURGUNLUK",
+      "milestoneCelebrationLabel": "GÜNLÜK DURGUNLUK",
+      "milestoneCelebrationDismiss": "DEVAM ET"
+    }
+  },
   "paywall": {
     "title": "PREMIUM",
     "heading": "Premium'a Geç",

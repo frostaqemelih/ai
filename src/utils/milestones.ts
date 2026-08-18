@@ -7,7 +7,6 @@ export const MILESTONE_MS: number[] = [
   60 * 60 * 1000,
 ];
 
-export function milestoneLabel(ms: number): string {
-  const minutes = Math.round(ms / 60000);
-  return `${minutes} MINUTE${minutes === 1 ? '' : 'S'} SURVIVED`;
+export function minutesForMilestone(ms: number): number {
+  return Math.round(ms / 60000);
 }

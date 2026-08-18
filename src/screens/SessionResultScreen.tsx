@@ -22,13 +22,14 @@ import { captureShareCard } from '../services/shareCardService';
 import { fetchDuelStatus, type DuelStatus } from '../services/duelService';
 import { DUEL_REFERRAL_BONUS_COINS } from '../utils/economy';
 import { useTranslation } from '../i18n';
+import { getPersona } from '../personas';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SessionResult'>;
 
-const FAIL_MESSAGE_KEYS: Record<string, string> = {
-  touch: 'sessionResult.touchedPhone',
-  backgrounded: 'sessionResult.leftApp',
-  interrupted: 'sessionResult.interrupted',
+const FAIL_MESSAGE_SUFFIX: Record<string, string> = {
+  touch: 'touchedPhone',
+  backgrounded: 'leftApp',
+  interrupted: 'interrupted',
 };
 
 type AdPurpose = 'streak' | 'double' | null;
@@ -58,6 +59,8 @@ export function SessionResultScreen({ navigation, route }: Props) {
     claimFirstDuelBonus,
     maybeRequestRating,
   } = useAppData();
+  const persona = getPersona(settings.personaId);
+  const personaKey = `personas.${persona.id}`;
   const [adFatigue, setAdFatigue] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [adPurpose, setAdPurpose] = useState<AdPurpose>(null);
@@ -196,20 +199,20 @@ export function SessionResultScreen({ navigation, route }: Props) {
       >
         <View style={styles.body}>
           <Text style={styles.status}>
-            {record.completed ? t('sessionResult.sessionComplete') : t('sessionResult.sessionOver')}
+            {record.completed ? t(`${personaKey}.result.completed`) : t(`${personaKey}.result.sessionOver`)}
           </Text>
           {record.completed && <Text style={styles.emoji}>🎉</Text>}
           <Text style={styles.duration}>{formatClock(record.durationMs)}</Text>
           <Text style={styles.message}>
             {record.completed
-              ? t('sessionResult.stayedAway')
-              : t(FAIL_MESSAGE_KEYS[record.failReason ?? 'touch'])}
+              ? t(`${personaKey}.result.stayedAway`)
+              : t(`${personaKey}.result.${FAIL_MESSAGE_SUFFIX[record.failReason ?? 'touch']}`)}
           </Text>
 
           {isNewRecord && (
-            <View style={styles.recordBadge}>
-              <Text style={styles.recordText}>
-                {record.completed ? t('sessionResult.personalBest') : t('sessionResult.newRecord')}
+            <View style={[styles.recordBadge, { borderColor: persona.accent }]}>
+              <Text style={[styles.recordText, { color: persona.accent }]}>
+                {record.completed ? t(`${personaKey}.result.personalBest`) : t(`${personaKey}.result.newRecord`)}
               </Text>
             </View>
           )}
@@ -249,7 +252,7 @@ export function SessionResultScreen({ navigation, route }: Props) {
 
           {record.completed && coinsEarned > 0 && (
             <View style={styles.coinBox}>
-              <Text style={styles.coinText}>
+              <Text style={[styles.coinText, { color: persona.accent }]}>
                 🪙 {t('sessionResult.coinsEarned', { amount: coinsDoubled ? coinsEarned * 2 : coinsEarned })}
               </Text>
               {!coinsDoubled && !isPremium ? (
@@ -268,7 +271,7 @@ export function SessionResultScreen({ navigation, route }: Props) {
 
           {!record.completed && streakAutoFrozen && (
             <View style={styles.streakBox}>
-              <Text style={styles.adDoneText}>🧊 {t('sessionResult.streakFreezeAutoUsed')}</Text>
+              <Text style={styles.adDoneText}>🧊 {t(`${personaKey}.result.streakFreezeAutoUsed`)}</Text>
             </View>
           )}
 
@@ -276,7 +279,7 @@ export function SessionResultScreen({ navigation, route }: Props) {
             <View style={styles.streakBox}>
               {!streakSaved ? (
                 <>
-                  <Text style={styles.streakWarning}>{t('sessionResult.streakEndingWarning')}</Text>
+                  <Text style={styles.streakWarning}>{t(`${personaKey}.result.streakEndingWarning`)}</Text>
                   <View style={styles.streakOptionsRow}>
                     {!isPremium && (
                       <Pressable
@@ -380,9 +383,9 @@ export function SessionResultScreen({ navigation, route }: Props) {
       {showMilestone && streakMilestone && (
         <MilestoneCelebration
           day={streakMilestone.day}
-          label={t('sessionResult.streakMilestoneLabel')}
+          label={t(`${personaKey}.milestoneCelebrationLabel`)}
           coinsText={t('sessionResult.streakMilestoneCoins', { amount: streakMilestone.coins })}
-          dismissLabel={t('sessionResult.streakMilestoneDismiss')}
+          dismissLabel={t(`${personaKey}.milestoneCelebrationDismiss`)}
           onDismiss={() => setShowMilestone(false)}
         />
       )}

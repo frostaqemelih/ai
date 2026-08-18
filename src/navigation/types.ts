@@ -23,6 +23,7 @@ export type RootStackParamList = {
   Store: undefined;
   Paywall: undefined;
   Duel: undefined;
+  Persona: undefined;
   PrivacyPolicy: undefined;
   Terms: undefined;
 };

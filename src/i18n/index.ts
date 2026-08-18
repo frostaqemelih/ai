@@ -53,6 +53,12 @@ export function useTranslation() {
       if (typeof value !== 'string') return key;
       return interpolate(value, vars);
     };
-    return { t, locale };
+    // For catalog entries that are arrays (e.g. a persona's temptation
+    // message pool) rather than a single string.
+    const list = (key: string): string[] => {
+      const value = getNested(catalog, key.split('.'));
+      return Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : [];
+    };
+    return { t, list, locale };
   }, [locale]);
 }
