@@ -15,6 +15,11 @@ const TEST_ADMOB_IOS_APP_ID = 'ca-app-pub-3940256099942544~1458002511';
 
 module.exports = {
   expo: {
+    extra: {
+      eas: {
+        projectId: '644fe337-de22-40c3-94f5-0b9d5e22c11f',
+      },
+    },
     name: "Don't Touch",
     slug: 'dont-touch',
     version: '1.0.0',
@@ -29,7 +34,11 @@ module.exports = {
     ios: {
       supportsTablet: false,
       bundleIdentifier: 'com.melihturan.donttouch',
-      buildNumber: '1',
+      // No buildNumber here — eas.json sets cli.appVersionSource: "remote",
+      // so EAS manages build numbers itself (auto-incremented per the
+      // production profile's autoIncrement: true) and ignores any value
+      // set locally. Confirmed by EAS's own build-time warning for the
+      // Android equivalent (versionCode); removed both for consistency.
       infoPlist: {
         // Avoids an App Store Connect "export compliance" prompt on every
         // submission — the app uses only standard HTTPS/TLS, no custom
@@ -44,7 +53,9 @@ module.exports = {
     },
     android: {
       package: 'com.melihturan.donttouch',
-      versionCode: 1,
+      // No versionCode — same reason as ios.buildNumber above; EAS warned
+      // at build time that a local value here is ignored under remote
+      // version source and recommended removing it.
       adaptiveIcon: {
         backgroundColor: '#0A0A0B',
         foregroundImage: './assets/android-icon-foreground.png',
