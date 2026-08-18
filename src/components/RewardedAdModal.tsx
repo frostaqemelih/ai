@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, fonts, radius, spacing, typography } from '../theme';
-import { getSimulatedAdDurationMs } from '../services/adsService';
+import { ActivityIndicator, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { colors, radius, spacing, typography } from '../theme';
+import { showRewardedAd } from '../services/adsService';
 
 interface RewardedAdModalProps {
   visible: boolean;
@@ -9,31 +9,30 @@ interface RewardedAdModalProps {
   onResult: (rewarded: boolean) => void;
 }
 
+// On native, RewardedAd.show() presents Google's own full-screen native ad
+// view on top of everything — this modal is only ever visible during the
+// brief load() phase before that happens, and again briefly after it
+// closes while onResult unmounts it. On web, rewarded ads are categorically
+// unavailable (see adsService.web.ts), so this shows a plain explanation
+// instead of silently closing or faking a reward.
 export function RewardedAdModal({ visible, prompt, onResult }: RewardedAdModalProps) {
-  const progress = useRef(new Animated.Value(0)).current;
-  const [done, setDone] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
     if (!visible) return;
-    setDone(false);
-    progress.setValue(0);
-    const duration = getSimulatedAdDurationMs();
 
-    // Progress bar is cosmetic (best-effort, rAF-driven); the reward itself
-    // is driven by a plain timer so it still fires even if the animation
-    // frame loop gets throttled (e.g. a backgrounded/hidden web tab).
-    const anim = Animated.timing(progress, { toValue: 1, duration, useNativeDriver: false });
-    anim.start();
+    if (Platform.OS === 'web') {
+      setUnavailable(true);
+      return; // user must tap close — no fake auto-reward on web
+    }
 
-    const rewardTimer = setTimeout(() => {
-      setDone(true);
-      setTimeout(() => onResult(true), 500);
-    }, duration);
-
-    return () => {
-      anim.stop();
-      clearTimeout(rewardTimer);
-    };
+    setUnavailable(false);
+    const requestId = ++requestIdRef.current;
+    showRewardedAd().then((rewarded) => {
+      if (requestIdRef.current !== requestId) return; // superseded by a newer request
+      onResult(rewarded);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
@@ -52,21 +51,20 @@ export function RewardedAdModal({ visible, prompt, onResult }: RewardedAdModalPr
           <Text style={styles.closeText}>✕</Text>
         </Pressable>
         <View style={styles.card}>
-          <Text style={styles.watermark}>SIMULATED AD</Text>
-          <Text style={styles.title}>{done ? 'Reward granted!' : prompt}</Text>
-          <View style={styles.track}>
-            <Animated.View
-              style={[
-                styles.fill,
-                {
-                  width: progress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
-                },
-              ]}
-            />
-          </View>
-          <Text style={styles.hint}>
-            {done ? '🎉' : 'Placeholder ad — a real network will play here in production.'}
-          </Text>
+          {unavailable ? (
+            <>
+              <Text style={styles.title}>Ads aren't available here</Text>
+              <Text style={styles.hint}>
+                Rewarded ads need a real device build — this web preview can't show one.
+              </Text>
+            </>
+          ) : (
+            <>
+              <ActivityIndicator color={colors.textSecondary} />
+              <Text style={styles.title}>{prompt}</Text>
+              <Text style={styles.hint}>Loading ad…</Text>
+            </>
+          )}
         </View>
       </View>
     </Modal>
@@ -102,26 +100,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
   },
-  watermark: {
-    ...typography.statLabel,
-    color: colors.textTertiary,
-    letterSpacing: 2,
-  },
   title: {
     ...typography.title,
     color: colors.textPrimary,
     textAlign: 'center',
-  },
-  track: {
-    width: '100%',
-    height: 6,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surfaceRaised,
-    overflow: 'hidden',
-  },
-  fill: {
-    height: '100%',
-    backgroundColor: colors.streak,
   },
   hint: {
     ...typography.body,

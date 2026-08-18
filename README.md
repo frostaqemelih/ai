@@ -61,17 +61,30 @@ itself, logs a warning) when its key is missing.
      and build with EAS (`eas build`) or a local custom dev client, since
      `react-native-purchases` ships native code.
 
-2. **AdMob** (`src/services/adsService.ts` — currently a simulated
-   placeholder, not yet wired to a real SDK)
+2. **AdMob** (`src/services/adsService.ts` — real `react-native-google-mobile-ads`
+   integration as of Faz 8; **not yet verified on a device**, see the
+   caveat below)
    - Create an AdMob app at [admob.google.com](https://admob.google.com),
-     get your App IDs and ad unit IDs (rewarded + interstitial).
+     get your App IDs (one per platform) and a rewarded ad unit ID per
+     platform.
    - Fill in `.env`: `EXPO_PUBLIC_ADMOB_IOS_APP_ID`,
-     `EXPO_PUBLIC_ADMOB_ANDROID_APP_ID`, and the four unit-ID variables.
-   - Install `react-native-google-mobile-ads` and replace the simulated
-     logic in `adsService.ts` and `RewardedAdModal.tsx` — the function
-     signatures were kept provider-agnostic on purpose so this is a
-     contained swap. This also requires the EAS/dev-client build from
-     step 1 (same native-code constraint).
+     `EXPO_PUBLIC_ADMOB_ANDROID_APP_ID`, `EXPO_PUBLIC_ADMOB_REWARDED_IOS_UNIT_ID`,
+     `EXPO_PUBLIC_ADMOB_REWARDED_ANDROID_UNIT_ID`. The App IDs are also read by
+     `app.config.js` at prebuild time (baked into the native
+     Info.plist/AndroidManifest.xml) — set them **before** running
+     `eas build` or `expo prebuild`, not just at runtime. Until they're
+     set, both fall back to Google's own public TEST App ID so a build
+     never fails, it just always serves Google's test ad creative.
+   - The interstitial unit-ID env vars (`EXPO_PUBLIC_ADMOB_INTERSTITIAL_*`)
+     are still unused — this app only ever shows rewarded ads, never
+     interstitials.
+   - **Caveat**: this integration has only been checked with `tsc` and the
+     web preview (where `adsService.web.ts` makes rewarded ads always
+     report "unavailable" — the real SDK has no web support at all). The
+     actual load → show → reward flow, the "closing early grants no
+     reward" behavior, and non-personalized-ads-only mode (triggered when
+     ATT is denied) all need a real device build to verify — see
+     `docs/DEVICE_TEST_CHECKLIST.md`.
 
 3. **PostHog** (`src/services/analyticsService.ts`)
    - Create a project at [posthog.com](https://posthog.com) (or self-host).

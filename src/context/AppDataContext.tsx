@@ -67,6 +67,7 @@ import {
   recordCheckin,
 } from '../services/friendStreakService';
 import { reportError } from '../services/crashService';
+import { setNonPersonalizedAdsOnly } from '../services/adsService';
 
 interface CompleteSessionInput {
   startedAt: number;
@@ -223,6 +224,13 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Defaults to non-personalized (adsService starts with this true) until
+  // the user explicitly grants ATT — this keeps every ad request compliant
+  // with Apple's tracking rules for the entire gap before that decision.
+  useEffect(() => {
+    setNonPersonalizedAdsOnly(!settings.trackingGranted);
+  }, [settings.trackingGranted]);
 
   const stats = useMemo(() => deriveStats(sessions), [sessions]);
   const achievements = useMemo(
