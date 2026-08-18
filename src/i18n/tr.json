@@ -114,6 +114,10 @@
         "survived": "DOKUNMADAN HAYATTA KALDI",
         "beforeTouching": "DOKUNMADAN ÖNCE",
         "footer": "Bunu geçebilir misin?"
+      },
+      "scheduleNotification": {
+        "title": "Süre doldu. Kanıtla.",
+        "body": "{{minutes}} dakika, telefon yok, şimdi başlıyor — başlamak için dokun."
       }
     },
     "calm": {
@@ -158,6 +162,10 @@
         "survived": "VAR OLARAK GEÇEN SÜRE",
         "beforeTouching": "AN GEÇMEDEN ÖNCE",
         "footer": "Sen ne kadar kalabilirdin?"
+      },
+      "scheduleNotification": {
+        "title": "Kendine bir an ayır",
+        "body": "{{minutes}} dakikalık oturumun hazır, ne zaman istersen dokun."
       }
     },
     "playful": {
@@ -202,6 +210,10 @@
         "survived": "PES ETMEDEN",
         "beforeTouching": "PES ETMEDEN ÖNCE",
         "footer": "Bunu geçebileceğine bahse girerim. 😏"
+      },
+      "scheduleNotification": {
+        "title": "Telefon. Bırak. Başla.",
+        "body": "{{minutes}} dakika, bahane yok. Başlamak için dokun."
       }
     },
     "coach": {
@@ -246,6 +258,10 @@
         "survived": "TELEFONSUZ KAYDEDİLDİ",
         "beforeTouching": "SET BİTMEDEN ÖNCE",
         "footer": "Bu tekrarı geçebilir misin?"
+      },
+      "scheduleNotification": {
+        "title": "Tekrar zamanı.",
+        "body": "{{minutes}} dakika sayaçta — setini başlatmak için dokun."
       }
     },
     "monk": {
@@ -288,8 +304,34 @@
         "survived": "DURGUNLUK İÇİNDE",
         "beforeTouching": "DURGUNLUK BOZULMADAN ÖNCE",
         "footer": "Sen ne kadar kalabilirsin?"
+      },
+      "scheduleNotification": {
+        "title": "Zamanı geldi.",
+        "body": "{{minutes}} dakikalık durgunluk. Başlamak için dokun."
       }
     }
+  },
+  "schedule": {
+    "title": "PLAN",
+    "subtitle": "Günleri ve saati seç — senin için hazır bir oturum açalım, karar vermene gerek kalmasın.",
+    "days": "GÜNLER",
+    "time": "SAAT",
+    "goal": "HEDEF SÜRE",
+    "save": "PLANI KAYDET",
+    "delete": "PLANI SİL",
+    "permissionNeeded": "Planının sana gerçekten ulaşması için Ayarlar'dan bildirimleri açman gerekiyor.",
+    "homeHintTitle": "Her gün karar vermeyi bırak.",
+    "homeHintBody": "Tekrarlayan bir saat ayarla, oturumunu senin için açalım.",
+    "homeHintCta": "KUR →",
+    "open": "PLANI AÇ",
+    "homeHintDismiss": "Şimdi değil",
+    "dayMon": "PZT",
+    "dayTue": "SAL",
+    "dayWed": "ÇAR",
+    "dayThu": "PER",
+    "dayFri": "CUM",
+    "daySat": "CMT",
+    "daySun": "PAZ"
   },
   "paywall": {
     "title": "PREMIUM",

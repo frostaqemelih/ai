@@ -24,6 +24,7 @@ export type RootStackParamList = {
   Paywall: undefined;
   Duel: undefined;
   Persona: undefined;
+  Schedule: undefined;
   PrivacyPolicy: undefined;
   Terms: undefined;
 };

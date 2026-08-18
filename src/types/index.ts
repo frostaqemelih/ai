@@ -59,6 +59,22 @@ export interface AppSettings {
    *  (pre-Faz 9) tone exactly, so existing users see no change until they
    *  actively pick something else. */
   personaId: PersonaId;
+  /** Recurring session plan — null until the user sets one up. Removes the
+   *  daily "should I start now?" micro-decision by having the app propose
+   *  the moment instead of waiting to be opened (see notificationsService
+   *  .scheduleSessionPlan and ScheduleScreen). */
+  schedule: SessionSchedule | null;
+  /** Whether the user has dismissed Home's "set up a schedule" hint — once
+   *  dismissed (or once a schedule exists), it never shows again. */
+  scheduleHintDismissed: boolean;
+}
+
+export interface SessionSchedule {
+  /** 1-7, Sunday=1..Saturday=7 — matches expo-notifications' WeeklyTriggerInput.weekday convention directly, no remapping needed at the call site. */
+  weekdays: number[];
+  hour: number;
+  minute: number;
+  goalMs: number;
 }
 
 export interface ActiveSession {

@@ -40,6 +40,21 @@ function interpolate(template: string, vars?: Record<string, string | number>): 
   });
 }
 
+// Plain (non-hook) lookup — used by code that can't call the useTranslation
+// hook because it would be circular (AppDataContext itself calls this
+// directly, since useTranslation calls useAppData() internally). Same
+// catalog/interpolation logic as the hook below, just without the
+// useMemo/settings wiring.
+export function translateSync(
+  locale: SupportedLocale,
+  key: string,
+  vars?: Record<string, string | number>
+): string {
+  const value = getNested(CATALOGS[locale], key.split('.'));
+  if (typeof value !== 'string') return key;
+  return interpolate(value, vars);
+}
+
 // Only the "core" screens (Home, Onboarding, Session, SessionResult, Paywall)
 // are covered — see the Faz 6 summary for the remaining TODO screens.
 export function useTranslation() {
@@ -47,16 +62,12 @@ export function useTranslation() {
   const locale = resolveLocale(settings.languageCode);
 
   return useMemo(() => {
-    const catalog = CATALOGS[locale];
-    const t = (key: string, vars?: Record<string, string | number>): string => {
-      const value = getNested(catalog, key.split('.'));
-      if (typeof value !== 'string') return key;
-      return interpolate(value, vars);
-    };
+    const t = (key: string, vars?: Record<string, string | number>): string =>
+      translateSync(locale, key, vars);
     // For catalog entries that are arrays (e.g. a persona's temptation
     // message pool) rather than a single string.
     const list = (key: string): string[] => {
-      const value = getNested(catalog, key.split('.'));
+      const value = getNested(CATALOGS[locale], key.split('.'));
       return Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : [];
     };
     return { t, list, locale };

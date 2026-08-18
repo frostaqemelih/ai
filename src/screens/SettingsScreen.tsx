@@ -88,6 +88,21 @@ export function SettingsScreen({ navigation }: Props) {
         </GlassCard>
 
         <GlassCard style={styles.section}>
+          <View style={styles.row}>
+            <Text style={styles.rowLabel}>{t('schedule.title')}</Text>
+            {settings.schedule && <Text style={styles.premiumBadge}>✓ {t('schedule.days')}</Text>}
+          </View>
+          <Text style={styles.coinHint}>{t('schedule.subtitle')}</Text>
+          <Pressable
+            style={styles.storeLink}
+            onPress={() => navigation.navigate('Schedule')}
+            accessibilityRole="button"
+          >
+            <Text style={styles.storeLinkText}>{t('schedule.open')} ›</Text>
+          </Pressable>
+        </GlassCard>
+
+        <GlassCard style={styles.section}>
           <Row
             label="Sound"
             right={

@@ -37,6 +37,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   streakFreezesOwned: 0,
   keepScreenAwakeEnabled: true,
   personaId: DEFAULT_PERSONA_ID,
+  schedule: null,
+  scheduleHintDismissed: false,
 };
 
 // Cap stored history so device storage never grows unbounded.

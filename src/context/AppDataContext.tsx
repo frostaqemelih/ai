@@ -13,6 +13,7 @@ import type {
   DerivedStats,
   FailReason,
   SessionRecord,
+  SessionSchedule,
 } from '../types';
 import {
   appendSession,
@@ -57,9 +58,12 @@ import {
   requestNotificationPermission,
   scheduleFriendStreakReminder,
   scheduleInactivityReminder,
+  scheduleSessionPlan,
   scheduleStreakReminder,
   scheduleTrialEndingReminder,
 } from '../services/notificationsService';
+import { resolveLocale, translateSync } from '../i18n';
+import { minutesForMilestone } from '../utils/milestones';
 import { toLocalDateKey } from '../utils/date';
 import { track } from '../services/analyticsService';
 import { requestTrackingPermission } from '../services/trackingService';
@@ -113,6 +117,8 @@ interface AppDataContextValue {
   unlockCosmetic: (id: string, cost: number) => Promise<boolean>;
   requestNotificationsPermission: () => Promise<boolean>;
   disableNotifications: () => Promise<void>;
+  setSchedule: (schedule: SessionSchedule | null) => Promise<void>;
+  dismissScheduleHint: () => Promise<void>;
   requestTracking: () => Promise<boolean>;
   recordAdWatched: () => Promise<number>;
   claimFirstDuelBonus: () => Promise<boolean>;
@@ -607,6 +613,33 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     await cancelAllReminders();
   }, [updateSettings]);
 
+  // Saves (or clears, when `schedule` is null) the recurring session plan
+  // and re-syncs the underlying WEEKLY notifications to match — the whole
+  // point (Faz 10 Bölüm A) is that these notifications ARE the action, not
+  // a reminder about it, so their copy has to be in the active persona's
+  // voice, not generic. Fails safe: if notification permission was never
+  // granted, scheduleSessionPlan silently no-ops and the plan still saves
+  // locally (so turning permission on later just needs a re-save, matching
+  // the pattern already established for every other reminder in this file).
+  const setSchedule = useCallback(
+    async (schedule: SessionSchedule | null): Promise<void> => {
+      await updateSettings({ schedule, scheduleHintDismissed: true });
+      const locale = resolveLocale(settings.languageCode);
+      const key = `personas.${settings.personaId}.scheduleNotification`;
+      const title = translateSync(locale, `${key}.title`);
+      const body = translateSync(locale, `${key}.body`, {
+        minutes: schedule ? minutesForMilestone(schedule.goalMs) : 0,
+      });
+      await scheduleSessionPlan(schedule, title, body);
+      track(schedule ? 'schedule_created' : 'schedule_deleted', schedule ?? undefined);
+    },
+    [updateSettings, settings.languageCode, settings.personaId]
+  );
+
+  const dismissScheduleHint = useCallback(async () => {
+    await updateSettings({ scheduleHintDismissed: true });
+  }, [updateSettings]);
+
   // Creates a fresh friend link and returns its share code, or null if
   // already linked or Supabase isn't configured. This device becomes
   // device_a; a friend joins with joinFriendStreak(code) to become device_b.
@@ -667,6 +700,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     unlockCosmetic,
     requestNotificationsPermission,
     disableNotifications,
+    setSchedule,
+    dismissScheduleHint,
     requestTracking,
     recordAdWatched,
     claimFirstDuelBonus,

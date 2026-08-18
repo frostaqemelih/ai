@@ -19,7 +19,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export function HomeScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { settings, stats, coins } = useAppData();
+  const { settings, stats, coins, dismissScheduleHint } = useAppData();
   const { t } = useTranslation();
   const [starting, setStarting] = useState(false);
 
@@ -94,6 +94,29 @@ export function HomeScreen({ navigation }: Props) {
             ringColor={ringColorForId(settings.selectedRingColorId)}
           />
         </View>
+
+        {!settings.schedule && !settings.scheduleHintDismissed && (
+          <Pressable
+            style={styles.scheduleHint}
+            onPress={() => navigation.navigate('Schedule')}
+            accessibilityRole="button"
+          >
+            <View style={styles.scheduleHintText}>
+              <Text style={styles.scheduleHintTitle}>{t('schedule.homeHintTitle')}</Text>
+              <Text style={styles.scheduleHintBody}>{t('schedule.homeHintBody')}</Text>
+            </View>
+            <Pressable
+              onPress={(e) => {
+                e.stopPropagation();
+                dismissScheduleHint();
+              }}
+              hitSlop={10}
+              style={styles.scheduleHintDismiss}
+            >
+              <Text style={styles.scheduleHintDismissText}>✕</Text>
+            </Pressable>
+          </Pressable>
+        )}
 
         <View style={styles.footer}>
           <Pressable onPress={() => navigation.navigate('GoalSelect')} style={styles.goalChip} hitSlop={8}>
@@ -201,6 +224,38 @@ const styles = StyleSheet.create({
     borderRadius: 110,
     backgroundColor: colors.textPrimary,
     opacity: 0.03,
+  },
+  scheduleHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.md,
+  },
+  scheduleHintText: {
+    flex: 1,
+    gap: 2,
+  },
+  scheduleHintTitle: {
+    ...typography.body,
+    fontFamily: fonts.displaySemiBold,
+    fontSize: 13,
+    color: colors.textPrimary,
+  },
+  scheduleHintBody: {
+    ...typography.body,
+    fontSize: 11,
+    color: colors.textTertiary,
+  },
+  scheduleHintDismiss: {
+    padding: 4,
+  },
+  scheduleHintDismissText: {
+    color: colors.textTertiary,
+    fontSize: 13,
   },
   footer: {
     alignItems: 'center',

@@ -10,6 +10,11 @@ const INACTIVITY_DAYS = 3;
 const INACTIVITY_REMINDER_HOUR = 10;
 const FRIEND_STREAK_REMINDER_HOUR = 19;
 const TRIAL_REMINDER_HOUR = 10;
+const SCHEDULE_NOTIFICATION_TYPE = 'scheduled-session';
+
+function scheduleSessionId(weekday: number): string {
+  return `schedule-session-${weekday}`;
+}
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -160,6 +165,43 @@ export async function scheduleTrialEndingReminder(expirationDateMillis: number |
     });
   } catch {
     // Permission not granted, or notifications unavailable — silently skip.
+  }
+}
+
+// One recurring WEEKLY-trigger notification per selected weekday — each is
+// the action itself (tap → straight into Countdown with this goal, see
+// RootNavigator's response listener), not a passive nudge. `data.goalMs`
+// is what the response listener reads; title/body are pre-formatted by the
+// caller (AppDataContext) since this service has no i18n/persona access of
+// its own. Always cancels all 7 possible weekday slots first — simpler and
+// safer than tracking which ones were previously scheduled.
+export async function scheduleSessionPlan(
+  schedule: { weekdays: number[]; hour: number; minute: number; goalMs: number } | null,
+  title: string,
+  body: string
+): Promise<void> {
+  await Promise.all(Array.from({ length: 7 }, (_, i) => cancelSafe(scheduleSessionId(i + 1))));
+  if (!schedule || !isNativePlatform()) return;
+
+  for (const weekday of schedule.weekdays) {
+    try {
+      await Notifications.scheduleNotificationAsync({
+        identifier: scheduleSessionId(weekday),
+        content: {
+          title,
+          body,
+          data: { type: SCHEDULE_NOTIFICATION_TYPE, goalMs: schedule.goalMs },
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+          weekday,
+          hour: schedule.hour,
+          minute: schedule.minute,
+        },
+      });
+    } catch {
+      // Permission not granted, or notifications unavailable — silently skip.
+    }
   }
 }
 
