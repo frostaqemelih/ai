@@ -40,6 +40,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   schedule: null,
   scheduleHintDismissed: false,
   onboardingGoalReason: null,
+  firstSessionPaywallShown: false,
 };
 
 // Cap stored history so device storage never grows unbounded.

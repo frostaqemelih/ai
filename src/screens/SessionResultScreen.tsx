@@ -49,6 +49,7 @@ export function SessionResultScreen({ navigation, route }: Props) {
   const { t } = useTranslation();
   const {
     settings,
+    updateSettings,
     stats,
     coins,
     isPremium,
@@ -115,7 +116,21 @@ export function SessionResultScreen({ navigation, route }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Bulgu 4 (Faz 10): bad onboarding loses ~80% of users before they ever
+  // see a paywall. This is the one deliberate exception — shown once ever,
+  // only after the user's first-ever run (Faz 6's existing achievement-
+  // unlock detection is the "did this just happen for the first time"
+  // signal, not a new trigger mechanism), and only once they've already
+  // seen the completion celebration on THIS screen, never mid-onboarding.
+  const isFirstEverCompletion =
+    record.completed && !isPremium && newlyUnlocked.some((a) => a.id === 'first_session');
+
   const goHome = () => {
+    if (isFirstEverCompletion && !settings.firstSessionPaywallShown) {
+      updateSettings({ firstSessionPaywallShown: true });
+      navigation.navigate('Paywall');
+      return;
+    }
     navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
   };
 

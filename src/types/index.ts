@@ -70,6 +70,9 @@ export interface AppSettings {
   /** Which ONBOARDING_REASONS id the user picked at onboarding — drives the
    *  pre-filled first goal + suggested schedule. Null if skipped. */
   onboardingGoalReason: string | null;
+  /** Set the first (and only) time the soft post-first-session paywall has
+   *  been shown — guarantees it fires at most once per device, ever. */
+  firstSessionPaywallShown: boolean;
 }
 
 export interface SessionSchedule {
