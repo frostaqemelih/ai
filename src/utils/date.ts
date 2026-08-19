@@ -6,10 +6,6 @@ export function toLocalDateKey(ts: number): string {
   return `${year}-${month}-${day}`;
 }
 
-export function isSameLocalDay(a: number, b: number): boolean {
-  return toLocalDateKey(a) === toLocalDateKey(b);
-}
-
 export function addDaysToKey(key: string, days: number): string {
   const [y, m, d] = key.split('-').map(Number);
   const date = new Date(y, m - 1, d);

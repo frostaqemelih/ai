@@ -55,8 +55,6 @@ export function translateSync(
   return interpolate(value, vars);
 }
 
-// Only the "core" screens (Home, Onboarding, Session, SessionResult, Paywall)
-// are covered — see the Faz 6 summary for the remaining TODO screens.
 export function useTranslation() {
   const languageCode = useLanguageCode();
   const locale = resolveLocale(languageCode);

@@ -29,14 +29,3 @@ export async function requestTrackingPermission(): Promise<boolean> {
     return false;
   }
 }
-
-export async function getTrackingGranted(): Promise<boolean> {
-  try {
-    const mod = loadModule();
-    if (!mod || !mod.isAvailable()) return true;
-    const { status } = await mod.getTrackingPermissionsAsync();
-    return status === 'granted';
-  } catch {
-    return false;
-  }
-}

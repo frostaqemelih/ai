@@ -30,16 +30,6 @@ function isNativePlatform(): boolean {
   return Platform.OS === 'ios' || Platform.OS === 'android';
 }
 
-export async function getNotificationPermissionGranted(): Promise<boolean> {
-  if (!isNativePlatform()) return false;
-  try {
-    const current = await Notifications.getPermissionsAsync();
-    return current.granted;
-  } catch {
-    return false;
-  }
-}
-
 // Requests permission at most once from the OS's point of view — if the user
 // already declined, this just returns the current (denied) status rather
 // than re-prompting, matching iOS/Android platform conventions.

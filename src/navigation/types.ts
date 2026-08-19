@@ -1,4 +1,3 @@
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { AchievementState, SessionRecord } from '../types';
 
 export type RootStackParamList = {
@@ -28,5 +27,3 @@ export type RootStackParamList = {
   PrivacyPolicy: undefined;
   Terms: undefined;
 };
-
-export type NavProp = NativeStackNavigationProp<RootStackParamList>;

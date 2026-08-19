@@ -1,4 +1,4 @@
-import type { PurchasesIntroPrice, PurchasesPackage } from 'react-native-purchases';
+import type { PurchasesPackage } from 'react-native-purchases';
 
 function parseIsoPeriodCount(period: string): number {
   const match = /P(\d+)[DWMY]/.exec(period);
@@ -9,17 +9,6 @@ function periodUnitLabel(unit: string, count: number): string {
   const map: Record<string, string> = { DAY: 'day', WEEK: 'week', MONTH: 'month', YEAR: 'year' };
   const label = map[unit] ?? unit.toLowerCase();
   return count === 1 ? label : `${label}s`;
-}
-
-// e.g. "3-day free trial" or "$0.99 for 1 week" — never hardcoded, always
-// read from whatever intro offer is actually configured in RevenueCat.
-export function describeIntroOffer(intro: PurchasesIntroPrice): string {
-  const count = parseIsoPeriodCount(intro.period);
-  const unit = periodUnitLabel(intro.periodUnit, count);
-  if (intro.price === 0) {
-    return `${count}-${unit.replace(/s$/, '')} free trial`;
-  }
-  return `${intro.priceString} for ${count} ${unit}`;
 }
 
 // Percent cheaper the annual package is per month, vs. the monthly package's
