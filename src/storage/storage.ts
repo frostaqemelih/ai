@@ -3,6 +3,7 @@ import type { ActiveSession, AppSettings, SessionRecord } from '../types';
 import { DEFAULT_GOAL_MS } from '../utils/goals';
 import { DEFAULT_RING_COLOR_ID } from '../utils/economy';
 import { DEFAULT_PERSONA_ID } from '../personas';
+import { reportError } from '../services/crashService';
 
 const KEYS = {
   sessions: '@dt/sessions',
@@ -47,8 +48,52 @@ export const DEFAULT_SETTINGS: AppSettings = {
 // Cap stored history so device storage never grows unbounded.
 const MAX_STORED_SESSIONS = 1000;
 
+// Every load*()/save*() function below goes through these instead of
+// calling AsyncStorage directly. A JSON.parse failure (corrupt data) was
+// already handled per-function, but the AsyncStorage.getItem/setItem/
+// removeItem call itself can also reject — a real native storage error
+// (full disk, a corrupt underlying SQLite db on Android, etc.), not
+// malformed data. Before this, that rejection wasn't caught anywhere,
+// including AppDataContext's boot Promise.all, which meant setLoading(false)
+// would never run and the app would hang on a blank screen forever (Faz 13
+// finding). These wrappers report the failure to Sentry (visible, not
+// silently swallowed) and resolve to the same "nothing was there" shape
+// every caller already treats as the signal to fall back to its default.
+async function safeGetItem(key: string): Promise<string | null> {
+  try {
+    return await AsyncStorage.getItem(key);
+  } catch (err) {
+    reportError(err, { storageKey: key, op: 'getItem' });
+    return null;
+  }
+}
+
+async function safeSetItem(key: string, value: string): Promise<void> {
+  try {
+    await AsyncStorage.setItem(key, value);
+  } catch (err) {
+    reportError(err, { storageKey: key, op: 'setItem' });
+  }
+}
+
+async function safeRemoveItem(key: string): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(key);
+  } catch (err) {
+    reportError(err, { storageKey: key, op: 'removeItem' });
+  }
+}
+
+async function safeMultiRemove(keys: readonly string[]): Promise<void> {
+  try {
+    await AsyncStorage.multiRemove(keys as string[]);
+  } catch (err) {
+    reportError(err, { storageKeys: keys, op: 'multiRemove' });
+  }
+}
+
 export async function loadSessions(): Promise<SessionRecord[]> {
-  const raw = await AsyncStorage.getItem(KEYS.sessions);
+  const raw = await safeGetItem(KEYS.sessions);
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw) as SessionRecord[];
@@ -64,12 +109,12 @@ export async function appendSession(
   record: SessionRecord
 ): Promise<SessionRecord[]> {
   const next = [...sessions, record].slice(-MAX_STORED_SESSIONS);
-  await AsyncStorage.setItem(KEYS.sessions, JSON.stringify(next));
+  await safeSetItem(KEYS.sessions, JSON.stringify(next));
   return next;
 }
 
 export async function loadSettings(): Promise<AppSettings> {
-  const raw = await AsyncStorage.getItem(KEYS.settings);
+  const raw = await safeGetItem(KEYS.settings);
   if (!raw) return DEFAULT_SETTINGS;
   try {
     const parsed = JSON.parse(raw) as Partial<AppSettings>;
@@ -80,11 +125,11 @@ export async function loadSettings(): Promise<AppSettings> {
 }
 
 export async function saveSettings(settings: AppSettings): Promise<void> {
-  await AsyncStorage.setItem(KEYS.settings, JSON.stringify(settings));
+  await safeSetItem(KEYS.settings, JSON.stringify(settings));
 }
 
 export async function loadAchievementUnlocks(): Promise<Record<string, number>> {
-  const raw = await AsyncStorage.getItem(KEYS.achievementUnlocks);
+  const raw = await safeGetItem(KEYS.achievementUnlocks);
   if (!raw) return {};
   try {
     const parsed = JSON.parse(raw) as Record<string, number>;
@@ -95,11 +140,11 @@ export async function loadAchievementUnlocks(): Promise<Record<string, number>> 
 }
 
 export async function saveAchievementUnlocks(unlocks: Record<string, number>): Promise<void> {
-  await AsyncStorage.setItem(KEYS.achievementUnlocks, JSON.stringify(unlocks));
+  await safeSetItem(KEYS.achievementUnlocks, JSON.stringify(unlocks));
 }
 
 export async function loadActiveSession(): Promise<ActiveSession | null> {
-  const raw = await AsyncStorage.getItem(KEYS.activeSession);
+  const raw = await safeGetItem(KEYS.activeSession);
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as ActiveSession;
@@ -111,25 +156,25 @@ export async function loadActiveSession(): Promise<ActiveSession | null> {
 }
 
 export async function setActiveSession(session: ActiveSession): Promise<void> {
-  await AsyncStorage.setItem(KEYS.activeSession, JSON.stringify(session));
+  await safeSetItem(KEYS.activeSession, JSON.stringify(session));
 }
 
 export async function clearActiveSession(): Promise<void> {
-  await AsyncStorage.removeItem(KEYS.activeSession);
+  await safeRemoveItem(KEYS.activeSession);
 }
 
 export async function loadCoins(): Promise<number> {
-  const raw = await AsyncStorage.getItem(KEYS.coins);
+  const raw = await safeGetItem(KEYS.coins);
   const parsed = raw ? Number(raw) : 0;
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
 }
 
 export async function saveCoins(coins: number): Promise<void> {
-  await AsyncStorage.setItem(KEYS.coins, String(Math.max(0, Math.floor(coins))));
+  await safeSetItem(KEYS.coins, String(Math.max(0, Math.floor(coins))));
 }
 
 export async function loadUnlockedCosmetics(): Promise<string[]> {
-  const raw = await AsyncStorage.getItem(KEYS.unlockedCosmetics);
+  const raw = await safeGetItem(KEYS.unlockedCosmetics);
   if (!raw) return [DEFAULT_RING_COLOR_ID];
   try {
     const parsed = JSON.parse(raw) as string[];
@@ -141,11 +186,11 @@ export async function loadUnlockedCosmetics(): Promise<string[]> {
 }
 
 export async function saveUnlockedCosmetics(ids: string[]): Promise<void> {
-  await AsyncStorage.setItem(KEYS.unlockedCosmetics, JSON.stringify(ids));
+  await safeSetItem(KEYS.unlockedCosmetics, JSON.stringify(ids));
 }
 
 export async function loadUnlockedPersonas(): Promise<string[]> {
-  const raw = await AsyncStorage.getItem(KEYS.unlockedPersonas);
+  const raw = await safeGetItem(KEYS.unlockedPersonas);
   if (!raw) return [DEFAULT_PERSONA_ID];
   try {
     const parsed = JSON.parse(raw) as string[];
@@ -157,7 +202,7 @@ export async function loadUnlockedPersonas(): Promise<string[]> {
 }
 
 export async function saveUnlockedPersonas(ids: string[]): Promise<void> {
-  await AsyncStorage.setItem(KEYS.unlockedPersonas, JSON.stringify(ids));
+  await safeSetItem(KEYS.unlockedPersonas, JSON.stringify(ids));
 }
 
 // RevenueCat transaction identifiers already credited toward the coin
@@ -167,7 +212,7 @@ export async function saveUnlockedPersonas(ids: string[]): Promise<void> {
 // empty ledger and re-credits already-seen transactions once, which is far
 // safer than never being able to credit a genuine purchase again.
 export async function loadCreditedTransactionIds(): Promise<string[]> {
-  const raw = await AsyncStorage.getItem(KEYS.creditedTransactionIds);
+  const raw = await safeGetItem(KEYS.creditedTransactionIds);
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw) as string[];
@@ -178,7 +223,7 @@ export async function loadCreditedTransactionIds(): Promise<string[]> {
 }
 
 export async function saveCreditedTransactionIds(ids: string[]): Promise<void> {
-  await AsyncStorage.setItem(KEYS.creditedTransactionIds, JSON.stringify(ids));
+  await safeSetItem(KEYS.creditedTransactionIds, JSON.stringify(ids));
 }
 
 export async function resetAllData(): Promise<void> {
@@ -189,7 +234,7 @@ export async function resetAllData(): Promise<void> {
   // restored" disclosure in StoreScreen/Terms. Leaving the ledger intact
   // means a reset genuinely forfeits those coins, matching what users were
   // told.
-  await AsyncStorage.multiRemove([
+  await safeMultiRemove([
     KEYS.sessions,
     KEYS.achievementUnlocks,
     KEYS.activeSession,

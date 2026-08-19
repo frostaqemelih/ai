@@ -165,57 +165,71 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      const [
-        loadedSettings,
-        loadedSessions,
-        loadedUnlocks,
-        leftoverActive,
-        loadedCoins,
-        loadedCosmetics,
-        loadedPersonas,
-        loadedCreditedTransactionIds,
-      ] = await Promise.all([
-        loadSettings(),
-        loadSessions(),
-        loadAchievementUnlocks(),
-        loadActiveSession(),
-        loadCoins(),
-        loadUnlockedCosmetics(),
-        loadUnlockedPersonas(),
-        loadCreditedTransactionIds(),
-      ]);
+      // Every load*()/save*() in storage.ts already fails safe internally
+      // (Faz 14-A — a real AsyncStorage rejection, not just corrupt JSON,
+      // is now caught there and reported, resolving to the same default
+      // shape every caller already handles). This try/catch/finally is a
+      // backstop, not the primary fix: if anything in this block somehow
+      // still throws, the app boots with whatever defaults the useState()
+      // initializers already have rather than hanging on the blank loading
+      // screen forever (the actual Faz 13 bug — setLoading(false) was only
+      // reachable on the unthrown-happy-path before).
+      try {
+        const [
+          loadedSettings,
+          loadedSessions,
+          loadedUnlocks,
+          leftoverActive,
+          loadedCoins,
+          loadedCosmetics,
+          loadedPersonas,
+          loadedCreditedTransactionIds,
+        ] = await Promise.all([
+          loadSettings(),
+          loadSessions(),
+          loadAchievementUnlocks(),
+          loadActiveSession(),
+          loadCoins(),
+          loadUnlockedCosmetics(),
+          loadUnlockedPersonas(),
+          loadCreditedTransactionIds(),
+        ]);
 
-      unlockTimestampsRef.current = loadedUnlocks;
-      creditedTransactionIdsRef.current = new Set(loadedCreditedTransactionIds);
-      let effectiveSessions = loadedSessions;
+        unlockTimestampsRef.current = loadedUnlocks;
+        creditedTransactionIdsRef.current = new Set(loadedCreditedTransactionIds);
+        let effectiveSessions = loadedSessions;
 
-      // A leftover "active session" marker means the app was killed, crashed, or the
-      // device restarted mid-session — the run never got a chance to end cleanly.
-      if (leftoverActive) {
-        const now = Date.now();
-        const interrupted: SessionRecord = {
-          id: makeId(),
-          startedAt: leftoverActive.startedAt,
-          endedAt: now,
-          goalMs: leftoverActive.goalMs,
-          durationMs: Math.max(0, Math.min(now - leftoverActive.startedAt, leftoverActive.goalMs)),
-          completed: false,
-          failReason: 'interrupted',
-        };
-        effectiveSessions = await appendSession(loadedSessions, interrupted);
-        await clearActiveSession();
-      }
+        // A leftover "active session" marker means the app was killed, crashed, or the
+        // device restarted mid-session — the run never got a chance to end cleanly.
+        if (leftoverActive) {
+          const now = Date.now();
+          const interrupted: SessionRecord = {
+            id: makeId(),
+            startedAt: leftoverActive.startedAt,
+            endedAt: now,
+            goalMs: leftoverActive.goalMs,
+            durationMs: Math.max(0, Math.min(now - leftoverActive.startedAt, leftoverActive.goalMs)),
+            completed: false,
+            failReason: 'interrupted',
+          };
+          effectiveSessions = await appendSession(loadedSessions, interrupted);
+          await clearActiveSession();
+        }
 
-      setSettings(loadedSettings);
-      setSessions(effectiveSessions);
-      setCoins(loadedCoins);
-      setUnlockedCosmetics(loadedCosmetics);
-      setUnlockedPersonas(loadedPersonas);
-      setLoading(false);
+        setSettings(loadedSettings);
+        setSessions(effectiveSessions);
+        setCoins(loadedCoins);
+        setUnlockedCosmetics(loadedCosmetics);
+        setUnlockedPersonas(loadedPersonas);
 
-      if (loadedSettings.notificationsEnabled) {
-        const bootStats = deriveStats(effectiveSessions);
-        await rescheduleReminders(effectiveSessions, bootStats);
+        if (loadedSettings.notificationsEnabled) {
+          const bootStats = deriveStats(effectiveSessions);
+          await rescheduleReminders(effectiveSessions, bootStats);
+        }
+      } catch (err) {
+        reportError(err, { phase: 'boot' });
+      } finally {
+        setLoading(false);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
