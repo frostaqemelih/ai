@@ -105,18 +105,17 @@ export interface DerivedStats {
 
 export interface AchievementDef {
   id: string;
-  title: string;
-  description: string;
   /** `settings` is optional and only needed by achievements that depend on
    *  user config (e.g. schedule adherence) rather than pure session/stats
    *  math — every pre-existing achievement ignores it. */
   check: (stats: DerivedStats, sessions: SessionRecord[], settings?: AppSettings) => boolean;
 }
 
+// No title/description — the engine (statsEngine.deriveAchievements) never
+// touches display text or locale (Faz 13-A). UI consumers resolve
+// `achievementDefs.<id>.title` / `.description` from i18n using this `id`.
 export interface AchievementState {
   id: string;
-  title: string;
-  description: string;
   unlocked: boolean;
   unlockedAt?: number;
 }

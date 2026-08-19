@@ -68,6 +68,7 @@ import {
   scheduleTrialEndingReminder,
 } from '../services/notificationsService';
 import { resolveLocale, translateSync } from '../i18n';
+import { LocaleContext } from './LocaleContext';
 import { minutesForMilestone } from '../utils/milestones';
 import { toLocalDateKey } from '../utils/date';
 import { track } from '../services/analyticsService';
@@ -291,14 +292,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
   const stats = useMemo(() => deriveStats(sessions), [sessions]);
   const achievements = useMemo(
-    () =>
-      deriveAchievements(
-        stats,
-        sessions,
-        unlockTimestampsRef.current,
-        settings,
-        resolveLocale(settings.languageCode)
-      ),
+    () => deriveAchievements(stats, sessions, unlockTimestampsRef.current, settings),
     [stats, sessions, settings]
   );
 
@@ -488,8 +482,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         nextStats,
         nextSessions,
         unlockTimestampsRef.current,
-        settings,
-        resolveLocale(settings.languageCode)
+        settings
       );
       const newlyUnlockedIds = findNewlyUnlocked(nextAchievements, unlockTimestampsRef.current);
 
@@ -798,7 +791,11 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     resetProgress,
   };
 
-  return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;
+  return (
+    <LocaleContext.Provider value={settings.languageCode}>
+      <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>
+    </LocaleContext.Provider>
+  );
 }
 
 export function useAppData(): AppDataContextValue {

@@ -3,8 +3,10 @@ import { StyleSheet, Text, View } from 'react-native';
 import type { AchievementState } from '../types';
 import { GlassCard } from './GlassCard';
 import { colors, fonts, spacing, typography } from '../theme';
+import { useTranslation } from '../i18n';
 
 export function AchievementCard({ achievement }: { achievement: AchievementState }) {
+  const { t } = useTranslation();
   return (
     <GlassCard style={[styles.card, !achievement.unlocked && styles.cardLocked]}>
       <View style={[styles.badge, achievement.unlocked && styles.badgeUnlocked]}>
@@ -12,9 +14,9 @@ export function AchievementCard({ achievement }: { achievement: AchievementState
       </View>
       <View style={styles.textContainer}>
         <Text style={[styles.title, !achievement.unlocked && styles.titleLocked]}>
-          {achievement.title}
+          {t(`achievementDefs.${achievement.id}.title`)}
         </Text>
-        <Text style={styles.description}>{achievement.description}</Text>
+        <Text style={styles.description}>{t(`achievementDefs.${achievement.id}.description`)}</Text>
       </View>
     </GlassCard>
   );

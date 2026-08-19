@@ -1,52 +1,42 @@
 import type { AchievementDef } from '../types';
 import { computeScheduleAdherenceWeeks } from '../utils/scheduleAdherence';
 
-// title/description hold i18n KEYS (achievementDefs.<id>.title/description
-// in en.json/tr.json), not display text — deriveAchievements resolves them
-// to the actual locale-appropriate string before they ever reach a screen.
-function localeKeys(id: string): { title: string; description: string } {
-  return { title: `achievementDefs.${id}.title`, description: `achievementDefs.${id}.description` };
-}
-
+// Pure logic only — id + unlock condition. No title/description here: the
+// engine never touches text or locale (Faz 13-A removed the
+// statsEngine -> i18n import cycle). Display text is resolved in the UI
+// layer from `achievementDefs.<id>.title` / `.description` in
+// en.json/tr.json, keyed by this same `id`.
 export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   {
     id: 'first_session',
-    ...localeKeys('first_session'),
     check: (stats) => stats.totalSessions >= 1,
   },
   {
     id: 'five_minutes',
-    ...localeKeys('five_minutes'),
     check: (stats) => stats.personalBestMs >= 5 * 60 * 1000,
   },
   {
     id: 'fifteen_minutes',
-    ...localeKeys('fifteen_minutes'),
     check: (stats) => stats.personalBestMs >= 15 * 60 * 1000,
   },
   {
     id: 'thirty_minutes',
-    ...localeKeys('thirty_minutes'),
     check: (stats) => stats.personalBestMs >= 30 * 60 * 1000,
   },
   {
     id: 'one_hour',
-    ...localeKeys('one_hour'),
     check: (stats) => stats.personalBestMs >= 60 * 60 * 1000,
   },
   {
     id: 'seven_day_streak',
-    ...localeKeys('seven_day_streak'),
     check: (stats) => stats.longestStreak >= 7,
   },
   {
     id: 'ten_sessions',
-    ...localeKeys('ten_sessions'),
     check: (stats) => stats.totalSessions >= 10,
   },
   {
     id: 'personal_best',
-    ...localeKeys('personal_best'),
     check: (_stats, sessions) => {
       let runningBest = 0;
       let improvements = 0;
@@ -66,22 +56,18 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   // above and exist to give committed users something to chase months in.
   {
     id: 'total_focus_10h',
-    ...localeKeys('total_focus_10h'),
     check: (stats) => stats.totalFocusMs >= 10 * 60 * 60 * 1000,
   },
   {
     id: 'total_focus_50h',
-    ...localeKeys('total_focus_50h'),
     check: (stats) => stats.totalFocusMs >= 50 * 60 * 60 * 1000,
   },
   {
     id: 'total_focus_100h',
-    ...localeKeys('total_focus_100h'),
     check: (stats) => stats.totalFocusMs >= 100 * 60 * 60 * 1000,
   },
   {
     id: 'same_goal_10',
-    ...localeKeys('same_goal_10'),
     check: (_stats, sessions) => {
       const ordered = sessions
         .filter((s) => s.completed && !s.streakSaved)
@@ -93,7 +79,6 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   },
   {
     id: 'cross_timezone',
-    ...localeKeys('cross_timezone'),
     check: (_stats, sessions) => {
       const offsets = new Set(
         sessions
@@ -105,13 +90,11 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   },
   {
     id: 'schedule_4_weeks',
-    ...localeKeys('schedule_4_weeks'),
     check: (_stats, sessions, settings) =>
       computeScheduleAdherenceWeeks(sessions, settings?.schedule ?? null) >= 4,
   },
   {
     id: 'schedule_12_weeks',
-    ...localeKeys('schedule_12_weeks'),
     check: (_stats, sessions, settings) =>
       computeScheduleAdherenceWeeks(sessions, settings?.schedule ?? null) >= 12,
   },

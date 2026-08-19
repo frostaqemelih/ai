@@ -1,7 +1,6 @@
 import type { AchievementState, AppSettings, DerivedStats, SessionRecord } from '../types';
 import { addDaysToKey, getCurrentWeekKeys, toLocalDateKey } from '../utils/date';
 import { ACHIEVEMENT_DEFS } from './achievementDefs';
-import { translateSync, type SupportedLocale } from '../i18n';
 
 export interface WeeklyTotal {
   key: string;
@@ -132,15 +131,12 @@ export function deriveAchievements(
   stats: DerivedStats,
   sessions: SessionRecord[],
   unlockTimestamps: Record<string, number>,
-  settings?: AppSettings,
-  locale: SupportedLocale = 'en'
+  settings?: AppSettings
 ): AchievementState[] {
   return ACHIEVEMENT_DEFS.map((def) => {
     const unlocked = def.check(stats, sessions, settings);
     return {
       id: def.id,
-      title: translateSync(locale, def.title),
-      description: translateSync(locale, def.description),
       unlocked,
       unlockedAt: unlocked ? unlockTimestamps[def.id] : undefined,
     };

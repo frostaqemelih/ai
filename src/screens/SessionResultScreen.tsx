@@ -259,7 +259,10 @@ export function SessionResultScreen({ navigation, route }: Props) {
             <View style={styles.achievementsBox}>
               {newlyUnlocked.map((a) => (
                 <Text key={a.id} style={styles.achievementText}>
-                  🏅 {t('sessionResult.achievementUnlocked', { title: a.title })}
+                  🏅{' '}
+                  {t('sessionResult.achievementUnlocked', {
+                    title: t(`achievementDefs.${a.id}.title`),
+                  })}
                 </Text>
               ))}
             </View>

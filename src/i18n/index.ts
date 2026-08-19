@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import * as Localization from 'expo-localization';
 import en from './en.json';
 import tr from './tr.json';
-import { useAppData } from '../context/AppDataContext';
+import { useLanguageCode } from '../context/LocaleContext';
 import type { AppSettings } from '../types';
 
 export type SupportedLocale = 'en' | 'tr';
@@ -58,8 +58,8 @@ export function translateSync(
 // Only the "core" screens (Home, Onboarding, Session, SessionResult, Paywall)
 // are covered — see the Faz 6 summary for the remaining TODO screens.
 export function useTranslation() {
-  const { settings } = useAppData();
-  const locale = resolveLocale(settings.languageCode);
+  const languageCode = useLanguageCode();
+  const locale = resolveLocale(languageCode);
 
   return useMemo(() => {
     const t = (key: string, vars?: Record<string, string | number>): string =>

@@ -75,8 +75,12 @@ export function StatsScreen({ navigation }: Props) {
             <View style={styles.milestoneRow}>
               <Text style={styles.milestoneGlyph}>🎯</Text>
               <View style={styles.milestoneText}>
-                <Text style={styles.milestoneTitle}>{nextMilestone.title}</Text>
-                <Text style={styles.milestoneDescription}>{nextMilestone.description}</Text>
+                <Text style={styles.milestoneTitle}>
+                  {t(`achievementDefs.${nextMilestone.id}.title`)}
+                </Text>
+                <Text style={styles.milestoneDescription}>
+                  {t(`achievementDefs.${nextMilestone.id}.description`)}
+                </Text>
               </View>
             </View>
           ) : (
