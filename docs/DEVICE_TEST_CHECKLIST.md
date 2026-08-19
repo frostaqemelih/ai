@@ -115,6 +115,84 @@ These all follow directly from Faz 8's Bulgu 1 (the keep-awake fix) and the
       same day, confirm the streak counter increments; skip a day on
       either device and confirm it resets to 0 on the next check.
 
+## Faz 12 — Coin purchase reconciliation & edge cases
+
+**Web-invisible, all of it.** `reconcileCoinPurchases()` (the single
+function that credits coins for a store purchase — see
+`AppDataContext.tsx`) and the outcome-classification in
+`purchasesService.ts` have never run against a real store. Every item
+below needs a real RevenueCat **sandbox** setup: a Google Play Console
+license tester account (Android) or an App Store Connect sandbox tester
+(iOS), with the `coins` offering configured in RevenueCat pointing at real
+sandbox products.
+
+- [ ] **Baseline credit.** Buy `coins_small` once. Confirm the balance
+      increases by exactly that pack's coin amount, and that
+      `@dt/creditedTransactionIds` in AsyncStorage now contains that
+      transaction's identifier (inspect via a debug menu or React Native
+      DevTools — there's no in-app viewer for this key).
+- [ ] **Idempotency — the core guarantee.** Immediately after the purchase
+      above completes, force-kill the app and relaunch it. Confirm the
+      balance does **not** increase again on relaunch (the boot-time
+      `reconcileCoinPurchases()` call must see the transaction is already
+      in the credited set and skip it).
+- [ ] **Crash before reconciliation.** This is the scenario the whole
+      design exists for. Buy a coin pack, and the instant the store's own
+      "purchase successful" confirmation appears (before the app's own
+      success UI has a chance to run), force-kill the app from the OS app
+      switcher. Relaunch. Confirm the coins are credited on this next
+      launch — this proves reconciliation, not the purchase-flow success
+      handler, is what actually grants coins.
+- [ ] **PENDING purchase.** Google Play sandbox: use a test payment method
+      that produces a pending/delayed state (Play Console → license
+      testers → test card options include a "slow" or deferred card in
+      some regions; check current Play Console docs, this changes). Start
+      a coin purchase with it. Confirm: no coins appear immediately, the
+      persona-toned "still processing" message shows (not a raw error),
+      and once the payment actually clears (may take a few minutes),
+      reopening the app credits the coins without you doing anything else.
+- [ ] **ITEM_ALREADY_OWNED / stuck pending from a prior session.** Trigger
+      a pending purchase (as above) or otherwise leave an unconsumed
+      purchase in the store's queue, then try to buy the *same* pack again
+      before it resolves. Confirm no raw error dialog appears — the app
+      should show the same "processing" message and quietly trigger
+      reconciliation instead.
+- [ ] **User cancels.** Start any coin purchase, then dismiss the native
+      store payment sheet (back button / swipe down / X). Confirm the app
+      shows **no message at all** — not even a toast — and the purchasing
+      state clears so the buttons are tappable again immediately.
+- [ ] **Network error.** Enable Airplane Mode after tapping a coin pack but
+      before the store sheet finishes loading (or mid-purchase if your
+      test device allows toggling connectivity that precisely). Confirm
+      the app shows the "couldn't reach the store, you weren't charged"
+      message, not a generic error and not silence.
+- [ ] **Quantity (best-effort, may not be triggerable at all).** This
+      app's own UI never lets a user request more than 1 unit of a coin
+      pack — `Purchases.purchasePackage()` has no quantity parameter in
+      this RevenueCat SDK version. The only way this could matter is if
+      Google Play's own store surface (outside this app) allowed a
+      multi-quantity purchase of one of these SKUs, which requires
+      specific Play Console product configuration. If you can construct
+      that scenario, confirm the credited amount is `pack coins × quantity`
+      by checking `transactionQuantity()`'s best-effort parse of the raw
+      Android purchase receipt (`originalJson`) in `purchasesService.ts`.
+      If you can't construct it, this item can't be verified and should
+      stay unchecked with a note why, rather than being marked done.
+- [ ] **Restore Purchases does not grant coins.** After confirming Premium
+      correctly restores (existing Monetization section above), on the
+      same device tap "Restore Purchases" again and confirm the coin
+      balance is completely unaffected — coins are consumable and
+      intentionally excluded from the restore flow (see the disclosure
+      copy in StoreScreen and the note under the restore button in
+      PaywallScreen).
+- [ ] **Reinstall wipes coins (confirms the disclosure is accurate).** Note
+      the coin balance, uninstall the app, reinstall it, sign back into
+      the same sandbox account if applicable. Confirm the coin balance is
+      **0**, not restored — this is the exact behavior StoreScreen and
+      Terms warn the user about; if it doesn't hold, the disclosure copy is
+      lying and either the copy or `resetAllData`'s ledger-preservation
+      logic needs to change.
+
 ## What's already been verified (and by what)
 
 To be clear about the boundary: `tsc --noEmit` passing and the web preview
