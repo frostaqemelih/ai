@@ -248,6 +248,95 @@ itself, logs a warning) when its key is missing.
 Copy `.env.example` to `.env` and fill in the keys you need (see above).
 `.env` is gitignored — never commit real keys.
 
+**This `.env` file only works for local `npx expo start`. EAS's cloud
+build servers never see it** (it's gitignored, so it never leaves your
+machine) — every `EXPO_PUBLIC_*` var is `undefined` in an `eas build` run
+unless you set it up separately:
+
+- `eas.json` now has an `env` block on every build profile (`development`,
+  `preview`, `production`, `diagnostic`), but it only contains
+  **placeholders** — empty strings, or (for `development`/`preview`)
+  Google's public AdMob **test** IDs. It's checked into git, so it must
+  never hold a real secret. Its only job is to make every variable this
+  app reads visibly listed in one place.
+- Real values for `production` must be set as **EAS Environment
+  Variables**, which live on Expo's servers, not in this repo:
+  ```bash
+  eas env:set --name EXPO_PUBLIC_REVENUECAT_ANDROID_KEY --value <real-key> \
+    --environment production --visibility secret
+  ```
+  Repeat per variable (see `.env.example` for the full list) and per
+  platform where relevant. Use `--visibility secret` for anything that's a
+  genuine credential (RevenueCat, PostHog, Sentry, Supabase) — those are
+  only ever read by the app's JS bundle at runtime, so `secret` visibility
+  is safe for them.
+- **The two AdMob App ID variables are the one exception — they cannot be
+  `secret` visibility.** `app.config.js` reads
+  `EXPO_PUBLIC_ADMOB_ANDROID_APP_ID` / `EXPO_PUBLIC_ADMOB_IOS_APP_ID`
+  directly (not through a `services/*.ts` wrapper) to bake them into the
+  native `AndroidManifest.xml` / `Info.plist` **during `expo prebuild`**,
+  before the app ever runs. Per Expo's own docs, `secret`-visibility
+  variables are "not available during build configuration resolution" —
+  only `plaintext` or `sensitive` are. Set these two with
+  `--visibility plaintext` (an AdMob App ID isn't a secret in the
+  security sense anyway — it's visible in the shipped app's own
+  manifest). **If you get this wrong, `eas build` will not fail** — it
+  will silently fall back to Google's public test App ID and your
+  production build will serve test ads with no error anywhere. There is
+  currently no automated check in this repo that would catch that; verify
+  it manually by unzipping a downloaded production `.aab`/`.apk` and
+  grepping its manifest for `com.google.android.gms.ads.APPLICATION_ID`
+  before submitting.
+- `development` and `preview` don't need real keys at all to produce a
+  working, installable build — every non-AdMob integration in
+  `src/services/` fails safe (silently disables itself) when its key is
+  missing, and `app.config.js` already falls back to Google's test AdMob
+  IDs on its own. The placeholders already in `eas.json` are enough.
+
+## Build troubleshooting
+
+If `eas build` fails with a Gradle error, the actual cause is almost never
+in the top-level error EAS prints (often just "Gradle build failed with
+unknown error") — it's further down in the build log:
+
+1. Open the failed build on [expo.dev](https://expo.dev), find the **Run
+   gradlew** step, and open its full log (not just the last few lines
+   shown by default).
+2. Search that step's output for, in this order:
+   - `FAILURE:` — Gradle's own top-level failure banner, usually followed
+     by a one-line summary of what task failed.
+   - `* What went wrong:` — the actual human-readable error.
+   - `Caused by:` — the real root exception; if there are several stacked
+     `Caused by:` blocks, the **last** one is usually the true root cause,
+     not the first.
+3. Copy the text from `* What went wrong:` through the last `Caused by:`
+   block (it's almost always under 30 lines) and share that exact text —
+   not a screenshot, not a summary — when asking for help diagnosing it.
+   Everything above `FAILURE:` in the log (Gradle task graph, dependency
+   resolution chatter) is normally irrelevant noise for this purpose.
+
+Before diving into the Gradle log, two local checks catch most
+config-level problems in minutes, without spending an EAS build:
+
+```bash
+npx expo-doctor                                  # SDK/package version mismatches
+npx expo prebuild --platform android --clean     # applies every config plugin locally;
+                                                  # a broken plugin fails HERE, not in Gradle
+```
+
+If both succeed locally, the problem is very likely inside the actual
+native Gradle compile/link/resource-merge step, which cannot be
+reproduced without a JDK + Android SDK — `npx expo prebuild` succeeding
+does **not** guarantee `eas build` will succeed, it only rules out the
+config-plugin layer.
+
+There's also a minimal `diagnostic` build profile
+(`npm run build:diagnostic`) — internal distribution, plain APK, no dev
+client, no env vars beyond the built-in test-ID fallbacks — for when you
+just need to answer "does this project compile natively at all?" with as
+few moving parts as possible before troubleshooting anything more
+specific.
+
 ## Project structure
 
 - `src/context/AppDataContext.tsx` — single source of truth for all app
