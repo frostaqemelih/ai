@@ -8,7 +8,7 @@ import { Header } from '../components/Header';
 import { GlassCard } from '../components/GlassCard';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { colors, fonts, radius, spacing, typography } from '../theme';
-import { GOAL_PRESETS, DEFAULT_GOAL_MS } from '../utils/goals';
+import { GOAL_PRESETS, DEFAULT_GOAL_MS, goalPresetLabel } from '../utils/goals';
 import { useTranslation } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Schedule'>;
@@ -31,7 +31,7 @@ function pad(n: number): string {
 
 export function ScheduleScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { settings, setSchedule, requestNotificationsPermission } = useAppData();
 
   const [weekdays, setWeekdays] = useState<number[]>(settings.schedule?.weekdays ?? [2, 3, 4, 5, 6]);
@@ -137,12 +137,12 @@ export function ScheduleScreen({ navigation }: Props) {
               const active = preset.ms === goalMs;
               return (
                 <Pressable
-                  key={preset.label}
+                  key={preset.minutes}
                   onPress={() => setGoalMs(preset.ms)}
                   style={[styles.goalOption, active && styles.goalOptionActive]}
                 >
                   <Text style={[styles.goalOptionText, active && styles.goalOptionTextActive]}>
-                    {preset.label}
+                    {goalPresetLabel(preset, locale)}
                   </Text>
                 </Pressable>
               );

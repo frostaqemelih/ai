@@ -12,12 +12,14 @@ import { createDuel, isSupabaseConfigured, joinDuel } from '../services/duelServ
 import { fetchFriendStreakStatus, type FriendStreakStatus } from '../services/friendStreakService';
 import { reportError } from '../services/crashService';
 import { goalLabelForMs } from '../utils/goals';
+import { useTranslation } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Duel'>;
 
 export function DuelScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { settings, createFriendStreak, joinFriendStreak } = useAppData();
+  const { t, locale } = useTranslation();
   const [joinCode, setJoinCode] = useState('');
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
@@ -51,11 +53,11 @@ export function DuelScreen({ navigation }: Props) {
     const code = await createFriendStreak();
     setCreatingFriendStreak(false);
     if (!code) {
-      setFriendStreakError("Couldn't start a friend streak. Check your connection and try again.");
+      setFriendStreakError(t('duel.createFriendStreakFailed'));
       return;
     }
     Share.share({
-      message: `Let's keep a Don't Touch Friend Streak going! Enter code ${code} in the app to link up — we both need to complete a run each day to keep it alive.`,
+      message: t('duel.shareCreateFriendStreakMessage', { code }),
     }).catch((err) => reportError(err));
   };
 
@@ -66,7 +68,7 @@ export function DuelScreen({ navigation }: Props) {
     const success = await joinFriendStreak(friendJoinCode);
     setJoiningFriendStreak(false);
     if (!success) {
-      setFriendStreakError('Code not found, or already linked to someone else.');
+      setFriendStreakError(t('duel.friendStreakCodeNotFound'));
     }
   };
 
@@ -76,13 +78,14 @@ export function DuelScreen({ navigation }: Props) {
     const result = await createDuel(settings.lastSelectedGoalMs);
     setCreating(false);
     if (!result) {
-      setError("Couldn't create a duel. Check your connection and try again.");
+      setError(t('duel.createDuelFailed'));
       return;
     }
     Share.share({
-      message: `Join my Don't Touch duel! Goal: ${goalLabelForMs(
-        settings.lastSelectedGoalMs
-      )}. Enter code ${result.code} in the app to accept.`,
+      message: t('duel.shareCreateMessage', {
+        goal: goalLabelForMs(settings.lastSelectedGoalMs, locale),
+        code: result.code,
+      }),
     }).catch((err) => reportError(err));
     navigation.replace('Countdown', { goalMs: settings.lastSelectedGoalMs, duelId: result.duelId });
   };
@@ -94,7 +97,7 @@ export function DuelScreen({ navigation }: Props) {
     const result = await joinDuel(joinCode);
     setJoining(false);
     if (!result) {
-      setError('Code not found. Double-check it with your friend.');
+      setError(t('duel.codeNotFound'));
       return;
     }
     navigation.replace('Countdown', { goalMs: result.goalMs, duelId: result.duelId });
@@ -102,53 +105,47 @@ export function DuelScreen({ navigation }: Props) {
 
   return (
     <View style={styles.screen}>
-      <Header title="FRIEND DUEL" />
+      <Header title={t('duel.title')} />
       <ScrollView
         style={styles.container}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xl }]}
       >
         {!configured ? (
           <GlassCard style={styles.card}>
-            <Text style={styles.notConfiguredText}>
-              Friend Duel isn't set up yet on this build. It needs a Supabase project — see the README.
-            </Text>
+            <Text style={styles.notConfiguredText}>{t('duel.notConfigured')}</Text>
           </GlassCard>
         ) : (
           <>
             <Text style={styles.intro}>
-              Race a friend to see who lasts longer, untouched. Your goal ({goalLabelForMs(
-                settings.lastSelectedGoalMs
-              )}) is shared with them automatically.
+              {t('duel.intro', { goal: goalLabelForMs(settings.lastSelectedGoalMs, locale) })}
             </Text>
 
             <GlassCard style={styles.card}>
-              <Text style={styles.cardTitle}>Start a duel</Text>
-              <Text style={styles.cardSubtitle}>
-                Create a code, send it to a friend, then start your run.
-              </Text>
+              <Text style={styles.cardTitle}>{t('duel.startDuelTitle')}</Text>
+              <Text style={styles.cardSubtitle}>{t('duel.startDuelSubtitle')}</Text>
               <PrimaryButton
-                label={creating ? 'CREATING…' : 'CREATE DUEL'}
+                label={creating ? t('duel.creating') : t('duel.createDuel')}
                 onPress={handleCreate}
                 disabled={creating}
               />
             </GlassCard>
 
             <GlassCard style={styles.card}>
-              <Text style={styles.cardTitle}>Join a duel</Text>
+              <Text style={styles.cardTitle}>{t('duel.joinDuelTitle')}</Text>
               <TextInput
                 value={joinCode}
-                onChangeText={(t) => {
+                onChangeText={(v) => {
                   setError(null);
-                  setJoinCode(t.toUpperCase());
+                  setJoinCode(v.toUpperCase());
                 }}
-                placeholder="ENTER CODE"
+                placeholder={t('duel.enterCode')}
                 placeholderTextColor={colors.textTertiary}
                 autoCapitalize="characters"
                 maxLength={6}
                 style={styles.input}
               />
               <PrimaryButton
-                label={joining ? 'JOINING…' : 'JOIN DUEL'}
+                label={joining ? t('duel.joining') : t('duel.joinDuel')}
                 onPress={handleJoin}
                 disabled={joining || !joinCode.trim()}
               />
@@ -157,11 +154,8 @@ export function DuelScreen({ navigation }: Props) {
             {error && <Text style={styles.error}>{error}</Text>}
 
             <View style={styles.sectionDivider} />
-            <Text style={styles.sectionHeading}>FRIEND STREAK</Text>
-            <Text style={styles.intro}>
-              A persistent streak with one friend — every day you BOTH complete a run, it grows.
-              Miss a day either side and it resets.
-            </Text>
+            <Text style={styles.sectionHeading}>{t('duel.friendStreakHeading')}</Text>
+            <Text style={styles.intro}>{t('duel.friendStreakIntro')}</Text>
 
             {settings.friendLinkId ? (
               <GlassCard style={styles.card}>
@@ -171,10 +165,10 @@ export function DuelScreen({ navigation }: Props) {
                   <>
                     {!friendStreakStatus.linked ? (
                       <>
-                        <Text style={styles.cardTitle}>Waiting for your friend</Text>
+                        <Text style={styles.cardTitle}>{t('duel.waitingForFriendTitle')}</Text>
                         {settings.friendLinkCode && (
                           <Text style={styles.cardSubtitle}>
-                            Share this code: {settings.friendLinkCode}
+                            {t('duel.shareThisCode', { code: settings.friendLinkCode })}
                           </Text>
                         )}
                       </>
@@ -182,58 +176,64 @@ export function DuelScreen({ navigation }: Props) {
                       <>
                         <Text style={styles.friendStreakCount}>
                           🔥 {friendStreakStatus.currentStreak}{' '}
-                          {friendStreakStatus.currentStreak === 1 ? 'DAY' : 'DAYS'}
+                          {friendStreakStatus.currentStreak === 1
+                            ? t('duel.streakDaySingular')
+                            : t('duel.streakDayPlural')}
                         </Text>
                         <Text style={styles.cardSubtitle}>
-                          You: {friendStreakStatus.checkedInToday ? '✓ checked in today' : 'not yet today'}
+                          {t('duel.youCheckedIn', {
+                            status: friendStreakStatus.checkedInToday
+                              ? t('duel.checkedInToday')
+                              : t('duel.notYetToday'),
+                          })}
                           {'  ·  '}
-                          Friend: {friendStreakStatus.partnerCheckedInToday ? '✓ checked in today' : 'not yet today'}
+                          {t('duel.friendCheckedIn', {
+                            status: friendStreakStatus.partnerCheckedInToday
+                              ? t('duel.checkedInToday')
+                              : t('duel.notYetToday'),
+                          })}
                         </Text>
                       </>
                     )}
                     <PrimaryButton
-                      label="REFRESH"
+                      label={t('duel.refresh')}
                       variant="ghost"
                       onPress={() => refreshFriendStreak(settings.friendLinkId!)}
                       disabled={loadingFriendStreak}
                     />
                   </>
                 ) : (
-                  <Text style={styles.cardSubtitle}>
-                    Couldn't load your friend streak. Check your connection and refresh.
-                  </Text>
+                  <Text style={styles.cardSubtitle}>{t('duel.friendStreakLoadFailed')}</Text>
                 )}
               </GlassCard>
             ) : (
               <>
                 <GlassCard style={styles.card}>
-                  <Text style={styles.cardTitle}>Start a friend streak</Text>
-                  <Text style={styles.cardSubtitle}>
-                    Create a code and send it to one friend — it's a permanent link, once set.
-                  </Text>
+                  <Text style={styles.cardTitle}>{t('duel.startFriendStreakTitle')}</Text>
+                  <Text style={styles.cardSubtitle}>{t('duel.startFriendStreakSubtitle')}</Text>
                   <PrimaryButton
-                    label={creatingFriendStreak ? 'STARTING…' : 'START FRIEND STREAK'}
+                    label={creatingFriendStreak ? t('duel.starting') : t('duel.startFriendStreak')}
                     onPress={handleCreateFriendStreak}
                     disabled={creatingFriendStreak}
                   />
                 </GlassCard>
 
                 <GlassCard style={styles.card}>
-                  <Text style={styles.cardTitle}>Join a friend streak</Text>
+                  <Text style={styles.cardTitle}>{t('duel.joinFriendStreakTitle')}</Text>
                   <TextInput
                     value={friendJoinCode}
-                    onChangeText={(t) => {
+                    onChangeText={(v) => {
                       setFriendStreakError(null);
-                      setFriendJoinCode(t.toUpperCase());
+                      setFriendJoinCode(v.toUpperCase());
                     }}
-                    placeholder="ENTER CODE"
+                    placeholder={t('duel.enterCode')}
                     placeholderTextColor={colors.textTertiary}
                     autoCapitalize="characters"
                     maxLength={6}
                     style={styles.input}
                   />
                   <PrimaryButton
-                    label={joiningFriendStreak ? 'JOINING…' : 'JOIN FRIEND STREAK'}
+                    label={joiningFriendStreak ? t('duel.joining') : t('duel.joinFriendStreak')}
                     onPress={handleJoinFriendStreak}
                     disabled={joiningFriendStreak || !friendJoinCode.trim()}
                   />

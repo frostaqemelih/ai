@@ -34,7 +34,7 @@ export function OnboardingScreen({ navigation }: Props) {
     selectPersona,
     setSchedule,
   } = useAppData();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [step, setStep] = useState(0);
   const [chosenPersonaId, setChosenPersonaId] = useState<PersonaId>(DEFAULT_PERSONA_ID);
   const [chosenReasonId, setChosenReasonId] = useState<string | null>(null);
@@ -195,7 +195,7 @@ export function OnboardingScreen({ navigation }: Props) {
           <View style={styles.stepBlock}>
             <Text style={styles.title}>{t('onboarding.firstSessionTitle')}</Text>
             <Text style={styles.subtitle}>
-              {t('onboarding.firstSessionSubtitle', { goal: goalLabelForMs(firstGoalMs) })}
+              {t('onboarding.firstSessionSubtitle', { goal: goalLabelForMs(firstGoalMs, locale) })}
             </Text>
           </View>
         )}

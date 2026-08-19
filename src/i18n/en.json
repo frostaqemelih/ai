@@ -32,7 +32,32 @@
     "bestEver": "Best Ever"
   },
   "session": {
-    "dontTouch": "DON'T TOUCH"
+    "dontTouch": "DON'T TOUCH",
+    "ghostSecondsToBeat": "{{seconds}}S TO BEAT YOUR RECORD",
+    "ghostNewRecord": "NEW PERSONAL BEST"
+  },
+  "ads": {
+    "close": "Close",
+    "unavailableTitle": "Ads aren't available here",
+    "unavailableHint": "Rewarded ads need a real device build — this web preview can't show one.",
+    "loading": "Loading ad…"
+  },
+  "achievementDefs": {
+    "first_session": { "title": "First Session", "description": "Complete your first session" },
+    "five_minutes": { "title": "5 Minutes", "description": "Stay away for 5 minutes straight" },
+    "fifteen_minutes": { "title": "15 Minutes", "description": "Stay away for 15 minutes straight" },
+    "thirty_minutes": { "title": "30 Minutes", "description": "Stay away for 30 minutes straight" },
+    "one_hour": { "title": "1 Hour", "description": "Stay away for a full hour" },
+    "seven_day_streak": { "title": "7 Day Streak", "description": "Complete a session 7 days in a row" },
+    "ten_sessions": { "title": "10 Sessions", "description": "Complete 10 sessions" },
+    "personal_best": { "title": "Personal Best", "description": "Beat your own record" },
+    "total_focus_10h": { "title": "10 Hours Away", "description": "Accumulate 10 hours of total focus time" },
+    "total_focus_50h": { "title": "50 Hours Away", "description": "Accumulate 50 hours of total focus time" },
+    "total_focus_100h": { "title": "100 Hours Away", "description": "Accumulate 100 hours of total focus time" },
+    "same_goal_10": { "title": "Creature of Habit", "description": "Complete 10 sessions in a row with the same goal" },
+    "cross_timezone": { "title": "No Matter Where", "description": "Complete sessions from 3 different timezones" },
+    "schedule_4_weeks": { "title": "Creature of Routine", "description": "Hit every scheduled session for 4 straight weeks" },
+    "schedule_12_weeks": { "title": "It Stuck", "description": "Hit every scheduled session for 12 straight weeks" }
   },
   "sessionResult": {
     "sessionComplete": "SESSION COMPLETE",
@@ -383,6 +408,23 @@
     "daySun": "SUN"
   },
   "stats": {
+    "title": "STATISTICS",
+    "totalFocusTime": "Total Focus Time",
+    "sessions": "Sessions",
+    "personalBest": "Personal Best",
+    "averageSession": "Average Session",
+    "currentStreak": "Current Streak",
+    "longestStreak": "Longest Streak",
+    "daysSuffix": "{{count}} days",
+    "thisWeek": "This week",
+    "leaderboard": "Leaderboard",
+    "yourBest": "YOUR BEST",
+    "globalToday": "GLOBAL TODAY",
+    "comingSoon": "Coming soon",
+    "globalHint": "The world has stayed phone-free for {{duration}} today.",
+    "timeSpentAway": "Time spent away",
+    "sixMonthTrend": "6-month trend",
+    "trendLocked": "See your focus trend over time — unlock with Premium",
     "nextMilestone": "NEXT MILESTONE",
     "allUnlocked": "Every milestone unlocked. You're the long game."
   },
@@ -435,5 +477,93 @@
     "periodWeek": "week",
     "periodMonth": "month",
     "periodYear": "year"
+  },
+  "settings": {
+    "title": "SETTINGS",
+    "coins": "Coins",
+    "coinHint": "Earn coins by completing runs, or watch a quick video to double your reward.",
+    "openStore": "OPEN STORE",
+    "sound": "Sound",
+    "haptics": "Haptics",
+    "reminders": "Reminders",
+    "keepScreenAwake": "Keep screen awake during sessions",
+    "keepAwakeWarning": "If your screen locks on its own during a run, the session will end — even if you never touched the phone.",
+    "language": "Language",
+    "contributeGlobalStats": "Contribute to global stats (anonymous)",
+    "premiumTitle": "Premium",
+    "premiumActive": "✓ ACTIVE",
+    "premiumSubtitle": "Unlock the full experience",
+    "goPremium": "GO PREMIUM",
+    "premiumThemeGold": "Premium theme (gold)",
+    "friendDuel": "🤝 Friend Duel",
+    "friendDuelHint": "Race a friend to see who lasts longer, untouched. Fully optional — nothing is sent anywhere unless you create or join a duel.",
+    "openDuel": "OPEN DUEL",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "noAccountTitle": "NO ACCOUNT REQUIRED",
+    "noAccountSubtext": "No usage-access permission. No app list read. No account. No profile setup. All your data stays on this device — nothing is uploaded anywhere unless you turn on an optional feature above (Friend Duel, global stats) yourself.",
+    "resetProgress": "RESET PROGRESS",
+    "resetConfirmTitle": "Reset all progress?",
+    "resetConfirmBody": "This deletes your session history, streak, coins, and achievements from this device. This cannot be undone.",
+    "cancel": "Cancel",
+    "reset": "Reset"
+  },
+  "achievements": {
+    "title": "ACHIEVEMENTS",
+    "unlockedCount": "{{unlocked}} / {{total}} unlocked"
+  },
+  "goalSelect": {
+    "title": "Choose your goal",
+    "custom": "CUSTOM",
+    "minutesPlaceholder": "Minutes",
+    "errorRange": "Enter a number between {{min}} and {{max}}",
+    "errorFreeCap": "Free plan caps runs at {{max}} min. Go Premium for up to 24 hours.",
+    "upsell": "🔒 Go Premium for runs up to 24 hours",
+    "setGoal": "SET GOAL",
+    "backToPresets": "Back to presets"
+  },
+  "countdown": {
+    "go": "GO"
+  },
+  "duel": {
+    "title": "FRIEND DUEL",
+    "notConfigured": "Friend Duel isn't set up yet on this build. It needs a Supabase project — see the README.",
+    "intro": "Race a friend to see who lasts longer, untouched. Your goal ({{goal}}) is shared with them automatically.",
+    "startDuelTitle": "Start a duel",
+    "startDuelSubtitle": "Create a code, send it to a friend, then start your run.",
+    "createDuel": "CREATE DUEL",
+    "creating": "CREATING…",
+    "joinDuelTitle": "Join a duel",
+    "enterCode": "ENTER CODE",
+    "joinDuel": "JOIN DUEL",
+    "joining": "JOINING…",
+    "createDuelFailed": "Couldn't create a duel. Check your connection and try again.",
+    "codeNotFound": "Code not found. Double-check it with your friend.",
+    "shareCreateMessage": "Join my Don't Touch duel! Goal: {{goal}}. Enter code {{code}} in the app to accept.",
+    "friendStreakHeading": "FRIEND STREAK",
+    "friendStreakIntro": "A persistent streak with one friend — every day you BOTH complete a run, it grows. Miss a day either side and it resets.",
+    "waitingForFriendTitle": "Waiting for your friend",
+    "shareThisCode": "Share this code: {{code}}",
+    "streakDaySingular": "DAY",
+    "streakDayPlural": "DAYS",
+    "youCheckedIn": "You: {{status}}",
+    "friendCheckedIn": "Friend: {{status}}",
+    "checkedInToday": "✓ checked in today",
+    "notYetToday": "not yet today",
+    "refresh": "REFRESH",
+    "friendStreakLoadFailed": "Couldn't load your friend streak. Check your connection and refresh.",
+    "startFriendStreakTitle": "Start a friend streak",
+    "startFriendStreakSubtitle": "Create a code and send it to one friend — it's a permanent link, once set.",
+    "startFriendStreak": "START FRIEND STREAK",
+    "starting": "STARTING…",
+    "joinFriendStreakTitle": "Join a friend streak",
+    "joinFriendStreak": "JOIN FRIEND STREAK",
+    "createFriendStreakFailed": "Couldn't start a friend streak. Check your connection and try again.",
+    "friendStreakCodeNotFound": "Code not found, or already linked to someone else.",
+    "shareCreateFriendStreakMessage": "Let's keep a Don't Touch Friend Streak going! Enter code {{code}} in the app to link up — we both need to complete a run each day to keep it alive."
+  },
+  "legal": {
+    "privacyTitle": "PRIVACY POLICY",
+    "termsTitle": "TERMS OF SERVICE"
   }
 }

@@ -7,13 +7,15 @@ import type { RootStackParamList } from '../navigation/types';
 import { useAppData } from '../context/AppDataContext';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { colors, fonts, radius, spacing, typography } from '../theme';
-import { GOAL_PRESETS, MIN_CUSTOM_MINUTES, maxCustomMinutesFor } from '../utils/goals';
+import { GOAL_PRESETS, MIN_CUSTOM_MINUTES, maxCustomMinutesFor, goalPresetLabel } from '../utils/goals';
+import { useTranslation } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GoalSelect'>;
 
 export function GoalSelectScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { settings, updateSettings, isPremium } = useAppData();
+  const { t, locale } = useTranslation();
   const [customMode, setCustomMode] = useState(false);
   const [customMinutes, setCustomMinutes] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -29,8 +31,8 @@ export function GoalSelectScreen({ navigation }: Props) {
     if (!Number.isFinite(minutes) || minutes < MIN_CUSTOM_MINUTES || minutes > maxMinutes) {
       setError(
         isPremium
-          ? `Enter a number between ${MIN_CUSTOM_MINUTES} and ${maxMinutes}`
-          : `Free plan caps runs at ${maxMinutes} min. Go Premium for up to 24 hours.`
+          ? t('goalSelect.errorRange', { min: MIN_CUSTOM_MINUTES, max: maxMinutes })
+          : t('goalSelect.errorFreeCap', { max: maxMinutes })
       );
       return;
     }
@@ -50,7 +52,7 @@ export function GoalSelectScreen({ navigation }: Props) {
       </Pressable>
       <View style={[styles.sheet, { paddingBottom: insets.bottom + spacing.lg }]}>
         <View style={styles.handle} />
-        <Text style={styles.title}>Choose your goal</Text>
+        <Text style={styles.title}>{t('goalSelect.title')}</Text>
 
         {!customMode ? (
           <View style={styles.grid}>
@@ -58,30 +60,30 @@ export function GoalSelectScreen({ navigation }: Props) {
               const active = preset.ms === settings.lastSelectedGoalMs;
               return (
                 <Pressable
-                  key={preset.label}
+                  key={preset.minutes}
                   onPress={() => choose(preset.ms)}
                   style={[styles.option, active && styles.optionActive]}
                 >
                   <Text style={[styles.optionText, active && styles.optionTextActive]}>
-                    {preset.label}
+                    {goalPresetLabel(preset, locale)}
                   </Text>
                 </Pressable>
               );
             })}
             <Pressable style={styles.option} onPress={() => setCustomMode(true)}>
-              <Text style={styles.optionText}>CUSTOM</Text>
+              <Text style={styles.optionText}>{t('goalSelect.custom')}</Text>
             </Pressable>
           </View>
         ) : (
           <View style={styles.customContainer}>
             <TextInput
               value={customMinutes}
-              onChangeText={(t) => {
+              onChangeText={(v) => {
                 setError(null);
-                setCustomMinutes(t.replace(/[^0-9]/g, ''));
+                setCustomMinutes(v.replace(/[^0-9]/g, ''));
               }}
               keyboardType="number-pad"
-              placeholder="Minutes"
+              placeholder={t('goalSelect.minutesPlaceholder')}
               placeholderTextColor={colors.textTertiary}
               style={styles.input}
               autoFocus
@@ -90,12 +92,12 @@ export function GoalSelectScreen({ navigation }: Props) {
             {error ? <Text style={styles.error}>{error}</Text> : null}
             {!isPremium && (
               <Pressable onPress={goToPaywall} hitSlop={8}>
-                <Text style={styles.upsell}>🔒 Go Premium for runs up to 24 hours</Text>
+                <Text style={styles.upsell}>{t('goalSelect.upsell')}</Text>
               </Pressable>
             )}
-            <PrimaryButton label="SET GOAL" onPress={submitCustom} />
+            <PrimaryButton label={t('goalSelect.setGoal')} onPress={submitCustom} />
             <Pressable onPress={() => setCustomMode(false)} hitSlop={8}>
-              <Text style={styles.back}>Back to presets</Text>
+              <Text style={styles.back}>{t('goalSelect.backToPresets')}</Text>
             </Pressable>
           </View>
         )}

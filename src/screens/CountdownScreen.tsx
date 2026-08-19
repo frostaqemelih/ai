@@ -6,14 +6,15 @@ import type { RootStackParamList } from '../navigation/types';
 import { useAppData } from '../context/AppDataContext';
 import { colors, typography } from '../theme';
 import { reportError } from '../services/crashService';
+import { useTranslation } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Countdown'>;
-
-const SEQUENCE = ['3', '2', '1', 'GO'];
 
 export function CountdownScreen({ navigation, route }: Props) {
   const { goalMs, duelId } = route.params;
   const { settings } = useAppData();
+  const { t } = useTranslation();
+  const SEQUENCE = ['3', '2', '1', t('countdown.go')];
   const [index, setIndex] = useState(0);
   const scale = React.useRef(new Animated.Value(0.6)).current;
 

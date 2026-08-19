@@ -7,17 +7,19 @@ import { useAppData } from '../context/AppDataContext';
 import { Header } from '../components/Header';
 import { AchievementCard } from '../components/AchievementCard';
 import { colors, spacing, typography } from '../theme';
+import { useTranslation } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Achievements'>;
 
 export function AchievementsScreen(_props: Props) {
   const insets = useSafeAreaInsets();
   const { achievements } = useAppData();
+  const { t } = useTranslation();
   const unlockedCount = achievements.filter((a) => a.unlocked).length;
 
   return (
     <View style={styles.screen}>
-      <Header title="ACHIEVEMENTS" />
+      <Header title={t('achievements.title')} />
       <FlatList
         style={styles.container}
         contentContainerStyle={[
@@ -28,7 +30,7 @@ export function AchievementsScreen(_props: Props) {
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <Text style={styles.subheader}>
-            {unlockedCount} / {achievements.length} unlocked
+            {t('achievements.unlockedCount', { unlocked: unlockedCount, total: achievements.length })}
           </Text>
         }
         renderItem={({ item }) => <AchievementCard achievement={item} />}

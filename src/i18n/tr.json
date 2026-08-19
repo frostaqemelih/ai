@@ -32,7 +32,32 @@
     "bestEver": "Tüm Zamanların En İyisi"
   },
   "session": {
-    "dontTouch": "DOKUNMA"
+    "dontTouch": "DOKUNMA",
+    "ghostSecondsToBeat": "REKORU KIRMAYA {{seconds}} SN",
+    "ghostNewRecord": "YENİ KİŞİSEL REKOR"
+  },
+  "ads": {
+    "close": "Kapat",
+    "unavailableTitle": "Reklamlar burada kullanılamıyor",
+    "unavailableHint": "Ödüllü reklamlar gerçek bir cihaz build'i gerektirir — bu web önizlemesi bir tane gösteremez.",
+    "loading": "Reklam yükleniyor…"
+  },
+  "achievementDefs": {
+    "first_session": { "title": "İlk Oturum", "description": "İlk oturumunu tamamla" },
+    "five_minutes": { "title": "5 Dakika", "description": "Aralıksız 5 dakika uzak kal" },
+    "fifteen_minutes": { "title": "15 Dakika", "description": "Aralıksız 15 dakika uzak kal" },
+    "thirty_minutes": { "title": "30 Dakika", "description": "Aralıksız 30 dakika uzak kal" },
+    "one_hour": { "title": "1 Saat", "description": "Tam bir saat uzak kal" },
+    "seven_day_streak": { "title": "7 Günlük Seri", "description": "7 gün üst üste bir oturum tamamla" },
+    "ten_sessions": { "title": "10 Oturum", "description": "10 oturum tamamla" },
+    "personal_best": { "title": "Kişisel Rekor", "description": "Kendi rekorunu kır" },
+    "total_focus_10h": { "title": "10 Saat Uzakta", "description": "Toplam 10 saatlik odak süresi biriktir" },
+    "total_focus_50h": { "title": "50 Saat Uzakta", "description": "Toplam 50 saatlik odak süresi biriktir" },
+    "total_focus_100h": { "title": "100 Saat Uzakta", "description": "Toplam 100 saatlik odak süresi biriktir" },
+    "same_goal_10": { "title": "Alışkanlık Yaratığı", "description": "Aynı hedefle üst üste 10 oturum tamamla" },
+    "cross_timezone": { "title": "Nerede Olursan Ol", "description": "3 farklı saat diliminden oturum tamamla" },
+    "schedule_4_weeks": { "title": "Rutin Yaratığı", "description": "4 hafta üst üste planlanan her oturumu yap" },
+    "schedule_12_weeks": { "title": "Kalıcı Oldu", "description": "12 hafta üst üste planlanan her oturumu yap" }
   },
   "sessionResult": {
     "sessionComplete": "OTURUM TAMAMLANDI",
@@ -383,6 +408,23 @@
     "daySun": "PAZ"
   },
   "stats": {
+    "title": "İSTATİSTİKLER",
+    "totalFocusTime": "Toplam Odak Süresi",
+    "sessions": "Oturumlar",
+    "personalBest": "Kişisel Rekor",
+    "averageSession": "Ortalama Oturum",
+    "currentStreak": "Güncel Seri",
+    "longestStreak": "En Uzun Seri",
+    "daysSuffix": "{{count}} gün",
+    "thisWeek": "Bu hafta",
+    "leaderboard": "Liderlik Tablosu",
+    "yourBest": "EN İYİN",
+    "globalToday": "BUGÜN DÜNYA",
+    "comingSoon": "Yakında",
+    "globalHint": "Dünya bugün telefondan {{duration}} uzak kaldı.",
+    "timeSpentAway": "Uzakta geçirilen süre",
+    "sixMonthTrend": "6 aylık trend",
+    "trendLocked": "Zaman içindeki odak trendini gör — Premium ile aç",
     "nextMilestone": "SIRADAKİ MİLESTONE",
     "allUnlocked": "Tüm milestone'lar açıldı. Sen uzun oyunu oynuyorsun."
   },
@@ -435,5 +477,93 @@
     "periodWeek": "hafta",
     "periodMonth": "ay",
     "periodYear": "yıl"
+  },
+  "settings": {
+    "title": "AYARLAR",
+    "coins": "Coin'ler",
+    "coinHint": "Oturumları tamamlayarak coin kazan, ya da kısa bir video izleyerek ödülünü ikiye katla.",
+    "openStore": "MAĞAZAYI AÇ",
+    "sound": "Ses",
+    "haptics": "Titreşim",
+    "reminders": "Hatırlatıcılar",
+    "keepScreenAwake": "Oturum sırasında ekranı açık tut",
+    "keepAwakeWarning": "Ekranın oturum sırasında kendiliğinden kilitlenirse, telefonuna hiç dokunmasan bile oturum sona erer.",
+    "language": "Dil",
+    "contributeGlobalStats": "Küresel istatistiklere katkıda bulun (anonim)",
+    "premiumTitle": "Premium",
+    "premiumActive": "✓ AKTİF",
+    "premiumSubtitle": "Tüm deneyimin kilidini aç",
+    "goPremium": "PREMIUM'A GEÇ",
+    "premiumThemeGold": "Premium tema (altın)",
+    "friendDuel": "🤝 Arkadaş Düellosu",
+    "friendDuelHint": "Kim daha uzun dayanacak görmek için bir arkadaşınla yarış. Tamamen isteğe bağlı — düello oluşturmadıkça ya da katılmadıkça hiçbir şey gönderilmez.",
+    "openDuel": "DÜELLOYU AÇ",
+    "privacyPolicy": "Gizlilik Politikası",
+    "termsOfService": "Kullanım Koşulları",
+    "noAccountTitle": "HESAP GEREKMİYOR",
+    "noAccountSubtext": "Kullanım erişimi izni yok. Uygulama listesi okuma yok. Hesap yok. Profil kurulumu yok. Tüm verilerin bu cihazda kalır — yukarıdaki isteğe bağlı bir özelliği (Arkadaş Düellosu, küresel istatistikler) kendin açmadıkça hiçbir şey hiçbir yere yüklenmez.",
+    "resetProgress": "İLERLEMEYİ SIFIRLA",
+    "resetConfirmTitle": "Tüm ilerleme sıfırlansın mı?",
+    "resetConfirmBody": "Bu, bu cihazdaki oturum geçmişini, serini, coin'lerini ve başarımlarını siler. Bu işlem geri alınamaz.",
+    "cancel": "İptal",
+    "reset": "Sıfırla"
+  },
+  "achievements": {
+    "title": "BAŞARIMLAR",
+    "unlockedCount": "{{unlocked}} / {{total}} açıldı"
+  },
+  "goalSelect": {
+    "title": "Hedefini seç",
+    "custom": "ÖZEL",
+    "minutesPlaceholder": "Dakika",
+    "errorRange": "{{min}} ile {{max}} arasında bir sayı gir",
+    "errorFreeCap": "Ücretsiz plan oturumları {{max}} dk ile sınırlar. 24 saate kadar için Premium'a geç.",
+    "upsell": "🔒 24 saate kadar oturumlar için Premium'a geç",
+    "setGoal": "HEDEFİ AYARLA",
+    "backToPresets": "Hazır seçeneklere dön"
+  },
+  "countdown": {
+    "go": "BAŞLA"
+  },
+  "duel": {
+    "title": "ARKADAŞ DÜELLOSU",
+    "notConfigured": "Arkadaş Düellosu bu build'de henüz kurulmadı. Bir Supabase projesi gerekiyor — README'ye bakın.",
+    "intro": "Kim daha uzun dayanacak görmek için bir arkadaşınla yarış. Hedefin ({{goal}}) otomatik olarak onunla paylaşılır.",
+    "startDuelTitle": "Bir düello başlat",
+    "startDuelSubtitle": "Bir kod oluştur, bir arkadaşına gönder, sonra oturumunu başlat.",
+    "createDuel": "DÜELLO OLUŞTUR",
+    "creating": "OLUŞTURULUYOR…",
+    "joinDuelTitle": "Bir düelloya katıl",
+    "enterCode": "KODU GİR",
+    "joinDuel": "DÜELLOYA KATIL",
+    "joining": "KATILINIYOR…",
+    "createDuelFailed": "Düello oluşturulamadı. Bağlantını kontrol edip tekrar dene.",
+    "codeNotFound": "Kod bulunamadı. Arkadaşınla birlikte kontrol et.",
+    "shareCreateMessage": "Don't Touch düellome katıl! Hedef: {{goal}}. Kabul etmek için uygulamada {{code}} kodunu gir.",
+    "friendStreakHeading": "ARKADAŞ SERİSİ",
+    "friendStreakIntro": "Bir arkadaşınla kalıcı bir seri — İKİNİZ de her gün bir oturum tamamladığınızda büyür. Bir taraf bir günü kaçırırsa sıfırlanır.",
+    "waitingForFriendTitle": "Arkadaşın bekleniyor",
+    "shareThisCode": "Bu kodu paylaş: {{code}}",
+    "streakDaySingular": "GÜN",
+    "streakDayPlural": "GÜN",
+    "youCheckedIn": "Sen: {{status}}",
+    "friendCheckedIn": "Arkadaşın: {{status}}",
+    "checkedInToday": "✓ bugün giriş yaptı",
+    "notYetToday": "henüz bugün değil",
+    "refresh": "YENİLE",
+    "friendStreakLoadFailed": "Arkadaş serin yüklenemedi. Bağlantını kontrol edip yenile.",
+    "startFriendStreakTitle": "Bir arkadaş serisi başlat",
+    "startFriendStreakSubtitle": "Bir kod oluştur ve tek bir arkadaşına gönder — bir kez kurulunca kalıcı bir bağlantıdır.",
+    "startFriendStreak": "ARKADAŞ SERİSİ BAŞLAT",
+    "starting": "BAŞLATILIYOR…",
+    "joinFriendStreakTitle": "Bir arkadaş serisine katıl",
+    "joinFriendStreak": "ARKADAŞ SERİSİNE KATIL",
+    "createFriendStreakFailed": "Arkadaş serisi başlatılamadı. Bağlantını kontrol edip tekrar dene.",
+    "friendStreakCodeNotFound": "Kod bulunamadı, ya da zaten başka birine bağlı.",
+    "shareCreateFriendStreakMessage": "Don't Touch Arkadaş Serisi'ni sürdürelim! Bağlanmak için uygulamada {{code}} kodunu gir — ikimizin de canlı tutmak için her gün bir oturum tamamlaması gerekiyor."
+  },
+  "legal": {
+    "privacyTitle": "GİZLİLİK POLİTİKASI",
+    "termsTitle": "KULLANIM KOŞULLARI"
   }
 }

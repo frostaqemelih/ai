@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, radius, spacing, typography } from '../theme';
 import { showRewardedAd } from '../services/adsService';
+import { useTranslation } from '../i18n';
 
 interface RewardedAdModalProps {
   visible: boolean;
@@ -16,6 +17,7 @@ interface RewardedAdModalProps {
 // unavailable (see adsService.web.ts), so this shows a plain explanation
 // instead of silently closing or faking a reward.
 export function RewardedAdModal({ visible, prompt, onResult }: RewardedAdModalProps) {
+  const { t } = useTranslation();
   const [unavailable, setUnavailable] = useState(false);
   const requestIdRef = useRef(0);
 
@@ -46,23 +48,21 @@ export function RewardedAdModal({ visible, prompt, onResult }: RewardedAdModalPr
           onPress={() => onResult(false)}
           hitSlop={12}
           accessibilityRole="button"
-          accessibilityLabel="Close"
+          accessibilityLabel={t('ads.close')}
         >
           <Text style={styles.closeText}>✕</Text>
         </Pressable>
         <View style={styles.card}>
           {unavailable ? (
             <>
-              <Text style={styles.title}>Ads aren't available here</Text>
-              <Text style={styles.hint}>
-                Rewarded ads need a real device build — this web preview can't show one.
-              </Text>
+              <Text style={styles.title}>{t('ads.unavailableTitle')}</Text>
+              <Text style={styles.hint}>{t('ads.unavailableHint')}</Text>
             </>
           ) : (
             <>
               <ActivityIndicator color={colors.textSecondary} />
               <Text style={styles.title}>{prompt}</Text>
-              <Text style={styles.hint}>Loading ad…</Text>
+              <Text style={styles.hint}>{t('ads.loading')}</Text>
             </>
           )}
         </View>

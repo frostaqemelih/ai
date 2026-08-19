@@ -37,37 +37,31 @@ export function SettingsScreen({ navigation }: Props) {
   };
 
   const confirmReset = () => {
-    Alert.alert(
-      'Reset all progress?',
-      'This deletes your session history, streak, coins, and achievements from this device. This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Reset', style: 'destructive', onPress: () => resetProgress() },
-      ]
-    );
+    Alert.alert(t('settings.resetConfirmTitle'), t('settings.resetConfirmBody'), [
+      { text: t('settings.cancel'), style: 'cancel' },
+      { text: t('settings.reset'), style: 'destructive', onPress: () => resetProgress() },
+    ]);
   };
 
   return (
     <View style={styles.screen}>
-      <Header title="SETTINGS" />
+      <Header title={t('settings.title')} />
       <ScrollView
         style={styles.container}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xl }]}
       >
         <GlassCard style={styles.section}>
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>Coins</Text>
+            <Text style={styles.rowLabel}>{t('settings.coins')}</Text>
             <Text style={styles.coinValue}>🪙 {coins}</Text>
           </View>
-          <Text style={styles.coinHint}>
-            Earn coins by completing runs, or watch a quick video to double your reward.
-          </Text>
+          <Text style={styles.coinHint}>{t('settings.coinHint')}</Text>
           <Pressable
             style={styles.storeLink}
             onPress={() => navigation.navigate('Store')}
             accessibilityRole="button"
           >
-            <Text style={styles.storeLinkText}>OPEN STORE ›</Text>
+            <Text style={styles.storeLinkText}>{t('settings.openStore')} ›</Text>
           </Pressable>
         </GlassCard>
 
@@ -104,7 +98,7 @@ export function SettingsScreen({ navigation }: Props) {
 
         <GlassCard style={styles.section}>
           <Row
-            label="Sound"
+            label={t('settings.sound')}
             right={
               <Switch
                 value={settings.soundEnabled}
@@ -115,7 +109,7 @@ export function SettingsScreen({ navigation }: Props) {
           />
           <Divider />
           <Row
-            label="Haptics"
+            label={t('settings.haptics')}
             right={
               <Switch
                 value={settings.hapticsEnabled}
@@ -126,7 +120,7 @@ export function SettingsScreen({ navigation }: Props) {
           />
           <Divider />
           <Row
-            label="Reminders"
+            label={t('settings.reminders')}
             right={
               <Switch
                 value={settings.notificationsEnabled}
@@ -137,7 +131,7 @@ export function SettingsScreen({ navigation }: Props) {
           />
           <Divider />
           <Row
-            label="Keep screen awake during sessions"
+            label={t('settings.keepScreenAwake')}
             right={
               <Switch
                 value={settings.keepScreenAwakeEnabled}
@@ -147,14 +141,11 @@ export function SettingsScreen({ navigation }: Props) {
             }
           />
           {!settings.keepScreenAwakeEnabled && (
-            <Text style={styles.keepAwakeWarning}>
-              If your screen locks on its own during a run, the session will end — even if you
-              never touched the phone.
-            </Text>
+            <Text style={styles.keepAwakeWarning}>{t('settings.keepAwakeWarning')}</Text>
           )}
           <Divider />
           <View style={styles.languageRow}>
-            <Text style={styles.rowLabel}>Language</Text>
+            <Text style={styles.rowLabel}>{t('settings.language')}</Text>
             <View style={styles.languageOptions}>
               {(['system', 'en', 'tr'] as const).map((code) => (
                 <Pressable
@@ -179,7 +170,7 @@ export function SettingsScreen({ navigation }: Props) {
           </View>
           <Divider />
           <Row
-            label="Contribute to global stats (anonymous)"
+            label={t('settings.contributeGlobalStats')}
             right={
               <Switch
                 value={settings.contributeToGlobalStats}
@@ -192,25 +183,25 @@ export function SettingsScreen({ navigation }: Props) {
 
         <GlassCard style={styles.section}>
           <View style={styles.row}>
-            <Text style={styles.premiumTitle}>Premium</Text>
-            {isPremium && <Text style={styles.premiumBadge}>✓ ACTIVE</Text>}
+            <Text style={styles.premiumTitle}>{t('settings.premiumTitle')}</Text>
+            {isPremium && <Text style={styles.premiumBadge}>{t('settings.premiumActive')}</Text>}
           </View>
           {!isPremium ? (
             <>
-              <Text style={styles.premiumSubtitle}>Unlock the full experience</Text>
+              <Text style={styles.premiumSubtitle}>{t('settings.premiumSubtitle')}</Text>
               {[
-                'No ads, ever',
-                'Custom runs up to 24 hours',
-                'Advanced stats trends',
-                'Premium timer theme',
-                'Exclusive cosmetics',
-              ].map((item) => (
-                <Text key={item} style={styles.premiumItem}>
-                  · {item}
+                'paywall.featureNoAds',
+                'paywall.featureCustomRuns',
+                'paywall.featureStatsTrends',
+                'paywall.featurePremiumTheme',
+                'paywall.featureCosmetics',
+              ].map((key) => (
+                <Text key={key} style={styles.premiumItem}>
+                  · {t(key)}
                 </Text>
               ))}
               <PrimaryButton
-                label="GO PREMIUM"
+                label={t('settings.goPremium')}
                 onPress={() => navigation.navigate('Paywall')}
                 style={styles.premiumButton}
               />
@@ -218,7 +209,7 @@ export function SettingsScreen({ navigation }: Props) {
           ) : (
             <>
               <Row
-                label="Premium theme (gold)"
+                label={t('settings.premiumThemeGold')}
                 right={
                   <Switch
                     value={settings.premiumThemeEnabled}
@@ -253,41 +244,34 @@ export function SettingsScreen({ navigation }: Props) {
 
         <GlassCard style={styles.section}>
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>🤝 Friend Duel</Text>
+            <Text style={styles.rowLabel}>{t('settings.friendDuel')}</Text>
           </View>
-          <Text style={styles.coinHint}>
-            Race a friend to see who lasts longer, untouched. Fully optional — nothing is
-            sent anywhere unless you create or join a duel.
-          </Text>
+          <Text style={styles.coinHint}>{t('settings.friendDuelHint')}</Text>
           <Pressable
             style={styles.storeLink}
             onPress={() => navigation.navigate('Duel')}
             accessibilityRole="button"
           >
-            <Text style={styles.storeLinkText}>OPEN DUEL ›</Text>
+            <Text style={styles.storeLinkText}>{t('settings.openDuel')} ›</Text>
           </Pressable>
         </GlassCard>
 
         <View style={styles.legalRow}>
           <Pressable onPress={() => navigation.navigate('PrivacyPolicy')} hitSlop={8}>
-            <Text style={styles.legalLink}>Privacy Policy</Text>
+            <Text style={styles.legalLink}>{t('settings.privacyPolicy')}</Text>
           </Pressable>
           <Text style={styles.legalDivider}>·</Text>
           <Pressable onPress={() => navigation.navigate('Terms')} hitSlop={8}>
-            <Text style={styles.legalLink}>Terms of Service</Text>
+            <Text style={styles.legalLink}>{t('settings.termsOfService')}</Text>
           </Pressable>
         </View>
 
         <View style={styles.noAccountBox}>
-          <Text style={styles.noAccountText}>NO ACCOUNT REQUIRED</Text>
-          <Text style={styles.noAccountSubtext}>
-            No usage-access permission. No app list read. No account. No profile setup. All your
-            data stays on this device — nothing is uploaded anywhere unless you turn on an
-            optional feature above (Friend Duel, global stats) yourself.
-          </Text>
+          <Text style={styles.noAccountText}>{t('settings.noAccountTitle')}</Text>
+          <Text style={styles.noAccountSubtext}>{t('settings.noAccountSubtext')}</Text>
         </View>
 
-        <PrimaryButton label="RESET PROGRESS" variant="danger" onPress={confirmReset} />
+        <PrimaryButton label={t('settings.resetProgress')} variant="danger" onPress={confirmReset} />
       </ScrollView>
     </View>
   );

@@ -291,7 +291,14 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
   const stats = useMemo(() => deriveStats(sessions), [sessions]);
   const achievements = useMemo(
-    () => deriveAchievements(stats, sessions, unlockTimestampsRef.current, settings),
+    () =>
+      deriveAchievements(
+        stats,
+        sessions,
+        unlockTimestampsRef.current,
+        settings,
+        resolveLocale(settings.languageCode)
+      ),
     [stats, sessions, settings]
   );
 
@@ -481,7 +488,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         nextStats,
         nextSessions,
         unlockTimestampsRef.current,
-        settings
+        settings,
+        resolveLocale(settings.languageCode)
       );
       const newlyUnlockedIds = findNewlyUnlocked(nextAchievements, unlockTimestampsRef.current);
 

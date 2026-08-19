@@ -5,24 +5,22 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { Header } from '../components/Header';
 import { colors, fonts, spacing, typography } from '../theme';
-import {
-  PRIVACY_POLICY_SECTIONS,
-  PRIVACY_POLICY_UPDATED,
-  TERMS_SECTIONS,
-  TERMS_UPDATED,
-} from '../utils/legalContent';
+import { legalContentForLocale } from '../utils/legalContent';
+import { useTranslation } from '../i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PrivacyPolicy' | 'Terms'>;
 
 export function LegalScreen({ route }: Props) {
   const insets = useSafeAreaInsets();
+  const { t, locale } = useTranslation();
   const isPrivacy = route.name === 'PrivacyPolicy';
-  const sections = isPrivacy ? PRIVACY_POLICY_SECTIONS : TERMS_SECTIONS;
-  const updated = isPrivacy ? PRIVACY_POLICY_UPDATED : TERMS_UPDATED;
+  const content = legalContentForLocale(locale);
+  const sections = isPrivacy ? content.privacySections : content.termsSections;
+  const updated = isPrivacy ? content.privacyUpdated : content.termsUpdated;
 
   return (
     <View style={styles.screen}>
-      <Header title={isPrivacy ? 'PRIVACY POLICY' : 'TERMS OF SERVICE'} />
+      <Header title={isPrivacy ? t('legal.privacyTitle') : t('legal.termsTitle')} />
       <ScrollView
         style={styles.container}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xl }]}

@@ -1,53 +1,52 @@
 import type { AchievementDef } from '../types';
 import { computeScheduleAdherenceWeeks } from '../utils/scheduleAdherence';
 
+// title/description hold i18n KEYS (achievementDefs.<id>.title/description
+// in en.json/tr.json), not display text — deriveAchievements resolves them
+// to the actual locale-appropriate string before they ever reach a screen.
+function localeKeys(id: string): { title: string; description: string } {
+  return { title: `achievementDefs.${id}.title`, description: `achievementDefs.${id}.description` };
+}
+
 export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   {
     id: 'first_session',
-    title: 'First Session',
-    description: 'Complete your first session',
+    ...localeKeys('first_session'),
     check: (stats) => stats.totalSessions >= 1,
   },
   {
     id: 'five_minutes',
-    title: '5 Minutes',
-    description: 'Stay away for 5 minutes straight',
+    ...localeKeys('five_minutes'),
     check: (stats) => stats.personalBestMs >= 5 * 60 * 1000,
   },
   {
     id: 'fifteen_minutes',
-    title: '15 Minutes',
-    description: 'Stay away for 15 minutes straight',
+    ...localeKeys('fifteen_minutes'),
     check: (stats) => stats.personalBestMs >= 15 * 60 * 1000,
   },
   {
     id: 'thirty_minutes',
-    title: '30 Minutes',
-    description: 'Stay away for 30 minutes straight',
+    ...localeKeys('thirty_minutes'),
     check: (stats) => stats.personalBestMs >= 30 * 60 * 1000,
   },
   {
     id: 'one_hour',
-    title: '1 Hour',
-    description: 'Stay away for a full hour',
+    ...localeKeys('one_hour'),
     check: (stats) => stats.personalBestMs >= 60 * 60 * 1000,
   },
   {
     id: 'seven_day_streak',
-    title: '7 Day Streak',
-    description: 'Complete a session 7 days in a row',
+    ...localeKeys('seven_day_streak'),
     check: (stats) => stats.longestStreak >= 7,
   },
   {
     id: 'ten_sessions',
-    title: '10 Sessions',
-    description: 'Complete 10 sessions',
+    ...localeKeys('ten_sessions'),
     check: (stats) => stats.totalSessions >= 10,
   },
   {
     id: 'personal_best',
-    title: 'Personal Best',
-    description: 'Beat your own record',
+    ...localeKeys('personal_best'),
     check: (_stats, sessions) => {
       let runningBest = 0;
       let improvements = 0;
@@ -67,26 +66,22 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   // above and exist to give committed users something to chase months in.
   {
     id: 'total_focus_10h',
-    title: '10 Hours Away',
-    description: 'Accumulate 10 hours of total focus time',
+    ...localeKeys('total_focus_10h'),
     check: (stats) => stats.totalFocusMs >= 10 * 60 * 60 * 1000,
   },
   {
     id: 'total_focus_50h',
-    title: '50 Hours Away',
-    description: 'Accumulate 50 hours of total focus time',
+    ...localeKeys('total_focus_50h'),
     check: (stats) => stats.totalFocusMs >= 50 * 60 * 60 * 1000,
   },
   {
     id: 'total_focus_100h',
-    title: '100 Hours Away',
-    description: 'Accumulate 100 hours of total focus time',
+    ...localeKeys('total_focus_100h'),
     check: (stats) => stats.totalFocusMs >= 100 * 60 * 60 * 1000,
   },
   {
     id: 'same_goal_10',
-    title: 'Creature of Habit',
-    description: 'Complete 10 sessions in a row with the same goal',
+    ...localeKeys('same_goal_10'),
     check: (_stats, sessions) => {
       const ordered = sessions
         .filter((s) => s.completed && !s.streakSaved)
@@ -98,8 +93,7 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   },
   {
     id: 'cross_timezone',
-    title: 'No Matter Where',
-    description: 'Complete sessions from 3 different timezones',
+    ...localeKeys('cross_timezone'),
     check: (_stats, sessions) => {
       const offsets = new Set(
         sessions
@@ -111,15 +105,13 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   },
   {
     id: 'schedule_4_weeks',
-    title: 'Creature of Routine',
-    description: 'Hit every scheduled session for 4 straight weeks',
+    ...localeKeys('schedule_4_weeks'),
     check: (_stats, sessions, settings) =>
       computeScheduleAdherenceWeeks(sessions, settings?.schedule ?? null) >= 4,
   },
   {
     id: 'schedule_12_weeks',
-    title: 'It Stuck',
-    description: 'Hit every scheduled session for 12 straight weeks',
+    ...localeKeys('schedule_12_weeks'),
     check: (_stats, sessions, settings) =>
       computeScheduleAdherenceWeeks(sessions, settings?.schedule ?? null) >= 12,
   },

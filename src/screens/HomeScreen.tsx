@@ -20,7 +20,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 export function HomeScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { settings, stats, coins, dismissScheduleHint } = useAppData();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [starting, setStarting] = useState(false);
 
   useFocusEffect(
@@ -120,7 +120,7 @@ export function HomeScreen({ navigation }: Props) {
 
         <View style={styles.footer}>
           <Pressable onPress={() => navigation.navigate('GoalSelect')} style={styles.goalChip} hitSlop={8}>
-            <Text style={styles.goalChipText}>{goalLabelForMs(settings.lastSelectedGoalMs)}</Text>
+            <Text style={styles.goalChipText}>{goalLabelForMs(settings.lastSelectedGoalMs, locale)}</Text>
           </Pressable>
 
           <PrimaryButton label={t('home.startSession')} onPress={handleStart} disabled={starting} />

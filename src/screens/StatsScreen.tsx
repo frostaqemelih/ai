@@ -37,29 +37,35 @@ export function StatsScreen({ navigation }: Props) {
 
   return (
     <View style={styles.screen}>
-      <Header title="STATISTICS" />
+      <Header title={t('stats.title')} />
       <ScrollView
         style={styles.container}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xl }]}
       >
         <View style={styles.grid}>
           <View style={styles.gridItem}>
-            <StatPill label="Total Focus Time" value={formatDurationLong(stats.totalFocusMs)} />
+            <StatPill label={t('stats.totalFocusTime')} value={formatDurationLong(stats.totalFocusMs)} />
           </View>
           <View style={styles.gridItem}>
-            <StatPill label="Sessions" value={`${stats.totalSessions}`} />
+            <StatPill label={t('stats.sessions')} value={`${stats.totalSessions}`} />
           </View>
           <View style={styles.gridItem}>
-            <StatPill label="Personal Best" value={formatClock(stats.personalBestMs)} />
+            <StatPill label={t('stats.personalBest')} value={formatClock(stats.personalBestMs)} />
           </View>
           <View style={styles.gridItem}>
-            <StatPill label="Average Session" value={formatClock(stats.averageSessionMs)} />
+            <StatPill label={t('stats.averageSession')} value={formatClock(stats.averageSessionMs)} />
           </View>
           <View style={styles.gridItem}>
-            <StatPill label="Current Streak" value={`${stats.currentStreak} days`} />
+            <StatPill
+              label={t('stats.currentStreak')}
+              value={t('stats.daysSuffix', { count: stats.currentStreak })}
+            />
           </View>
           <View style={styles.gridItem}>
-            <StatPill label="Longest Streak" value={`${stats.longestStreak} days`} />
+            <StatPill
+              label={t('stats.longestStreak')}
+              value={t('stats.daysSuffix', { count: stats.longestStreak })}
+            />
           </View>
         </View>
 
@@ -79,36 +85,36 @@ export function StatsScreen({ navigation }: Props) {
         </GlassCard>
 
         <GlassCard style={styles.section}>
-          <Text style={styles.sectionTitle}>This week</Text>
+          <Text style={styles.sectionTitle}>{t('stats.thisWeek')}</Text>
           <WeekCalendar streakDateKeys={stats.streakDateKeys} />
         </GlassCard>
 
         <GlassCard style={styles.section}>
-          <Text style={styles.sectionTitle}>Leaderboard</Text>
+          <Text style={styles.sectionTitle}>{t('stats.leaderboard')}</Text>
           <View style={styles.leaderboardRow}>
             <View>
-              <Text style={styles.leaderboardLabel}>YOUR BEST</Text>
+              <Text style={styles.leaderboardLabel}>{t('stats.yourBest')}</Text>
               <Text style={styles.leaderboardValue}>{formatClock(stats.personalBestMs)}</Text>
             </View>
             <View style={styles.leaderboardDivider} />
             <View>
-              <Text style={styles.leaderboardLabel}>GLOBAL TODAY</Text>
+              <Text style={styles.leaderboardLabel}>{t('stats.globalToday')}</Text>
               {globalTodayMs !== null ? (
                 <Text style={styles.leaderboardValue}>{formatDurationLong(globalTodayMs)}</Text>
               ) : (
-                <Text style={styles.leaderboardValueMuted}>Coming soon</Text>
+                <Text style={styles.leaderboardValueMuted}>{t('stats.comingSoon')}</Text>
               )}
             </View>
           </View>
           {globalTodayMs !== null && (
             <Text style={styles.globalHint}>
-              The world has stayed phone-free for {formatDurationLong(globalTodayMs)} today.
+              {t('stats.globalHint', { duration: formatDurationLong(globalTodayMs) })}
             </Text>
           )}
         </GlassCard>
 
         <GlassCard style={styles.section}>
-          <Text style={styles.sectionTitle}>Time spent away</Text>
+          <Text style={styles.sectionTitle}>{t('stats.timeSpentAway')}</Text>
           <View style={styles.chart}>
             {weekly.map((day, i) => {
               const heightRatio = day.totalMs / maxWeekly;
@@ -132,7 +138,7 @@ export function StatsScreen({ navigation }: Props) {
 
         <GlassCard style={styles.section}>
           <View style={styles.trendHeader}>
-            <Text style={styles.sectionTitle}>6-month trend</Text>
+            <Text style={styles.sectionTitle}>{t('stats.sixMonthTrend')}</Text>
             {!isPremium && <Text style={styles.lockGlyph}>🔒</Text>}
           </View>
           {isPremium ? (
@@ -152,9 +158,7 @@ export function StatsScreen({ navigation }: Props) {
             </View>
           ) : (
             <Pressable onPress={() => navigation.navigate('Paywall')} style={styles.lockedPreview}>
-              <Text style={styles.lockedPreviewText}>
-                See your focus trend over time — unlock with Premium
-              </Text>
+              <Text style={styles.lockedPreviewText}>{t('stats.trendLocked')}</Text>
             </Pressable>
           )}
         </GlassCard>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors, spacing, typography } from '../theme';
+import { useTranslation } from '../i18n';
 
 interface GhostPbBannerProps {
   elapsedMs: number;
@@ -10,6 +11,7 @@ interface GhostPbBannerProps {
 const PROXIMITY_WINDOW_MS = 30_000;
 
 export function GhostPbBanner({ elapsedMs, previousBestMs }: GhostPbBannerProps) {
+  const { t } = useTranslation();
   if (previousBestMs <= 0) return null;
 
   const remaining = previousBestMs - elapsedMs;
@@ -19,14 +21,14 @@ export function GhostPbBanner({ elapsedMs, previousBestMs }: GhostPbBannerProps)
     const seconds = Math.ceil(remaining / 1000);
     return (
       <View style={styles.container} pointerEvents="none">
-        <Text style={styles.text}>{seconds}S TO BEAT YOUR RECORD</Text>
+        <Text style={styles.text}>{t('session.ghostSecondsToBeat', { seconds })}</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container} pointerEvents="none">
-      <Text style={styles.recordText}>NEW PERSONAL BEST</Text>
+      <Text style={styles.recordText}>{t('session.ghostNewRecord')}</Text>
     </View>
   );
 }
