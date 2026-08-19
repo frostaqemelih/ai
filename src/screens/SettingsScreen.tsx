@@ -8,7 +8,7 @@ import { Header } from '../components/Header';
 import { GlassCard } from '../components/GlassCard';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { colors, fonts, spacing, typography } from '../theme';
-import { PERSONAS } from '../personas';
+import { getPersona } from '../personas';
 import { useTranslation } from '../i18n';
 import { reportError } from '../services/crashService';
 import { getCustomerInfoSafe } from '../services/purchasesService';
@@ -27,6 +27,13 @@ export function SettingsScreen({ navigation }: Props) {
     requestNotificationsPermission,
     disableNotifications,
   } = useAppData();
+  // getPersona() falls back to the default persona if settings.personaId
+  // ever points at one that no longer exists (e.g. a persona removed in a
+  // future update while a device still has the old id persisted) — reading
+  // it once here and reusing .id/.accent keeps both the color and the i18n
+  // lookup on the SAME guaranteed-valid persona, rather than trusting the
+  // raw stored id directly (see Faz 13-D).
+  const activePersona = getPersona(settings.personaId);
 
   const handleNotificationsToggle = async (value: boolean) => {
     if (value) {
@@ -68,8 +75,8 @@ export function SettingsScreen({ navigation }: Props) {
         <GlassCard style={styles.section}>
           <View style={styles.row}>
             <Text style={styles.rowLabel}>{t('personaPicker.settingsTitle')}</Text>
-            <Text style={[styles.coinValue, { color: PERSONAS[settings.personaId].accent, fontSize: 16 }]}>
-              {t(`personas.${settings.personaId}.name`)}
+            <Text style={[styles.coinValue, { color: activePersona.accent, fontSize: 16 }]}>
+              {t(`personas.${activePersona.id}.name`)}
             </Text>
           </View>
           <Pressable
