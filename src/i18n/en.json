@@ -42,6 +42,12 @@
     "unavailableHint": "Rewarded ads need a real device build — this web preview can't show one.",
     "loading": "Loading ad…"
   },
+  "notifications": {
+    "trialEnding": {
+      "title": "Your free trial ends tomorrow",
+      "body": "You'll be charged for Premium unless you cancel before then. Manage it anytime in Settings."
+    }
+  },
   "achievementDefs": {
     "first_session": { "title": "First Session", "description": "Complete your first session" },
     "five_minutes": { "title": "5 Minutes", "description": "Stay away for 5 minutes straight" },
@@ -160,6 +166,18 @@
         "title": "Time's up. Prove it.",
         "body": "{{minutes}} minutes, no phone, starting now — tap to begin."
       },
+      "streakReminder": {
+        "title": "Your streak ends today.",
+        "body": "Midnight's coming. One run, no excuses."
+      },
+      "inactivityReminder": {
+        "title": "Where have you been?",
+        "body": "Days of silence. Prove you can still do it."
+      },
+      "friendStreakReminder": {
+        "title": "Your friend streak dies today.",
+        "body": "You haven't checked in. Don't be the reason it ends."
+      },
       "purchase": {
         "pending": "Payment's processing. No coins yet — they land the second it clears, no need to retry.",
         "network": "Couldn't reach the store. Nothing was charged. Try again.",
@@ -214,6 +232,18 @@
       "scheduleNotification": {
         "title": "A moment for yourself",
         "body": "Your {{minutes}} minute session is ready whenever you tap in."
+      },
+      "streakReminder": {
+        "title": "Your streak is ending today",
+        "body": "If you'd like to keep it going, there's still time before midnight."
+      },
+      "inactivityReminder": {
+        "title": "Whenever you're ready",
+        "body": "It's been a few days. No rush — a moment of stillness is here when you want it."
+      },
+      "friendStreakReminder": {
+        "title": "Your friend streak fades today",
+        "body": "You haven't checked in yet. Still time, if you'd like."
       },
       "purchase": {
         "pending": "Your payment is still settling. Nothing to do — the coins will just quietly appear once it clears.",
@@ -270,6 +300,18 @@
         "title": "Phone. Down. Go.",
         "body": "{{minutes}} minutes, no excuses. Tap to start."
       },
+      "streakReminder": {
+        "title": "Uh oh, your streak's in danger",
+        "body": "Midnight's the deadline. One quick run and you're safe. 😏"
+      },
+      "inactivityReminder": {
+        "title": "Miss me?",
+        "body": "It's been a few days. Your phone's getting cocky — put it in its place."
+      },
+      "friendStreakReminder": {
+        "title": "Your friend streak is about to ghost you",
+        "body": "You haven't checked in yet. Don't leave your friend hanging!"
+      },
       "purchase": {
         "pending": "Ooh, your payment's still cooking. No coins yet — they'll pop in the moment it's done. 👀",
         "network": "Store's not picking up. Don't worry, your wallet's untouched — try again in a sec.",
@@ -325,6 +367,18 @@
         "title": "Rep time.",
         "body": "{{minutes}} minutes on the clock — tap to begin your set."
       },
+      "streakReminder": {
+        "title": "Don't skip today's rep",
+        "body": "Your streak's on the line. One run before midnight keeps it alive."
+      },
+      "inactivityReminder": {
+        "title": "Time to get back in the game",
+        "body": "It's been a few days off. Let's log another rep."
+      },
+      "friendStreakReminder": {
+        "title": "Your team streak needs you",
+        "body": "You haven't checked in yet — get your rep in before it's gone."
+      },
       "purchase": {
         "pending": "Payment's still in the pipeline. No coins logged yet — they'll land automatically once it clears.",
         "network": "Couldn't connect to the store. No charge went through. Run it back when you're ready.",
@@ -377,6 +431,18 @@
       "scheduleNotification": {
         "title": "It's time.",
         "body": "{{minutes}} minutes of stillness. Tap to begin."
+      },
+      "streakReminder": {
+        "title": "The streak fades today",
+        "body": "Return before midnight, if you wish to keep it."
+      },
+      "inactivityReminder": {
+        "title": "Whenever you return",
+        "body": "Some days have passed. Stillness awaits, when you're ready."
+      },
+      "friendStreakReminder": {
+        "title": "The shared streak fades today",
+        "body": "You have not yet returned. A moment together, if you choose."
       },
       "purchase": {
         "pending": "The payment has not yet settled. No coins yet. They will arrive on their own.",

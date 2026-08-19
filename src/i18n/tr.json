@@ -42,6 +42,12 @@
     "unavailableHint": "Ödüllü reklamlar gerçek bir cihaz build'i gerektirir — bu web önizlemesi bir tane gösteremez.",
     "loading": "Reklam yükleniyor…"
   },
+  "notifications": {
+    "trialEnding": {
+      "title": "Ücretsiz deneme sürenin bitmesine bir gün kaldı",
+      "body": "İptal etmezsen Premium için ücretlendirileceksin. Ayarlar'dan istediğin zaman yönetebilirsin."
+    }
+  },
   "achievementDefs": {
     "first_session": { "title": "İlk Oturum", "description": "İlk oturumunu tamamla" },
     "five_minutes": { "title": "5 Dakika", "description": "Aralıksız 5 dakika uzak kal" },
@@ -160,6 +166,18 @@
         "title": "Süre doldu. Kanıtla.",
         "body": "{{minutes}} dakika, telefon yok, şimdi başlıyor — başlamak için dokun."
       },
+      "streakReminder": {
+        "title": "Serin bugün bitiyor.",
+        "body": "Gece yarısı yaklaşıyor. Tek bir oturum, bahane yok."
+      },
+      "inactivityReminder": {
+        "title": "Nerelerdeydin?",
+        "body": "Günlerdir sessizlik. Hâlâ yapabildiğini kanıtla."
+      },
+      "friendStreakReminder": {
+        "title": "Arkadaş serin bugün ölüyor.",
+        "body": "Henüz giriş yapmadın. Bitmesinin sebebi sen olma."
+      },
       "purchase": {
         "pending": "Ödeme işleniyor. Henüz coin yok — onaylanır onaylanmaz otomatik gelir, tekrar denemene gerek yok.",
         "network": "Mağazaya ulaşılamadı. Hiçbir ücret alınmadı. Tekrar dene.",
@@ -214,6 +232,18 @@
       "scheduleNotification": {
         "title": "Kendine bir an ayır",
         "body": "{{minutes}} dakikalık oturumun hazır, ne zaman istersen dokun."
+      },
+      "streakReminder": {
+        "title": "Serin bugün bitiyor",
+        "body": "Sürdürmek istersen, gece yarısına kadar vaktin var."
+      },
+      "inactivityReminder": {
+        "title": "Ne zaman hazır olursan",
+        "body": "Birkaç gün oldu. Acelesi yok — istediğinde bir sükunet anı burada."
+      },
+      "friendStreakReminder": {
+        "title": "Arkadaş serin bugün soluyor",
+        "body": "Henüz giriş yapmadın. İstersen hâlâ vakit var."
       },
       "purchase": {
         "pending": "Ödemen hâlâ onaylanıyor. Yapacak bir şey yok — onaylanınca coin'ler sessizce belirir.",
@@ -270,6 +300,18 @@
         "title": "Telefon. Bırak. Başla.",
         "body": "{{minutes}} dakika, bahane yok. Başlamak için dokun."
       },
+      "streakReminder": {
+        "title": "Eyvah, serin tehlikede",
+        "body": "Son teslim gece yarısı. Hızlı bir oturum seni kurtarır. 😏"
+      },
+      "inactivityReminder": {
+        "title": "Beni özledin mi?",
+        "body": "Birkaç gün oldu. Telefonun küstahlaşıyor — haddini bildir."
+      },
+      "friendStreakReminder": {
+        "title": "Arkadaş serin seni hayalet yapmak üzere",
+        "body": "Henüz giriş yapmadın. Arkadaşını asılı bırakma!"
+      },
       "purchase": {
         "pending": "Ödemen hâlâ pişiyor. Henüz coin yok — bitince kendiliğinden gelecek. 👀",
         "network": "Mağaza açılmıyor. Merak etme, cüzdanına dokunulmadı — birazdan tekrar dene.",
@@ -325,6 +367,18 @@
         "title": "Tekrar zamanı.",
         "body": "{{minutes}} dakika sayaçta — setini başlatmak için dokun."
       },
+      "streakReminder": {
+        "title": "Bugünün tekrarını atlama",
+        "body": "Serin tehlikede. Gece yarısından önce bir oturum onu kurtarır."
+      },
+      "inactivityReminder": {
+        "title": "Oyuna dönme vakti",
+        "body": "Birkaç gün ara verdin. Hadi bir tekrar daha kaydedelim."
+      },
+      "friendStreakReminder": {
+        "title": "Takım serin sana ihtiyaç duyuyor",
+        "body": "Henüz giriş yapmadın — bitmeden tekrarını kaydet."
+      },
       "purchase": {
         "pending": "Ödeme hâlâ işlem hattında. Henüz kaydedilen coin yok — onaylanınca otomatik gelecek.",
         "network": "Mağazaya bağlanılamadı. Hiçbir ücret alınmadı. Hazır olunca tekrar dene.",
@@ -377,6 +431,18 @@
       "scheduleNotification": {
         "title": "Zamanı geldi.",
         "body": "{{minutes}} dakikalık durgunluk. Başlamak için dokun."
+      },
+      "streakReminder": {
+        "title": "Seri bugün soluyor",
+        "body": "Sürdürmek istersen, gece yarısından önce dön."
+      },
+      "inactivityReminder": {
+        "title": "Ne zaman dönersen",
+        "body": "Birkaç gün geçti. Hazır olduğunda sükunet seni bekliyor."
+      },
+      "friendStreakReminder": {
+        "title": "Paylaşılan seri bugün soluyor",
+        "body": "Henüz dönmedin. İstersen, birlikte bir an."
       },
       "purchase": {
         "pending": "Ödeme henüz kesinleşmedi. Coin yok. Kendiliğinden gelecek.",

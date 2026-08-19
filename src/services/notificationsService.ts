@@ -63,7 +63,17 @@ async function cancelSafe(id: string): Promise<void> {
   }
 }
 
-export async function scheduleStreakReminder(shouldSchedule: boolean): Promise<void> {
+// title/body are pre-formatted by the caller (AppDataContext), same
+// established pattern as scheduleSessionPlan below — this service has no
+// i18n/persona access of its own by design (see Faz 13-A: giving it one
+// previously recreated the AppDataContext<->i18n require cycle). Faz 14-B
+// moved these four reminders' text out of hardcoded English into that same
+// caller-resolves-it pattern.
+export async function scheduleStreakReminder(
+  shouldSchedule: boolean,
+  title: string,
+  body: string
+): Promise<void> {
   await cancelSafe(STREAK_REMINDER_ID);
   if (!shouldSchedule || !isNativePlatform()) return;
 
@@ -74,10 +84,7 @@ export async function scheduleStreakReminder(shouldSchedule: boolean): Promise<v
   try {
     await Notifications.scheduleNotificationAsync({
       identifier: STREAK_REMINDER_ID,
-      content: {
-        title: 'Your streak ends today',
-        body: 'Complete one run before midnight to keep it alive.',
-      },
+      content: { title, body },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: target },
     });
   } catch {
@@ -85,7 +92,11 @@ export async function scheduleStreakReminder(shouldSchedule: boolean): Promise<v
   }
 }
 
-export async function scheduleInactivityReminder(lastActivityAt: number | null): Promise<void> {
+export async function scheduleInactivityReminder(
+  lastActivityAt: number | null,
+  title: string,
+  body: string
+): Promise<void> {
   await cancelSafe(INACTIVITY_REMINDER_ID);
   if (!isNativePlatform()) return;
 
@@ -98,10 +109,7 @@ export async function scheduleInactivityReminder(lastActivityAt: number | null):
   try {
     await Notifications.scheduleNotificationAsync({
       identifier: INACTIVITY_REMINDER_ID,
-      content: {
-        title: 'Ready for another run?',
-        body: "It's been a few days. Put your phone down and see how long you last.",
-      },
+      content: { title, body },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: target },
     });
   } catch {
@@ -109,7 +117,11 @@ export async function scheduleInactivityReminder(lastActivityAt: number | null):
   }
 }
 
-export async function scheduleFriendStreakReminder(shouldSchedule: boolean): Promise<void> {
+export async function scheduleFriendStreakReminder(
+  shouldSchedule: boolean,
+  title: string,
+  body: string
+): Promise<void> {
   await cancelSafe(FRIEND_STREAK_REMINDER_ID);
   if (!shouldSchedule || !isNativePlatform()) return;
 
@@ -127,10 +139,7 @@ export async function scheduleFriendStreakReminder(shouldSchedule: boolean): Pro
   try {
     await Notifications.scheduleNotificationAsync({
       identifier: FRIEND_STREAK_REMINDER_ID,
-      content: {
-        title: 'Your friend streak ends today',
-        body: "You haven't checked in yet — complete a run to keep it alive.",
-      },
+      content: { title, body },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: target },
     });
   } catch {
@@ -144,8 +153,17 @@ export async function scheduleFriendStreakReminder(shouldSchedule: boolean): Pro
 // Deliberately NOT included in cancelAllReminders/disableNotifications —
 // this is a financial notice, not a retention nudge, so it stays scheduled
 // independently of the user's "Reminders" preference as long as OS
-// notification permission was granted at some point.
-export async function scheduleTrialEndingReminder(expirationDateMillis: number | null): Promise<void> {
+// notification permission was granted at some point. Also deliberately NOT
+// persona-toned (unlike the other three reminders) — same reasoning as the
+// paywall's own copy: a notice about being charged money reads as more
+// trustworthy in a neutral voice, not a persona's, regardless of who's
+// selected. Its text lives under the top-level `notifications.trialEnding`
+// key, not `personas.<id>.*`.
+export async function scheduleTrialEndingReminder(
+  expirationDateMillis: number | null,
+  title: string,
+  body: string
+): Promise<void> {
   await cancelSafe(TRIAL_ENDING_REMINDER_ID);
   if (!expirationDateMillis || !isNativePlatform()) return;
 
@@ -157,10 +175,7 @@ export async function scheduleTrialEndingReminder(expirationDateMillis: number |
   try {
     await Notifications.scheduleNotificationAsync({
       identifier: TRIAL_ENDING_REMINDER_ID,
-      content: {
-        title: 'Your free trial ends tomorrow',
-        body: "You'll be charged for Premium unless you cancel before then. Manage it anytime in Settings.",
-      },
+      content: { title, body },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: target },
     });
   } catch {

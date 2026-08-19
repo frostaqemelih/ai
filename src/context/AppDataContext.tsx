@@ -224,7 +224,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
         if (loadedSettings.notificationsEnabled) {
           const bootStats = deriveStats(effectiveSessions);
-          await rescheduleReminders(effectiveSessions, bootStats);
+          await rescheduleReminders(effectiveSessions, bootStats, loadedSettings);
         }
       } catch (err) {
         reportError(err, { phase: 'boot' });
@@ -238,17 +238,32 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   // Reschedules both local reminders from current data. Local notifications can't
   // be recomputed in the background, so this fires at boot and after every
   // completed session — the best approximation available without a background task.
+  // Text is resolved here (not inside notificationsService — see Faz 13-A's
+  // note on why that service has no i18n access) from the CURRENT locale and
+  // persona, so this must be re-run whenever either changes, not just when
+  // session/stats data changes — see the effect below that does exactly that.
   const rescheduleReminders = useCallback(
-    async (currentSessions: SessionRecord[], currentStats: DerivedStats) => {
+    async (currentSessions: SessionRecord[], currentStats: DerivedStats, currentSettings: AppSettings) => {
+      const locale = resolveLocale(currentSettings.languageCode);
+      const personaKey = `personas.${currentSettings.personaId}`;
+
       const todayKey = toLocalDateKey(Date.now());
       const streakActiveToday = currentStats.streakDateKeys.has(todayKey);
-      await scheduleStreakReminder(currentStats.currentStreak > 0 && !streakActiveToday);
+      await scheduleStreakReminder(
+        currentStats.currentStreak > 0 && !streakActiveToday,
+        translateSync(locale, `${personaKey}.streakReminder.title`),
+        translateSync(locale, `${personaKey}.streakReminder.body`)
+      );
 
       const lastActivityAt = currentSessions.reduce<number | null>(
         (max, s) => (max === null || s.endedAt > max ? s.endedAt : max),
         null
       );
-      await scheduleInactivityReminder(lastActivityAt);
+      await scheduleInactivityReminder(
+        lastActivityAt,
+        translateSync(locale, `${personaKey}.inactivityReminder.title`),
+        translateSync(locale, `${personaKey}.inactivityReminder.body`)
+      );
     },
     []
   );
@@ -256,13 +271,19 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   // Keeps the trial-ending local reminder in sync with whatever RevenueCat
   // currently reports — scheduled while an entitlement is genuinely mid-trial,
   // cancelled the instant it isn't (converted to paid, cancelled, expired).
-  const syncTrialReminder = useCallback((info: CustomerInfo | null) => {
-    const entitlement = info?.entitlements.active[PREMIUM_ENTITLEMENT_ID];
-    const inTrial = entitlement?.periodType === 'TRIAL';
-    scheduleTrialEndingReminder(inTrial ? entitlement!.expirationDateMillis : null).catch((err) =>
-      reportError(err)
-    );
-  }, []);
+  const syncTrialReminder = useCallback(
+    (info: CustomerInfo | null) => {
+      const entitlement = info?.entitlements.active[PREMIUM_ENTITLEMENT_ID];
+      const inTrial = entitlement?.periodType === 'TRIAL';
+      const locale = resolveLocale(settings.languageCode);
+      scheduleTrialEndingReminder(
+        inTrial ? entitlement!.expirationDateMillis : null,
+        translateSync(locale, 'notifications.trialEnding.title'),
+        translateSync(locale, 'notifications.trialEnding.body')
+      ).catch((err) => reportError(err));
+    },
+    [settings.languageCode]
+  );
 
   const refreshPremiumStatus = useCallback(async () => {
     const info = await getCustomerInfoSafe();
@@ -309,6 +330,48 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     () => deriveAchievements(stats, sessions, unlockTimestampsRef.current, settings),
     [stats, sessions, settings]
   );
+
+  // Faz 14-B: every scheduled local notification's TEXT is resolved from
+  // the locale + persona active at the moment it's scheduled, not read
+  // live when it fires — so a language or persona change afterward would
+  // otherwise leave already-scheduled notifications showing stale copy
+  // until whatever unrelated event happens to reschedule them next (a
+  // completed session, a fresh app boot, an explicit schedule edit).
+  // Re-syncs all three kinds whenever either setting changes: the
+  // streak/inactivity reminders, the trial-ending notice (via
+  // refreshPremiumStatus, which already calls syncTrialReminder), and the
+  // recurring weekly schedule-session notification if one is set. Skips
+  // the very first firing — right after boot's own settings load already
+  // scheduled everything with correct text, so this would just be a
+  // redundant duplicate.
+  const remindersSyncedOnceRef = useRef(false);
+  useEffect(() => {
+    if (loading) return;
+    if (!remindersSyncedOnceRef.current) {
+      remindersSyncedOnceRef.current = true;
+      return;
+    }
+    (async () => {
+      try {
+        if (settings.notificationsEnabled) {
+          await rescheduleReminders(sessions, stats, settings);
+        }
+        await refreshPremiumStatus();
+        if (settings.schedule) {
+          const locale = resolveLocale(settings.languageCode);
+          const key = `personas.${settings.personaId}.scheduleNotification`;
+          const title = translateSync(locale, `${key}.title`);
+          const body = translateSync(locale, `${key}.body`, {
+            minutes: minutesForMilestone(settings.schedule.goalMs),
+          });
+          await scheduleSessionPlan(settings.schedule, title, body);
+        }
+      } catch (err) {
+        reportError(err);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.languageCode, settings.personaId, loading]);
 
   const updateSettings = useCallback(async (patch: Partial<AppSettings>) => {
     setSettings((prev) => {
@@ -556,7 +619,13 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
             .then(() => fetchFriendStreakStatus(linkId))
             .then((status) => {
               if (status) {
-                scheduleFriendStreakReminder(status.currentStreak > 0 && !status.checkedInToday);
+                const locale = resolveLocale(settings.languageCode);
+                const key = `personas.${settings.personaId}.friendStreakReminder`;
+                scheduleFriendStreakReminder(
+                  status.currentStreak > 0 && !status.checkedInToday,
+                  translateSync(locale, `${key}.title`),
+                  translateSync(locale, `${key}.body`)
+                );
               }
             })
             .catch((err) => reportError(err));
@@ -570,7 +639,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (settings.notificationsEnabled) {
-        await rescheduleReminders(nextSessions, nextStats);
+        await rescheduleReminders(nextSessions, nextStats, settings);
       }
 
       return {
@@ -660,10 +729,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     const granted = await requestNotificationPermission();
     await updateSettings({ notificationsPermissionAsked: true, notificationsEnabled: granted });
     if (granted) {
-      await rescheduleReminders(sessions, stats);
+      await rescheduleReminders(sessions, stats, settings);
     }
     return granted;
-  }, [updateSettings, rescheduleReminders, sessions, stats]);
+  }, [updateSettings, rescheduleReminders, sessions, stats, settings]);
 
   const requestTracking = useCallback(async (): Promise<boolean> => {
     const granted = await requestTrackingPermission();
