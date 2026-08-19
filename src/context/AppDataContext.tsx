@@ -21,6 +21,7 @@ import {
   loadAchievementUnlocks,
   loadActiveSession,
   loadCoins,
+  loadCreditedTransactionIds,
   loadSessions,
   loadSettings,
   loadUnlockedCosmetics,
@@ -28,6 +29,7 @@ import {
   resetAllData,
   saveAchievementUnlocks,
   saveCoins,
+  saveCreditedTransactionIds,
   saveSettings,
   saveUnlockedCosmetics,
   saveUnlockedPersonas,
@@ -39,6 +41,7 @@ import { DEFAULT_SETTINGS } from '../storage/storage';
 import {
   baseCoinsForSession,
   checkStreakMilestone,
+  coinsForPackageIdentifier,
   DEFAULT_RING_COLOR_ID,
   DUEL_REFERRAL_BONUS_COINS,
   STREAK_FREEZE_COST,
@@ -49,9 +52,11 @@ import {
   addCustomerInfoListener,
   configurePurchases,
   getCustomerInfoSafe,
+  getNonSubscriptionTransactions,
   isEntitled,
   PREMIUM_ENTITLEMENT_ID,
   removeCustomerInfoListener,
+  transactionQuantity,
 } from '../services/purchasesService';
 import {
   cancelAllReminders,
@@ -111,6 +116,7 @@ interface AppDataContextValue {
   completeSession: (input: CompleteSessionInput) => Promise<CompleteSessionResult>;
   earnCoins: (amount: number) => Promise<void>;
   spendCoins: (amount: number) => Promise<boolean>;
+  reconcileCoinPurchases: () => Promise<void>;
   saveStreakWithInsurance: () => Promise<void>;
   saveStreakWithCoins: () => Promise<boolean>;
   buyStreakFreeze: () => Promise<boolean>;
@@ -145,6 +151,11 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [unlockedPersonas, setUnlockedPersonas] = useState<string[]>([]);
   const [isPremium, setIsPremium] = useState(false);
   const unlockTimestampsRef = useRef<Record<string, number>>({});
+  // Idempotency ledger for reconcileCoinPurchases — every RevenueCat
+  // transaction identifier already credited to the coin balance, so the
+  // same purchase is never granted twice. See storage.ts's comment on why
+  // resetAllData deliberately leaves this untouched.
+  const creditedTransactionIdsRef = useRef<Set<string>>(new Set());
   // Guards buyStreakFreeze against a double-fire (e.g. a fast double-tap)
   // landing two calls before React re-renders with the disabled button —
   // state alone can't catch that since both calls read it before either
@@ -161,6 +172,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         loadedCoins,
         loadedCosmetics,
         loadedPersonas,
+        loadedCreditedTransactionIds,
       ] = await Promise.all([
         loadSettings(),
         loadSessions(),
@@ -169,9 +181,11 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         loadCoins(),
         loadUnlockedCosmetics(),
         loadUnlockedPersonas(),
+        loadCreditedTransactionIds(),
       ]);
 
       unlockTimestampsRef.current = loadedUnlocks;
+      creditedTransactionIdsRef.current = new Set(loadedCreditedTransactionIds);
       let effectiveSessions = loadedSessions;
 
       // A leftover "active session" marker means the app was killed, crashed, or the
@@ -246,9 +260,19 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       await configurePurchases();
       await refreshPremiumStatus();
+      // Catches any consumable purchase RevenueCat already knows about but
+      // this device hasn't credited yet — e.g. a previous session ended
+      // (crash, killed app) after payment went through but before
+      // reconciliation ran. "Uygulama açılışında" per Faz 12-A.
+      await reconcileCoinPurchases();
       listener = (info: CustomerInfo) => {
         setIsPremium(isEntitled(info));
         syncTrialReminder(info);
+        // CustomerInfo updates after every completed purchase and every
+        // restore, so this is also "her satın alma sonrasında" — the
+        // single automatic trigger point, in addition to the explicit
+        // call screens make right after their own purchase attempt.
+        reconcileCoinPurchases().catch((err) => reportError(err));
       };
       addCustomerInfoListener(listener);
     })();
@@ -294,6 +318,51 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
   }, []);
+
+  // Guards against two reconcileCoinPurchases runs overlapping (boot +
+  // the CustomerInfo listener can both fire close together) — without
+  // this, both could read the same not-yet-credited transaction before
+  // either writes the ledger back, crediting it twice.
+  const reconcilingCoinsRef = useRef(false);
+
+  // The ONLY function in the app allowed to credit coins for a store
+  // purchase (Faz 12-A). RevenueCat is the source of truth for which
+  // consumable transactions genuinely happened — this reads
+  // nonSubscriptionTransactions and credits whichever ones this device
+  // hasn't already credited (creditedTransactionIdsRef), one at a time,
+  // persisting the ledger after each one so a crash mid-loop can't cause
+  // a transaction to be silently skipped OR double-credited on retry.
+  // Never called from a purchase success handler directly — screens
+  // complete the purchase, then call this; it does the actual crediting.
+  const reconcileCoinPurchases = useCallback(async () => {
+    if (reconcilingCoinsRef.current) return;
+    reconcilingCoinsRef.current = true;
+    try {
+      const transactions = await getNonSubscriptionTransactions();
+      for (const tx of transactions) {
+        const id = tx.transactionIdentifier;
+        if (!id || creditedTransactionIdsRef.current.has(id)) continue;
+        const coinsPerUnit = coinsForPackageIdentifier(tx.productIdentifier);
+        // Not a coin-pack product (e.g. some other non-subscription
+        // product added later) — not this function's concern, and never
+        // marked credited so a future coin-aware handler can still see it.
+        if (coinsPerUnit === null) continue;
+        const quantity = transactionQuantity(tx);
+        await earnCoins(coinsPerUnit * quantity);
+        const nextCredited = new Set(creditedTransactionIdsRef.current);
+        nextCredited.add(id);
+        creditedTransactionIdsRef.current = nextCredited;
+        await saveCreditedTransactionIds([...nextCredited]);
+        track('coin_purchase_reconciled', {
+          productId: tx.productIdentifier,
+          coins: coinsPerUnit * quantity,
+          quantity,
+        });
+      }
+    } finally {
+      reconcilingCoinsRef.current = false;
+    }
+  }, [earnCoins]);
 
   const spendCoins = useCallback(async (amount: number): Promise<boolean> => {
     if (amount <= 0) return true;
@@ -701,6 +770,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     completeSession,
     earnCoins,
     spendCoins,
+    reconcileCoinPurchases,
     saveStreakWithInsurance,
     saveStreakWithCoins,
     buyStreakFreeze,

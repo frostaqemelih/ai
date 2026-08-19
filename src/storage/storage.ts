@@ -12,6 +12,7 @@ const KEYS = {
   coins: '@dt/coins',
   unlockedCosmetics: '@dt/unlockedCosmetics',
   unlockedPersonas: '@dt/unlockedPersonas',
+  creditedTransactionIds: '@dt/creditedTransactionIds',
 } as const;
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -159,7 +160,35 @@ export async function saveUnlockedPersonas(ids: string[]): Promise<void> {
   await AsyncStorage.setItem(KEYS.unlockedPersonas, JSON.stringify(ids));
 }
 
+// RevenueCat transaction identifiers already credited toward the coin
+// balance — the coin-purchase reconciliation loop's idempotency ledger
+// (see AppDataContext.reconcileCoinPurchases). A corrupt/unreadable ledger
+// must never crash or block reconciliation — worst case it re-derives an
+// empty ledger and re-credits already-seen transactions once, which is far
+// safer than never being able to credit a genuine purchase again.
+export async function loadCreditedTransactionIds(): Promise<string[]> {
+  const raw = await AsyncStorage.getItem(KEYS.creditedTransactionIds);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as string[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function saveCreditedTransactionIds(ids: string[]): Promise<void> {
+  await AsyncStorage.setItem(KEYS.creditedTransactionIds, JSON.stringify(ids));
+}
+
 export async function resetAllData(): Promise<void> {
+  // Deliberately NOT clearing KEYS.creditedTransactionIds here. Wiping it
+  // would make the next boot's reconciliation see old, already-owned
+  // RevenueCat coin transactions as "new" again and re-grant coins the
+  // user already spent — quietly contradicting the "consumables aren't
+  // restored" disclosure in StoreScreen/Terms. Leaving the ledger intact
+  // means a reset genuinely forfeits those coins, matching what users were
+  // told.
   await AsyncStorage.multiRemove([
     KEYS.sessions,
     KEYS.achievementUnlocks,

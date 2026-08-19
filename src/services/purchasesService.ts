@@ -1,9 +1,11 @@
 import { Platform } from 'react-native';
 import Purchases, {
+  PURCHASES_ERROR_CODE,
   type CustomerInfo,
   type CustomerInfoUpdateListener,
   type PurchasesOffering,
   type PurchasesPackage,
+  type PurchasesStoreTransaction,
 } from 'react-native-purchases';
 
 // Must match the entitlement identifier configured in the RevenueCat
@@ -76,28 +78,100 @@ export async function fetchOfferingByIdentifier(id: string): Promise<PurchasesOf
   }
 }
 
-export async function purchasePackage(
-  pkg: PurchasesPackage
-): Promise<{ success: boolean; info: CustomerInfo | null }> {
-  if (!isNativePlatform() || !configured) return { success: false, info: null };
+// Purchase-flow outcomes a UI actually needs to react to differently.
+// Deliberately coarser than PURCHASES_ERROR_CODE's ~35 values — every code
+// not called out explicitly below collapses to 'unknown' (a generic,
+// non-alarming failure message), so a future SDK error code that isn't
+// mapped here degrades safely instead of falling through unhandled.
+export type PurchaseOutcome = 'cancelled' | 'pending' | 'alreadyOwned' | 'network' | 'unknown';
+
+// Classifies by the SDK's typed PURCHASES_ERROR_CODE enum, never by string
+// matching error messages (messages aren't a stable API and can change
+// between SDK versions/locales).
+function classifyPurchaseError(code: PURCHASES_ERROR_CODE | undefined): PurchaseOutcome {
+  switch (code) {
+    case PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR:
+      return 'cancelled';
+    case PURCHASES_ERROR_CODE.PAYMENT_PENDING_ERROR:
+      return 'pending';
+    // RevenueCat/Google Play can also surface a stuck-pending purchase from
+    // a *previous* session as "already purchased" rather than "pending" —
+    // both cases mean the same thing to the user (no product yet, nothing
+    // to alarm them about) and both should trigger reconciliation rather
+    // than a raw error.
+    case PURCHASES_ERROR_CODE.PRODUCT_ALREADY_PURCHASED_ERROR:
+      return 'alreadyOwned';
+    case PURCHASES_ERROR_CODE.NETWORK_ERROR:
+    case PURCHASES_ERROR_CODE.STORE_PROBLEM_ERROR:
+    case PURCHASES_ERROR_CODE.OFFLINE_CONNECTION_ERROR:
+      return 'network';
+    default:
+      return 'unknown';
+  }
+}
+
+export interface PurchaseResult {
+  success: boolean;
+  info: CustomerInfo | null;
+  /** Present only when `success` is false — see PurchaseOutcome. */
+  outcome?: PurchaseOutcome;
+}
+
+export async function purchasePackage(pkg: PurchasesPackage): Promise<PurchaseResult> {
+  if (!isNativePlatform() || !configured) return { success: false, info: null, outcome: 'unknown' };
   try {
     const { customerInfo } = await Purchases.purchasePackage(pkg);
     return { success: true, info: customerInfo };
   } catch (err: any) {
-    if (err?.userCancelled) return { success: false, info: null };
-    console.warn('[purchasesService] purchase failed', err);
-    return { success: false, info: null };
+    const outcome = classifyPurchaseError(err?.code);
+    if (outcome === 'unknown') {
+      console.warn('[purchasesService] purchase failed', err);
+    }
+    return { success: false, info: null, outcome };
   }
 }
 
-export async function restorePurchases(): Promise<{ success: boolean; info: CustomerInfo | null }> {
-  if (!isNativePlatform() || !configured) return { success: false, info: null };
+export async function restorePurchases(): Promise<PurchaseResult> {
+  if (!isNativePlatform() || !configured) return { success: false, info: null, outcome: 'unknown' };
   try {
     const info = await Purchases.restorePurchases();
     return { success: true, info };
-  } catch (err) {
-    console.warn('[purchasesService] restore failed', err);
-    return { success: false, info: null };
+  } catch (err: any) {
+    const outcome = classifyPurchaseError(err?.code);
+    if (outcome === 'unknown') {
+      console.warn('[purchasesService] restore failed', err);
+    }
+    return { success: false, info: null, outcome };
+  }
+}
+
+// Every non-subscription (consumable) transaction RevenueCat has on record
+// for this user — the source of truth for coin-purchase reconciliation
+// (AppDataContext.reconcileCoinPurchases). RevenueCat only resolves
+// purchasePackage()/adds a transaction here once the store has genuinely
+// finalized it as purchased, so a PENDING transaction never appears —
+// nothing extra to filter out here for that case.
+export async function getNonSubscriptionTransactions(): Promise<PurchasesStoreTransaction[]> {
+  const info = await getCustomerInfoSafe();
+  return info?.nonSubscriptionTransactions ?? [];
+}
+
+// Google Play supports multi-quantity purchases of a single one-time
+// product; the purchased quantity is not exposed as a typed field on
+// PurchasesStoreTransaction anywhere in this SDK version, only inside the
+// raw Android purchase receipt JSON (`originalJson`, null on iOS and most
+// other stores). This is a best-effort read of that undocumented shape —
+// defaults to 1 (the overwhelmingly common case, and this app's own
+// purchase flow never requests more than 1) if the field is absent,
+// unparseable, or the platform doesn't provide originalJson at all.
+export function transactionQuantity(tx: PurchasesStoreTransaction): number {
+  if (!tx.originalJson) return 1;
+  try {
+    const parsed = JSON.parse(tx.originalJson) as { quantity?: unknown };
+    const quantity = Number(parsed.quantity);
+    return Number.isInteger(quantity) && quantity > 0 ? quantity : 1;
+  } catch {
+    return 1;
   }
 }
 
