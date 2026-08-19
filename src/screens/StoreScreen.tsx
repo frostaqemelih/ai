@@ -17,7 +17,7 @@ import {
   STREAK_FREEZE_PREMIUM_CAP,
   streakFreezeCap,
 } from '../utils/economy';
-import { fetchOfferingByIdentifier, purchasePackage } from '../services/purchasesService';
+import { fetchOfferingByIdentifier, purchasePackage, type PurchaseOutcome } from '../services/purchasesService';
 import { track } from '../services/analyticsService';
 import { PersonaOption } from '../components/PersonaOption';
 import { PERSONAS, PERSONA_ORDER, isPersonaUnlocked, type PersonaId } from '../personas';
@@ -36,7 +36,7 @@ export function StoreScreen({ navigation }: Props) {
     updateSettings,
     unlockCosmetic,
     isPremium,
-    earnCoins,
+    reconcileCoinPurchases,
     buyStreakFreeze,
     selectPersona,
     unlockPersonaWithCoins,
@@ -47,6 +47,9 @@ export function StoreScreen({ navigation }: Props) {
   const [purchasingCoinPack, setPurchasingCoinPack] = useState<string | null>(null);
   const [buyingFreeze, setBuyingFreeze] = useState(false);
   const [pendingPersonaId, setPendingPersonaId] = useState<PersonaId | null>(null);
+  const [purchaseMessage, setPurchaseMessage] = useState<string | null>(null);
+
+  const personaKey = `personas.${settings.personaId}`;
 
   const handlePersonaPress = async (id: PersonaId) => {
     const unlocked = isPersonaUnlocked(id, unlockedPersonas, isPremium);
@@ -76,16 +79,53 @@ export function StoreScreen({ navigation }: Props) {
 
   const coinPackages = coinOffering?.availablePackages ?? [];
 
-  const handleBuyCoins = async (pkg: PurchasesPackage) => {
-    const coinsForPack = coinsForPackageIdentifier(pkg.identifier);
-    if (coinsForPack === null || purchasingCoinPack) return;
-    setPurchasingCoinPack(pkg.identifier);
-    const { success } = await purchasePackage(pkg);
-    setPurchasingCoinPack(null);
-    if (success) {
-      await earnCoins(coinsForPack);
-      track('coin_purchased', { packageId: pkg.identifier, coins: coinsForPack });
+  // Every purchase outcome except a plain success is either silent
+  // (cancelled — the user's own choice, not an error) or maps to a
+  // persona-toned message. 'alreadyOwned' shares 'pending's copy: both
+  // mean "no product yet, nothing to worry about" from the user's side —
+  // reconcileCoinPurchases is what actually catches up once either
+  // resolves, never a raw error alert (Faz 12-B).
+  function messageForOutcome(outcome: PurchaseOutcome): string | null {
+    switch (outcome) {
+      case 'cancelled':
+        return null;
+      case 'pending':
+      case 'alreadyOwned':
+        return t(`${personaKey}.purchase.pending`);
+      case 'network':
+        return t(`${personaKey}.purchase.network`);
+      case 'unknown':
+        return t(`${personaKey}.purchase.unknown`);
     }
+  }
+
+  const handleBuyCoins = async (pkg: PurchasesPackage) => {
+    if (purchasingCoinPack) return;
+    setPurchasingCoinPack(pkg.identifier);
+    setPurchaseMessage(null);
+    const result = await purchasePackage(pkg);
+    if (result.success) {
+      // Never credit coins here directly — completing the purchase and
+      // crediting it are two separate steps (Faz 12-A). Reconciliation
+      // reads RevenueCat's own record of what was actually purchased and
+      // is the only function allowed to touch the coin balance for a
+      // store purchase; this call also fires automatically from the
+      // CustomerInfo listener, so this is a second, harmless trigger for
+      // snappier UI feedback, not a second crediting path.
+      await reconcileCoinPurchases();
+      const packCoins = coinsForPackageIdentifier(pkg.identifier);
+      if (packCoins !== null) {
+        setPurchaseMessage(t('store.coinPurchaseSuccess', { coins: packCoins }));
+      }
+      track('coin_purchase_attempted', { packageId: pkg.identifier, outcome: 'success' });
+    } else if (result.outcome) {
+      if (result.outcome === 'alreadyOwned') {
+        await reconcileCoinPurchases();
+      }
+      setPurchaseMessage(messageForOutcome(result.outcome));
+      track('coin_purchase_attempted', { packageId: pkg.identifier, outcome: result.outcome });
+    }
+    setPurchasingCoinPack(null);
   };
 
   const handlePress = async (id: string, cost: number, premiumOnly?: boolean) => {
@@ -126,7 +166,7 @@ export function StoreScreen({ navigation }: Props) {
 
   return (
     <View style={styles.screen}>
-      <Header title="STORE" />
+      <Header title={t('store.title')} />
       <FlatList
         style={styles.container}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xl }]}
@@ -137,7 +177,7 @@ export function StoreScreen({ navigation }: Props) {
         ListHeaderComponent={
           <>
             <View style={styles.balanceRow}>
-              <Text style={styles.balanceLabel}>YOUR BALANCE</Text>
+              <Text style={styles.balanceLabel}>{t('store.yourBalance')}</Text>
               <Text style={styles.balanceValue}>🪙 {coins}</Text>
             </View>
 
@@ -145,7 +185,7 @@ export function StoreScreen({ navigation }: Props) {
               <ActivityIndicator color={colors.textSecondary} style={styles.coinLoading} />
             ) : coinPackages.length > 0 ? (
               <View style={styles.buyCoinsSection}>
-                <Text style={styles.sectionLabel}>BUY COINS</Text>
+                <Text style={styles.sectionLabel}>{t('store.buyCoins')}</Text>
                 <View style={styles.buyCoinsRow}>
                   {coinPackages.map((pkg) => {
                     const packCoins = coinsForPackageIdentifier(pkg.identifier);
@@ -166,14 +206,14 @@ export function StoreScreen({ navigation }: Props) {
                     );
                   })}
                 </View>
+                {purchaseMessage && <Text style={styles.purchaseMessage}>{purchaseMessage}</Text>}
+                <Text style={styles.coinDisclosure}>{t('store.coinDisclosure')}</Text>
               </View>
             ) : null}
 
             <View style={styles.personaSection}>
-              <Text style={styles.sectionLabel}>PERSONAS</Text>
-              <Text style={styles.freezeSubtitle}>
-                A persona is more than a color — it changes how the app talks to you.
-              </Text>
+              <Text style={styles.sectionLabel}>{t('store.personas')}</Text>
+              <Text style={styles.freezeSubtitle}>{t('store.personaSubtitle')}</Text>
               <View style={styles.personaList}>
                 {PERSONA_ORDER.map((id) => (
                   <PersonaOption
@@ -188,10 +228,18 @@ export function StoreScreen({ navigation }: Props) {
             </View>
 
             <View style={styles.freezeSection}>
-              <Text style={styles.sectionLabel}>STREAK FREEZES</Text>
+              <Text style={styles.sectionLabel}>{t('store.streakFreezes')}</Text>
               <Text style={styles.freezeSubtitle}>
-                Auto-saves your streak the instant you miss a day. {settings.streakFreezesOwned}/
-                {freezeCap} owned{isPremium ? '' : ` (Premium raises the cap to ${STREAK_FREEZE_PREMIUM_CAP})`}.
+                {isPremium
+                  ? t('store.freezeSubtitlePremium', {
+                      owned: settings.streakFreezesOwned,
+                      cap: freezeCap,
+                    })
+                  : t('store.freezeSubtitleFree', {
+                      owned: settings.streakFreezesOwned,
+                      cap: freezeCap,
+                      premiumCap: STREAK_FREEZE_PREMIUM_CAP,
+                    })}
               </Text>
               <Pressable
                 style={[
@@ -206,14 +254,14 @@ export function StoreScreen({ navigation }: Props) {
                   {buyingFreeze
                     ? '…'
                     : settings.streakFreezesOwned >= freezeCap
-                      ? 'CAP REACHED'
-                      : `🧊 BUY FREEZE — 🪙 ${STREAK_FREEZE_COST}`}
+                      ? t('store.freezeCapReached')
+                      : t('store.freezeBuyLabel', { cost: STREAK_FREEZE_COST })}
                 </Text>
               </Pressable>
             </View>
 
             <Text style={[styles.sectionLabel, styles.ringColorsLabel]}>
-              {t(`personas.${settings.personaId}.name`).toUpperCase()} — RING COLORS
+              {t('store.ringColorsFor', { persona: t(`${personaKey}.name`).toUpperCase() })}
             </Text>
           </>
         }
@@ -224,9 +272,7 @@ export function StoreScreen({ navigation }: Props) {
               hitSlop={8}
               style={styles.upsellFooter}
             >
-              <Text style={styles.upsellFooterText}>
-                Short on coins? Premium unlocks everything, no grinding →
-              </Text>
+              <Text style={styles.upsellFooterText}>{t('store.upsellFooter')}</Text>
             </Pressable>
           ) : null
         }
@@ -251,11 +297,11 @@ export function StoreScreen({ navigation }: Props) {
                 />
                 <Text style={styles.cardLabel}>{item.label}</Text>
                 {selected ? (
-                  <Text style={styles.selectedText}>✓ SELECTED</Text>
+                  <Text style={styles.selectedText}>{t('store.selected')}</Text>
                 ) : owned ? (
-                  <Text style={styles.ownedText}>OWNED</Text>
+                  <Text style={styles.ownedText}>{t('store.owned')}</Text>
                 ) : locked ? (
-                  <Text style={styles.lockedText}>🔒 PREMIUM</Text>
+                  <Text style={styles.lockedText}>{t('store.lockedPremium')}</Text>
                 ) : (
                   <Text style={[styles.costText, !affordable && styles.costTextDisabled]}>
                     🪙 {item.cost}
@@ -328,6 +374,16 @@ const styles = StyleSheet.create({
     ...typography.label,
     fontSize: 11,
     color: colors.streak,
+  },
+  purchaseMessage: {
+    ...typography.body,
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  coinDisclosure: {
+    ...typography.body,
+    fontSize: 11,
+    color: colors.textTertiary,
   },
   personaSection: {
     marginBottom: spacing.xl,

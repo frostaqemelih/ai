@@ -134,6 +134,11 @@
       "scheduleNotification": {
         "title": "Süre doldu. Kanıtla.",
         "body": "{{minutes}} dakika, telefon yok, şimdi başlıyor — başlamak için dokun."
+      },
+      "purchase": {
+        "pending": "Ödeme işleniyor. Henüz coin yok — onaylanır onaylanmaz otomatik gelir, tekrar denemene gerek yok.",
+        "network": "Mağazaya ulaşılamadı. Hiçbir ücret alınmadı. Tekrar dene.",
+        "unknown": "Bir şeyler ters gitti. Hiçbir ücret alınmadı — tekrar dene."
       }
     },
     "calm": {
@@ -184,6 +189,11 @@
       "scheduleNotification": {
         "title": "Kendine bir an ayır",
         "body": "{{minutes}} dakikalık oturumun hazır, ne zaman istersen dokun."
+      },
+      "purchase": {
+        "pending": "Ödemen hâlâ onaylanıyor. Yapacak bir şey yok — onaylanınca coin'ler sessizce belirir.",
+        "network": "Mağazaya bu sefer ulaşılamadı. Ücret alınmadı. Acelesi yok, istediğinde tekrar dene.",
+        "unknown": "Bu işlem tamamlanmadı. Ücret alınmadı — hazır olduğunda tekrar dene."
       }
     },
     "playful": {
@@ -234,6 +244,11 @@
       "scheduleNotification": {
         "title": "Telefon. Bırak. Başla.",
         "body": "{{minutes}} dakika, bahane yok. Başlamak için dokun."
+      },
+      "purchase": {
+        "pending": "Ödemen hâlâ pişiyor. Henüz coin yok — bitince kendiliğinden gelecek. 👀",
+        "network": "Mağaza açılmıyor. Merak etme, cüzdanına dokunulmadı — birazdan tekrar dene.",
+        "unknown": "Eyvah, bu olmadı. Yine de ücret alınmadı — bir daha dene."
       }
     },
     "coach": {
@@ -284,6 +299,11 @@
       "scheduleNotification": {
         "title": "Tekrar zamanı.",
         "body": "{{minutes}} dakika sayaçta — setini başlatmak için dokun."
+      },
+      "purchase": {
+        "pending": "Ödeme hâlâ işlem hattında. Henüz kaydedilen coin yok — onaylanınca otomatik gelecek.",
+        "network": "Mağazaya bağlanılamadı. Hiçbir ücret alınmadı. Hazır olunca tekrar dene.",
+        "unknown": "Bu tekrar sayılmadı — ücret alınmadı. Tekrar dene."
       }
     },
     "monk": {
@@ -332,6 +352,11 @@
       "scheduleNotification": {
         "title": "Zamanı geldi.",
         "body": "{{minutes}} dakikalık durgunluk. Başlamak için dokun."
+      },
+      "purchase": {
+        "pending": "Ödeme henüz kesinleşmedi. Coin yok. Kendiliğinden gelecek.",
+        "network": "Mağazaya ulaşılamadı. Hiçbir şey alınmadı. Sonra tekrar dene.",
+        "unknown": "Gerçekleşmedi. Hiçbir şey alınmadı. Tekrar dene."
       }
     }
   },
@@ -361,10 +386,30 @@
     "nextMilestone": "SIRADAKİ MİLESTONE",
     "allUnlocked": "Tüm milestone'lar açıldı. Sen uzun oyunu oynuyorsun."
   },
+  "store": {
+    "title": "MAĞAZA",
+    "yourBalance": "BAKİYEN",
+    "buyCoins": "COIN SATIN AL",
+    "personas": "PERSONALAR",
+    "personaSubtitle": "Bir persona sadece bir renk değil — uygulamanın seninle konuşma şeklini değiştirir.",
+    "streakFreezes": "STREAK FREEZE",
+    "freezeSubtitleFree": "Bir günü kaçırdığın anda serini otomatik kurtarır. {{owned}}/{{cap}} sende (Premium bu limiti {{premiumCap}}'a çıkarır).",
+    "freezeSubtitlePremium": "Bir günü kaçırdığın anda serini otomatik kurtarır. {{owned}}/{{cap}} sende.",
+    "freezeCapReached": "LİMİT DOLDU",
+    "freezeBuyLabel": "🧊 FREEZE AL — 🪙 {{cost}}",
+    "ringColorsFor": "{{persona}} — HALKA RENKLERİ",
+    "selected": "✓ SEÇİLİ",
+    "owned": "SENDE VAR",
+    "lockedPremium": "🔒 PREMIUM",
+    "upsellFooter": "Coin'in mi az? Premium her şeyin kilidini açar, uğraşmana gerek kalmaz →",
+    "coinDisclosure": "Coin'ler sadece bu cihazda saklanır. Uygulamayı silersen coin'ler de gider — bu tür tüketilebilir satın almalar App Store/Play Store tarafından geri yüklenemez, bu platformların kuralı.",
+    "coinPurchaseSuccess": "🪙 {{coins}} eklendi"
+  },
   "paywall": {
     "title": "PREMIUM",
     "heading": "Premium'a Geç",
     "restorePurchases": "SATIN ALIMLARI GERİ YÜKLE",
+    "restoreDoesntCoverCoins": "Sadece Premium'u geri yükler — coin satın alımları tüketilebilir ve sadece bu cihazda saklanır, bu şekilde geri gelmez.",
     "restoring": "GERİ YÜKLENİYOR…",
     "noProducts": "Henüz ürün tanımlanmadı.\nRevenueCat panelinde Offerings kurulumu yapılmalı (README'ye bakın).",
     "terms": "Koşullar",
@@ -374,6 +419,9 @@
     "perMonth": "{{price}}/ay",
     "entitlementMissing": "Satın alma tamamlandı ama premium yetkisi bulunamadı. RevenueCat entitlement ayarını kontrol edin.",
     "noPreviousPurchase": "Geri yüklenecek önceki bir satın alma bulunamadı.",
+    "purchasePending": "Ödeme işleniyor — onaylanınca Premium otomatik açılacak, tekrar denemene gerek yok.",
+    "purchaseNetwork": "Mağazaya ulaşılamadı. Hiçbir ücret alınmadı. Tekrar dene.",
+    "purchaseUnknown": "Bir şeyler ters gitti. Hiçbir ücret alınmadı — tekrar dene.",
     "featureNoAds": "Reklamsız, her zaman",
     "featureCustomRuns": "24 saate kadar özel oturumlar",
     "featureStatsTrends": "Gelişmiş istatistik: aylık ve 3 aylık trendler",

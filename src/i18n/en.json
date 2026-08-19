@@ -134,6 +134,11 @@
       "scheduleNotification": {
         "title": "Time's up. Prove it.",
         "body": "{{minutes}} minutes, no phone, starting now — tap to begin."
+      },
+      "purchase": {
+        "pending": "Payment's processing. No coins yet — they land the second it clears, no need to retry.",
+        "network": "Couldn't reach the store. Nothing was charged. Try again.",
+        "unknown": "Something went wrong. Nothing was charged — try again."
       }
     },
     "calm": {
@@ -184,6 +189,11 @@
       "scheduleNotification": {
         "title": "A moment for yourself",
         "body": "Your {{minutes}} minute session is ready whenever you tap in."
+      },
+      "purchase": {
+        "pending": "Your payment is still settling. Nothing to do — the coins will just quietly appear once it clears.",
+        "network": "Couldn't reach the store this time. You weren't charged. No rush, try again whenever.",
+        "unknown": "That didn't go through. You weren't charged — try again whenever you're ready."
       }
     },
     "playful": {
@@ -234,6 +244,11 @@
       "scheduleNotification": {
         "title": "Phone. Down. Go.",
         "body": "{{minutes}} minutes, no excuses. Tap to start."
+      },
+      "purchase": {
+        "pending": "Ooh, your payment's still cooking. No coins yet — they'll pop in the moment it's done. 👀",
+        "network": "Store's not picking up. Don't worry, your wallet's untouched — try again in a sec.",
+        "unknown": "Welp, that flopped. You weren't charged though — give it another go."
       }
     },
     "coach": {
@@ -284,6 +299,11 @@
       "scheduleNotification": {
         "title": "Rep time.",
         "body": "{{minutes}} minutes on the clock — tap to begin your set."
+      },
+      "purchase": {
+        "pending": "Payment's still in the pipeline. No coins logged yet — they'll land automatically once it clears.",
+        "network": "Couldn't connect to the store. No charge went through. Run it back when you're ready.",
+        "unknown": "That rep didn't count — no charge went through. Try again."
       }
     },
     "monk": {
@@ -332,6 +352,11 @@
       "scheduleNotification": {
         "title": "It's time.",
         "body": "{{minutes}} minutes of stillness. Tap to begin."
+      },
+      "purchase": {
+        "pending": "The payment has not yet settled. No coins yet. They will arrive on their own.",
+        "network": "The store could not be reached. Nothing was taken. Try again later.",
+        "unknown": "It did not go through. Nothing was taken. Try again."
       }
     }
   },
@@ -361,10 +386,30 @@
     "nextMilestone": "NEXT MILESTONE",
     "allUnlocked": "Every milestone unlocked. You're the long game."
   },
+  "store": {
+    "title": "STORE",
+    "yourBalance": "YOUR BALANCE",
+    "buyCoins": "BUY COINS",
+    "personas": "PERSONAS",
+    "personaSubtitle": "A persona is more than a color — it changes how the app talks to you.",
+    "streakFreezes": "STREAK FREEZES",
+    "freezeSubtitleFree": "Auto-saves your streak the instant you miss a day. {{owned}}/{{cap}} owned (Premium raises the cap to {{premiumCap}}).",
+    "freezeSubtitlePremium": "Auto-saves your streak the instant you miss a day. {{owned}}/{{cap}} owned.",
+    "freezeCapReached": "CAP REACHED",
+    "freezeBuyLabel": "🧊 BUY FREEZE — 🪙 {{cost}}",
+    "ringColorsFor": "{{persona}} — RING COLORS",
+    "selected": "✓ SELECTED",
+    "owned": "OWNED",
+    "lockedPremium": "🔒 PREMIUM",
+    "upsellFooter": "Short on coins? Premium unlocks everything, no grinding →",
+    "coinDisclosure": "Coins live on this device only. Delete the app and they're gone — consumable purchases like these can't be restored by the App Store or Play Store, by design.",
+    "coinPurchaseSuccess": "🪙 {{coins}} added"
+  },
   "paywall": {
     "title": "PREMIUM",
     "heading": "Go Premium",
     "restorePurchases": "RESTORE PURCHASES",
+    "restoreDoesntCoverCoins": "Restores Premium only — coin purchases are consumable and device-only, so they can't be restored this way.",
     "restoring": "RESTORING…",
     "noProducts": "No products configured yet.\nSet up Offerings in the RevenueCat dashboard (see README).",
     "terms": "Terms",
@@ -374,6 +419,9 @@
     "perMonth": "{{price}}/mo",
     "entitlementMissing": "Purchase completed, but the premium entitlement wasn't found. Check your RevenueCat entitlement configuration.",
     "noPreviousPurchase": "No previous purchase found to restore.",
+    "purchasePending": "Payment's processing — you'll get Premium automatically once it's confirmed, no need to retry.",
+    "purchaseNetwork": "Couldn't reach the store. You weren't charged. Try again.",
+    "purchaseUnknown": "Something went wrong. You weren't charged — try again.",
     "featureNoAds": "No ads, ever",
     "featureCustomRuns": "Custom runs up to 24 hours",
     "featureStatsTrends": "Advanced stats: monthly & 3-month trends",

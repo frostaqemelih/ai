@@ -8,7 +8,13 @@ import { useAppData } from '../context/AppDataContext';
 import { Header } from '../components/Header';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { colors, radius, spacing, typography } from '../theme';
-import { fetchOfferings, isEntitled, purchasePackage, restorePurchases } from '../services/purchasesService';
+import {
+  fetchOfferings,
+  isEntitled,
+  purchasePackage,
+  restorePurchases,
+  type PurchaseOutcome,
+} from '../services/purchasesService';
 import { track } from '../services/analyticsService';
 import { computeAnnualSavingsPercent, describeRenewalTerms } from '../utils/paywall';
 import { useTranslation } from '../i18n';
@@ -42,17 +48,43 @@ export function PaywallScreen({ navigation }: Props) {
     })();
   }, []);
 
+  // 'alreadyOwned' means RevenueCat/the store already has a record of this
+  // purchase from an unfinished previous session — refreshing entitlement
+  // status (not showing an error) is the correct response, same idea as
+  // StoreScreen's reconcileCoinPurchases for consumables. 'cancelled' is a
+  // normal user choice, never an error message (Faz 12-B).
+  function messageForOutcome(outcome: PurchaseOutcome): string | null {
+    switch (outcome) {
+      case 'cancelled':
+        return null;
+      case 'pending':
+        return t('paywall.purchasePending');
+      case 'alreadyOwned':
+        return null;
+      case 'network':
+        return t('paywall.purchaseNetwork');
+      case 'unknown':
+        return t('paywall.purchaseUnknown');
+    }
+  }
+
   const handlePurchase = async (pkg: PurchasesPackage) => {
     setPurchasingId(pkg.identifier);
     setMessage(null);
-    const { success, info } = await purchasePackage(pkg);
+    const result = await purchasePackage(pkg);
     setPurchasingId(null);
-    if (success && isEntitled(info)) {
+    if (result.success && isEntitled(result.info)) {
       track('purchase_completed', { packageId: pkg.identifier });
       await refreshPremiumStatus();
       navigation.goBack();
-    } else if (success) {
+    } else if (result.success) {
       setMessage(t('paywall.entitlementMissing'));
+    } else if (result.outcome) {
+      if (result.outcome === 'alreadyOwned') {
+        await refreshPremiumStatus();
+      }
+      setMessage(messageForOutcome(result.outcome));
+      track('purchase_attempted', { packageId: pkg.identifier, outcome: result.outcome });
     }
   };
 
@@ -151,6 +183,7 @@ export function PaywallScreen({ navigation }: Props) {
             onPress={handleRestore}
             disabled={restoring}
           />
+          <Text style={styles.restoreNote}>{t('paywall.restoreDoesntCoverCoins')}</Text>
           <View style={styles.legalRow}>
             <Pressable onPress={() => navigation.navigate('Terms')} hitSlop={8}>
               <Text style={styles.legalLink}>{t('paywall.terms')}</Text>
@@ -283,6 +316,13 @@ const styles = StyleSheet.create({
   footer: {
     alignItems: 'center',
     gap: spacing.md,
+  },
+  restoreNote: {
+    ...typography.body,
+    fontSize: 10,
+    color: colors.textTertiary,
+    textAlign: 'center',
+    paddingHorizontal: spacing.lg,
   },
   legalRow: {
     flexDirection: 'row',
